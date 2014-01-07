@@ -1,0 +1,5 @@
+## This is a par file for model building.
+
+NUM_MESH_FILES = 2
+MESH_FILE      = ./dat/single_scale_hex_highres.e
+
