@@ -1,18 +1,43 @@
+#include <algorithm>
 #include <iostream>
-#include <fstream>
 #include <string>
-#include <stdlib.h>
+#include <fstream>
+#include "classes.h"
 using namespace std;
 
-void open_driver ( ifstream &myfile )
+void Driver::openDriver ( ifstream &myfile )
 {
   
-  myfile.open ("dat/driver.txt");
+  int i;
+  
+  myfile.open ("./dat/driver.txt");
+  
+  if  (myfile.good () == !true ) {
+    cout << "***Something is wrong with your param file. Exiting.\n";
+    exit (EXIT_FAILURE);    
+  }
+  
+  i = std::count ( istreambuf_iterator<char>(myfile), 
+  istreambuf_iterator<char>(), '\n' );
+    
+  params = new string [i - N_HEADER];
+  
+  myfile.clear ();
+  myfile.seekg (0, ios::beg);
+  
   return;
   
 }
 
-void get_token ( string &test )
+void Driver::closeDriver ( ifstream &myfile )
+{
+  
+  myfile.close ();
+  return;
+  
+}
+
+void Driver::getToken ( string &test )
 {
   
   string del = "=";
@@ -24,22 +49,24 @@ void get_token ( string &test )
   
 }
 
-void read_driver_nMshFiles ( ifstream &myfile, string &num_mesh_files ) 
+void Driver::readDriver ( ifstream &myfile ) 
 {  
   
   int i; 
-  int ar_num;
-  int LINENO_MSH_FILE = 2;  
+  int j;
   string line;
 
   i = 0;  
+  j = 0;
   if ( myfile.is_open() )
   {
     while ( getline (myfile, line) )
     {
-      if ( i == LINENO_MSH_FILE ) 
+      if ( i > N_HEADER ) 
       {
-        get_token ( line );
+        getToken ( line );
+        params[j] = line;
+        j++;
       }
       i++;
     }

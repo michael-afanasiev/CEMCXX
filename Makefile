@@ -2,10 +2,11 @@ CPPFLAGS=-g -std=c++11
 LDFLAGS=-L/usr/local/lib -lexoIIv2c -lnetcdf
 
 OBJS= \
+			./src/construct.o \
       ./src/Exodus_file.o \
       ./src/Mesh.o \
 			./src/read_driver.o \
-      ./src/construct.o \
+			./src/Model_file.o \
 			
 ###################
 %.o: ./src/%.cpp

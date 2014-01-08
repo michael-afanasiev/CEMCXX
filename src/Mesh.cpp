@@ -1,5 +1,6 @@
 #include <iostream>
 #include "classes.h"
+using namespace std;
 
 void Mesh::getInfo (int exoid) 
 {
@@ -19,12 +20,13 @@ void Mesh::getCoord (int exoid)
   
   if (ier != 0) 
   {
-    std::cout << "Fatal error reading in coordinates.\n";
+    std::cout << "***Fatal error reading in coordinates. Exiting.\n";
+    exit (EXIT_FAILURE);
   }
         
 }
 
-void Mesh::allocateMesh (int exoid) 
+void Mesh::allocateMesh () 
 {  
   
   xmsh = new double [num_nodes];
@@ -54,3 +56,40 @@ void Mesh::allocateMesh (int exoid)
   c66 = new double [num_nodes]; 
    
 }
+
+void Mesh::deallocateMesh ()
+{
+  
+  delete [] xmsh;
+  delete [] ymsh;
+  delete [] zmsh;
+
+  delete [] c11;
+  delete [] c12;
+  delete [] c13;
+  delete [] c14;
+  delete [] c15;
+  delete [] c16;
+  delete [] c22;
+  delete [] c23;
+  delete [] c24;
+  delete [] c25;
+  delete [] c26;
+  delete [] c33;
+  delete [] c34;
+  delete [] c35;
+  delete [] c36;
+  delete [] c44;
+  delete [] c45;
+  delete [] c46;
+  delete [] c55;
+  delete [] c56;
+  delete [] c66;
+    
+}
+
+// void Mesh::appendMesh ()
+// {
+//   
+//   
+// }

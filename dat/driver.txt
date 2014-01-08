@@ -1,5 +1,8 @@
 ## This is a par file for model building.
 
-NUM_MESH_FILES = 2
-MESH_FILE      = ./dat/single_scale_hex_highres.e
-
+NUM_MESH_FILES        = 1
+MESH_FILE             = ./dat/single_scale_hex_highres.e
+INPUT_MODEL_DIRECTORY = ../../../Japan/
+INPUT_MODEL_FILE_TYPE = SES3D
+INPUT_MODEL_PHYSICS   = TTI
+ABSOLUTE_OR_PERTURB   = PERTURB

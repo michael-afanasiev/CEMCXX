@@ -1,11 +1,83 @@
-#include <exodusII.h>
-#include <stdlib.h>
 #include <iostream>
 #include <fstream>
-#include <string>
+#include <vector>
+#include <exodusII.h>
 
-void open_driver           ( std::ifstream &myfile );
-void read_driver_nMshFiles ( std::ifstream &myfile, int &num_mesh_files );  
+class Constants
+{
+  
+public:
+  double PI      = 3.1415926535897932;
+  double R_EARTH = 6371.0;
+  double o80     = 180.0;
+};
+
+
+class Model_file
+{
+  
+private:
+  
+  void readSES3D     ();
+  void readSPECFEM3D ();
+  
+  void populateSES3D ( std::string name, int &num_regions, int &num_params, 
+    std::vector<std::vector<double>> &vec , char ftype );
+  
+public:
+  
+  int * region;
+  int num_regions;
+  int num_x;
+  int num_y;
+  int num_z;
+  int num_p;
+  
+  std::vector<double> x;
+  std::vector<double> y;
+  std::vector<double> z;
+  std::vector<std::vector<double>> col_rad;
+  std::vector<std::vector<double>> lon_rad;
+  std::vector<std::vector<double>> col_deg;
+  std::vector<std::vector<double>> lon_deg;
+  std::vector<std::vector<double>> rad;
+  std::vector<std::vector<double>> vsh;
+  std::vector<std::vector<double>> vsv;
+  std::vector<std::vector<double>> rho;
+  std::vector<std::vector<double>> vpp;
+  
+  std::string input_model_directory;
+  std::string input_model_file_type;
+  std::string input_model_physics;
+  std::string absolute_or_perturb;
+  
+  // Internal functions.
+  
+  void read                 ();
+  void colLonRad2xyzSES3D   ();
+  void populateRadiansSES3D ();
+  
+};
+
+class Driver
+{
+  
+private:
+  
+  void getToken ( std::string &test );
+  
+public:
+ 
+  int N_HEADER = 1;  
+
+  
+  std::string * params;
+  
+  void closeDriver ( std::ifstream &myfile );
+  void openDriver  ( std::ifstream &myfile );
+  void readDriver  ( std::ifstream &myfile );
+  
+};
 
 class Exodus_file
 {
@@ -18,12 +90,15 @@ public:
   int nump;
   int comp_ws;
   int io_ws;
+  int num_mesh_files;
   
   float vers;
   
+  std::string fname;
+  
   // Internal functions.
   
-  void openFile ();
+  void openFile ( std::string fname );
   void closeFile ();
   
 };
@@ -72,7 +147,8 @@ public:
   
   void getInfo (int exoid);
   void getCoord (int exoid);
-  void allocateMesh (int exoid);
+  void allocateMesh ();
+  void deallocateMesh ();
            
 };
 
