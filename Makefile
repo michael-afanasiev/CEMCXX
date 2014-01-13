@@ -1,21 +1,24 @@
-CPPFLAGS=-g -std=c++11
-LDFLAGS=-L/usr/local/lib -lexoIIv2c -lnetcdf
+CXX = /usr/local/bin/g++-4.8
+CC  = /usr/local/bin/gcc-4.8
+
+CXXFLAGS = -O3 -std=c++11
+CFLAGS   = -O3
+LDFLAGS  = -L/usr/local/lib -lexoIIv2c -lnetcdf
 
 OBJS= \
-			./src/construct.o \
+			./src/Construct.o \
       ./src/Exodus_file.o \
       ./src/Mesh.o \
-			./src/read_driver.o \
+			./src/Read_driver.o \
 			./src/Model_file.o \
+			./src/Utilities.o \
+			./src/Kdtree.o
 			
 ###################
-%.o: ./src/%.cpp
-	$(CXX) $(CPPFLAGS) -c $<
-
 all: Construct
 
 Construct: $(OBJS)
 	$(CXX) $(LDFLAGS) -o Construct $(OBJS)
 	
 clean:
-	$(RM) ./src/*.o
+	$(RM) ./src/*.o ./Construct

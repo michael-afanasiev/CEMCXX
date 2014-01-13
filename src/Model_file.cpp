@@ -33,7 +33,6 @@ void Model_file::populateSES3D ( string name, int &num_regions,
 
   int * region;  
   int fix_stride;
-  int fix_total;
 
   myfile.open ( name, ios::in );
   
@@ -51,10 +50,8 @@ void Model_file::populateSES3D ( string name, int &num_regions,
       // region is not assigned a parameter.
       if ( ftype == 'c' ) {
         fix_stride = 0;
-        fix_total  = num_regions;
       } else if ( ftype == 'p' ) {
         fix_stride = 1;
-        fix_total  = 0;
       }
       
     }
@@ -154,11 +151,47 @@ void Model_file::populateRadiansSES3D ()
   
 }
 
-void Model_file::readSES3D ()
+void Model_file::openUp ( Mesh &msh )
 {
   
-  int i;
-  int n_head = 2;
+  /** This calculates the quantities of the elastic tensor that are not zero
+  for a TTI model. 
+  
+  NOTE :: eta is set to 1 in this case. This may need to
+  be changed in the future.
+  */
+  
+  int l = 0;
+  for ( int r=0; r<col_deg.size(); r++ ) {
+    for ( int i=0; i<col_deg[r].size(); i++ ) {
+      
+      if ( input_model_physics == "TTI" ) {
+        double N = rho[r][i] * vsh[r][i] * vsh[r][i];
+        double L = rho[r][i] * vsv[r][i] * vsv[r][i];
+        double A = rho[r][i] * vpp[r][i] * vpp[r][i];
+    
+        double C = A;
+        double F = A - 2 * L;
+      
+        msh.c11[l] = C;
+        msh.c12[l] = F;
+        msh.c13[l] = F;
+        msh.c22[l] = A;
+        msh.c23[l] = A - 2 * N;
+        msh.c33[l] = A;
+        msh.c44[l] = N;
+        msh.c55[l] = L;
+        msh.c66[l] = L;  
+      }
+      
+      l++;
+    }
+  }
+  
+}
+
+void Model_file::readSES3D ()
+{
   
   string imd = input_model_directory;
       
@@ -179,7 +212,7 @@ void Model_file::readSES3D ()
   x.resize ( num_p );
   y.resize ( num_p );
   z.resize ( num_p );
-    
+      
 }
 
 void Model_file::readSPECFEM3D ()

@@ -1,4 +1,7 @@
 #include <iostream>
+#include <assert.h>
+#include <ctype.h>
+#include "kdtree.h"
 #include "classes.h"
 using namespace std;
 
@@ -13,7 +16,14 @@ void Mesh::getInfo (int exoid)
   
 }
 
-void Mesh::getCoord (int exoid) 
+void Mesh::populateParams ( int exoid ) 
+{
+  
+  ier = ex_get_nodal_var ( exoid, 0, 0, num_nodes, c11 );
+  
+}
+
+void Mesh::populateCoord ( int exoid ) 
 { 
        
   ier = ex_get_coord ( exoid, xmsh, ymsh, zmsh );
@@ -26,34 +36,34 @@ void Mesh::getCoord (int exoid)
         
 }
 
-void Mesh::allocateMesh () 
+void Mesh::allocateMesh ( int &num_nodes ) 
 {  
   
-  xmsh = new double [num_nodes];
-  ymsh = new double [num_nodes];
-  zmsh = new double [num_nodes];
+  xmsh = new double [num_nodes]();
+  ymsh = new double [num_nodes]();
+  zmsh = new double [num_nodes]();
   
-  c11 = new double [num_nodes];
-  c12 = new double [num_nodes];
-  c13 = new double [num_nodes];
-  c14 = new double [num_nodes];
-  c15 = new double [num_nodes];
-  c16 = new double [num_nodes];
-  c22 = new double [num_nodes];
-  c23 = new double [num_nodes];
-  c24 = new double [num_nodes];
-  c25 = new double [num_nodes];
-  c26 = new double [num_nodes];
-  c33 = new double [num_nodes];
-  c34 = new double [num_nodes];
-  c35 = new double [num_nodes];
-  c36 = new double [num_nodes];
-  c44 = new double [num_nodes];
-  c45 = new double [num_nodes];
-  c46 = new double [num_nodes];
-  c55 = new double [num_nodes];
-  c56 = new double [num_nodes];
-  c66 = new double [num_nodes]; 
+  c11 = new double [num_nodes]();
+  c12 = new double [num_nodes]();
+  c13 = new double [num_nodes]();
+  c14 = new double [num_nodes]();
+  c15 = new double [num_nodes]();
+  c16 = new double [num_nodes]();
+  c22 = new double [num_nodes]();
+  c23 = new double [num_nodes]();
+  c24 = new double [num_nodes]();
+  c25 = new double [num_nodes]();
+  c26 = new double [num_nodes]();
+  c33 = new double [num_nodes]();
+  c34 = new double [num_nodes]();
+  c35 = new double [num_nodes]();
+  c36 = new double [num_nodes]();
+  c44 = new double [num_nodes]();
+  c45 = new double [num_nodes]();
+  c46 = new double [num_nodes]();
+  c55 = new double [num_nodes]();
+  c56 = new double [num_nodes]();
+  c66 = new double [num_nodes](); 
    
 }
 
@@ -88,8 +98,41 @@ void Mesh::deallocateMesh ()
     
 }
 
-// void Mesh::appendMesh ()
-// {
-//   
-//   
-// }
+void Mesh::interpolateModel ( Model_file &mod )
+{
+
+  // Create KDtree.
+  kdtree *tree = kd_create (3);  
+  
+  // Create reference array.
+  int *dat = new int [num_nodes];  
+  for ( int i=0; i<num_nodes; i++ ) {
+    dat[i] = i;
+  }
+  
+  // Populate KDtree.
+  cout << "Creating KDtree.\n";
+  for ( int i=0; i<num_nodes; i++ ) {
+    kd_insert3 ( tree, xmsh[i], ymsh[i], zmsh[i], &dat[i] );
+    cout << "Creating tree. " << num_nodes - (i + 1) << " nodes left.\xd";
+  }  
+  cout << "\n";
+  cout << "Done creating tree.\n" << std::flush;
+  
+  // Loop through model file & assign.
+  
+  if ( mod.interpolation == "GOURAUD" ) {
+    cout << "Performing Gouraud shading.\n";
+  }
+  
+  for ( int i=0; i<mod.x.size(); i++ ) {      
+    kdres  *set = kd_nearest3  ( tree,  mod.x[i],  mod.y[i], mod.z[i] );
+    void *ind_p = kd_res_item_data ( set );
+    int     ind = * (int *) ind_p;
+
+    cout << "Assinging model. " << mod.x.size() - (i + 1) << " nodes left.\xd";
+    kd_res_free ( set );        
+  }
+  cout << "\n";
+
+}

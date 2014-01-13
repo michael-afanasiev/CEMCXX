@@ -3,15 +3,20 @@
 #include <vector>
 #include <exodusII.h>
 
+class Mesh;
+
 class Constants
 {
   
 public:
-  double PI      = 3.1415926535897932;
+  
+  double PI      = 3.141592653589793;
+  double PIo2    = 1.570796326794896;
   double R_EARTH = 6371.0;
   double o80     = 180.0;
+  double ninty   = 90.0;
+  
 };
-
 
 class Model_file
 {
@@ -33,6 +38,12 @@ public:
   int num_z;
   int num_p;
   
+  double rotAng;
+  double rotRad;
+  double rotVecX;
+  double rotVecY;
+  double rotVecZ;
+  
   std::vector<double> x;
   std::vector<double> y;
   std::vector<double> z;
@@ -50,14 +61,34 @@ public:
   std::string input_model_file_type;
   std::string input_model_physics;
   std::string absolute_or_perturb;
+  std::string intentions;
+  std::string dimensions;
+  std::string interpolation;
   
   // Internal functions.
   
   void read                 ();
   void colLonRad2xyzSES3D   ();
   void populateRadiansSES3D ();
+  void openUp               ( Mesh &msh );
   
 };
+
+class Utilities
+{
+  
+public:
+  
+  double col2Lat   ( double &in, char flag );
+  void rotate      ( Model_file &mod );   
+  void convertBary ( double &xp, double &yp, double &zp, 
+                   double &x1, double &x2, double &x3, double &x4,
+                   double &y1, double &y2, double &y3, double &y4,
+                   double &z1, double &z2, double &z3, double &z4,
+                   double &l1, double &l2, double &l3, double &l4 ); 
+  
+};
+
 
 class Driver
 {
@@ -69,9 +100,8 @@ private:
 public:
  
   int N_HEADER = 1;  
-
   
-  std::string * params;
+  std::string *params;
   
   void closeDriver ( std::ifstream &myfile );
   void openDriver  ( std::ifstream &myfile );
@@ -82,14 +112,15 @@ public:
 class Exodus_file
 {
 public:  
+
+  int comp_ws = 8;
+  int io_ws   = 0;
   
   int relert;
   int chrret; 
   int ier; 
   int idexo; 
   int nump;
-  int comp_ws;
-  int io_ws;
   int num_mesh_files;
   
   float vers;
@@ -145,10 +176,12 @@ public:
   
   // Internal functions.
   
-  void getInfo (int exoid);
-  void getCoord (int exoid);
-  void allocateMesh ();
-  void deallocateMesh ();
+  void getInfo          ( int exoid );
+  void populateCoord    ( int exoid );
+  void populateParams   ( int eoxid );
+  void allocateMesh     ( int &num_nodes );
+  void interpolateModel ( Model_file &mod );
+  void deallocateMesh   ();
            
 };
 
