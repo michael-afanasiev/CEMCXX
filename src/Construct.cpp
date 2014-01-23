@@ -12,8 +12,7 @@ int main ()
   Constants   con;
   Exodus_file exo;
   Driver      drv;
-  Mesh        mshLoc;
-  Mesh        mshGlb;
+  Mesh        msh;
   Model_file  mod;
   Utilities   util;
   
@@ -31,29 +30,13 @@ int main ()
   
   // Close driver.
   drv.closeDriver ( myfile );
-  
-  // Determine the number of mesh files.
-  exo.num_mesh_files = stoi ( drv.params[0] );
-  cout << "Reading " << exo.num_mesh_files << " mesh file(s).\n";
     
   // ********************************************************************* //
   //                            QUERY THE MESH                             //
   // ********************************************************************* //
-    
-  // Since we've got a variable number of mesh files, 
-  // the next step is mandatory. We're counting the total number of elements
-  // and nodes across the files. This might be able to be cleaned up a teeny
-  // bit by initializing seperate Exodus_file object for each open file, but
-  // I don't think it's worth it right now.
-  mshGlb.num_nodes = 0;
-  mshGlb.num_elem  = 0;
-  for ( i=1; i<exo.num_mesh_files+1; i++ ) {
-    exo.openFile ( drv.params[i] );
-    mshLoc.getInfo ( exo.idexo );
-    
-    mshGlb.num_nodes = mshLoc.num_nodes + mshGlb.num_nodes;
-    mshGlb.num_elem  = mshLoc.num_elem  + mshGlb.num_elem;
-  }
+
+  exo.openFile ( drv.params[0] );
+  msh.getInfo ( exo.idexo );
   
   // ********************************************************************* //
   //                            READ IN PARAMS                             //
@@ -66,12 +49,6 @@ int main ()
   // ********************************************************************* //
   
   mod.read ();  
-  mod.findMinMax ();
-  
-  if ( mod.input_model_file_type == "SES3D" ) {    
-    mod.populateRadiansSES3D ();
-    mod.colLonRad2xyzSES3D   ();    
-  }
   
   if ( mod.rotAng != 0 ) {
     mod.rotRad = mod.rotAng * con.PI / con.o80;   
@@ -83,28 +60,21 @@ int main ()
   // ********************************************************************* //
       
   // Report to the friendly user.    
-  cout << "\nWe're working with " << mshGlb.num_nodes << " nodes, and " << 
-    mshGlb.num_elem << " elements.\n";
-    
-  for ( i=1; i<exo.num_mesh_files+1; i++ ) { 
-     
-    exo.openFile            ( drv.params[i] );
-                            
-    mshLoc.getInfo          ( exo.idexo );
-    mshLoc.allocateMesh     ( mshLoc.num_nodes );
-    mshLoc.populateCoord    ( exo.idexo ); 
-    mshLoc.populateParams   ( exo.idexo, mod );
-                            
-    mod.openUp              ();  // Dome rock.. dome rock.. dome rock
-    
-    mshLoc.reNormalize      ( mod );    
-    mshLoc.interpolateModel ( mod );
-    
-    exo.closeFile           ();        
-    
-    
-    }
-               
+  cout << "\nWe're working with " << msh.num_nodes << " nodes, and " << 
+    msh.num_elem << " elements.\n";
+                          
+  msh.getInfo          ( exo.idexo );
+  msh.allocateMesh     ( msh.num_nodes );
+  msh.populateCoord    ( exo.idexo ); 
+  msh.populateParams   ( exo.idexo, mod );
+                          
+  mod.openUp           ();  // Dome rock.. dome rock.. dome rock
+  
+  msh.reNormalize      ( mod );    
+  msh.interpolateModel ( mod );
+  
+  exo.closeFile           ();        
+                   
   return 0;
   
 }

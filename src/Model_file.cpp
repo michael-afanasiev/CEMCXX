@@ -104,17 +104,17 @@ void Model_file::populateSES3D ( string name, int &num_regions,
 void Model_file::populateParams ( Driver &drv, Exodus_file &exo ) 
 {
   
-  input_model_directory = drv.params[exo.num_mesh_files+1];
-  input_model_file_type = drv.params[exo.num_mesh_files+2];
-  input_model_physics   = drv.params[exo.num_mesh_files+3];
-  absolute_or_perturb   = drv.params[exo.num_mesh_files+4]; 
-  rotAng                = stod (drv.params[exo.num_mesh_files+5]);
-  rotVecX               = stod (drv.params[exo.num_mesh_files+6]);
-  rotVecY               = stod (drv.params[exo.num_mesh_files+7]);
-  rotVecZ               = stod (drv.params[exo.num_mesh_files+8]);
-  intentions            = drv.params[exo.num_mesh_files+9];
-  dimensions            = drv.params[exo.num_mesh_files+10];
-  interpolation         = drv.params[exo.num_mesh_files+11];
+  input_model_directory = drv.params[1];
+  input_model_file_type = drv.params[2];
+  input_model_physics   = drv.params[3];
+  absolute_or_perturb   = drv.params[4]; 
+  rotAng                = stod (drv.params[5]);
+  rotVecX               = stod (drv.params[6]);
+  rotVecY               = stod (drv.params[7]);
+  rotVecZ               = stod (drv.params[8]);
+  intentions            = drv.params[9];
+  dimensions            = drv.params[10];
+  interpolation         = drv.params[11];
        
   cout << "\nModel information:\n* INPUT_MODEL_DIRECTORY: " <<
     input_model_directory << "\n* INPUT_MODEL_FILE_TYPE: "  <<
@@ -304,6 +304,10 @@ void Model_file::readSES3D ()
   x.resize ( num_p );
   y.resize ( num_p );
   z.resize ( num_p );
+  
+  populateRadiansSES3D ();
+  colLonRad2xyzSES3D   ();  
+  findMinMax           ();
       
 }
 
