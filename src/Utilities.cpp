@@ -1,5 +1,5 @@
-#include "classes.h"
 #include <cmath>
+#include "classes.hpp"
 using namespace std;
 
 double Utilities::col2Lat ( double &col, char flag ) 
@@ -9,9 +9,8 @@ double Utilities::col2Lat ( double &col, char flag )
   either radians or degrees.
   */
   
-  Constants con;
-  
-  double lat;
+  Constants con;  
+  double    lat;
   
   if ( flag == 'r' ) {
     lat = con.PIo2 - col;
@@ -23,6 +22,33 @@ double Utilities::col2Lat ( double &col, char flag )
   return lat;
   
 }
+
+void Utilities::xyz2ColLonRadDeg ( double &x,   double &y,   double &z, 
+                                   double &col, double &lon, double &rad )
+{
+  
+  Constants con;
+  
+  rad = sqrt  ( x * x + y * y + z * z );
+  col = acos  ( z / rad ) * con.o80 / con.PI ;
+  lon = atan2 ( y, x ) * con.o80 / con.PI ;
+  
+}
+                                  
+void Utilities::colLonRadDeg2xyz ( double col,  double lon,  double rad,
+                                   double &x,   double &y,   double &z ) 
+{
+  
+  Constants con;
+  
+  col = col * con.PI / con.o80;
+  lon = lon * con.PI / con.o80;
+  
+  x = rad * cos (lon) * sin (col);
+  y = rad * sin (lon) * sin (col);
+  z = rad * cos (col);  
+  
+}                                
 
 void Utilities::rotate ( Model_file &mod )
 {
@@ -78,8 +104,8 @@ void Utilities::convertBary ( double &xp, double &yp, double &zp,
   double f = y3 - y4;
   double i = z3 - z4;
   
-  double det = ( a * ( e * i - f * h ) ) - ( b * ( i * d - f * g ) ) +
-    ( c * ( d * h - e * g ) );
+  double det = 1 / (( a * ( e * i - f * h ) ) - ( b * ( i * d - f * g ) ) +
+    ( c * ( d * h - e * g ) ));
   
   double ai = det * (e * i - f * h);
   double bi = det * (d * i - f * g) * (-1);

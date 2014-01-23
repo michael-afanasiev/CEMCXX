@@ -2,7 +2,7 @@
 #include <iostream>
 #include <string>
 #include <fstream>
-#include "classes.h"
+#include "classes.hpp"
 using namespace std;
 
 void Driver::openDriver ( ifstream &myfile )

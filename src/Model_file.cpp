@@ -1,5 +1,5 @@
-#include "classes.h"
 #include <cmath>
+#include "classes.hpp"
 using namespace std;
 
 void Model_file::read () 
@@ -101,6 +101,80 @@ void Model_file::populateSES3D ( string name, int &num_regions,
   
 }
 
+void Model_file::populateParams ( Driver &drv, Exodus_file &exo ) 
+{
+  
+  input_model_directory = drv.params[exo.num_mesh_files+1];
+  input_model_file_type = drv.params[exo.num_mesh_files+2];
+  input_model_physics   = drv.params[exo.num_mesh_files+3];
+  absolute_or_perturb   = drv.params[exo.num_mesh_files+4]; 
+  rotAng                = stod (drv.params[exo.num_mesh_files+5]);
+  rotVecX               = stod (drv.params[exo.num_mesh_files+6]);
+  rotVecY               = stod (drv.params[exo.num_mesh_files+7]);
+  rotVecZ               = stod (drv.params[exo.num_mesh_files+8]);
+  intentions            = drv.params[exo.num_mesh_files+9];
+  dimensions            = drv.params[exo.num_mesh_files+10];
+  interpolation         = drv.params[exo.num_mesh_files+11];
+       
+  cout << "\nModel information:\n* INPUT_MODEL_DIRECTORY: " <<
+    input_model_directory << "\n* INPUT_MODEL_FILE_TYPE: "  <<
+    input_model_file_type << "\n* INPUT_MODEL_PHYSICS: "    <<
+    input_model_physics   << "\n* ABSOLUTE_OR_PERTURB: "    <<
+    absolute_or_perturb   << "\n";
+  
+}
+
+void Model_file::findMinMax ()
+{
+  
+  double colMin = 180.0;
+  double colMax = 0.0;
+  
+  for ( int r=0; r<col_deg.size(); r++ ) {
+    for ( int i=0; i<col_deg[r].size(); i++ ) {
+      if ( col_deg[r][i] < colMin ) {
+        colMin = col_deg[r][i];
+      }
+      if ( col_deg[r][i] > colMax ) {
+        colMax = col_deg[r][i];
+      }
+    }
+  }
+  
+  double lonMin = 180.0;
+  double lonMax = -180.0;
+  
+  for ( int r=0; r<lon_deg.size(); r++ ) {
+    for ( int i=0; i<lon_deg[r].size(); i++ ) {
+      if ( lon_deg[r][i] < lonMin ) {
+        lonMin = lon_deg[r][i];
+      }
+      if ( lon_deg[r][i] > lonMax ) {
+        lonMax = lon_deg[r][i];
+      }
+    }
+  }
+  
+  double radMax = 0.0;
+  double radMin = 6371.0;
+  
+  for ( int r=0; r<rad.size(); r++ ) {
+    for ( int i=0; i<rad[r].size(); i++ ) {
+      if ( rad[r][i] < radMin ) {
+        radMin = rad[r][i];
+      }
+      if ( rad[r][i] > radMax ) {
+        radMax = rad[r][i];
+      }
+    }
+  }
+  
+  cout << "Col: " << colMin << " " << colMax << "\n";
+  cout << "Lon: " << lonMin << " " << lonMax << "\n";
+  cout << "Rad: " << radMin << " " << radMax << "\n";
+  
+}
+
 void Model_file::colLonRad2xyzSES3D ()
 {
     
@@ -110,9 +184,9 @@ void Model_file::colLonRad2xyzSES3D ()
       for ( int j=0; j<lon_rad[r].size(); j++ ) {
         for ( int k=0; k<rad[r].size();     k++ ) {
         
-          x[l] = rad[r][k] * sin ( lon_rad[r][j] ) * cos ( col_rad[r][i] );
+          x[l] = rad[r][k] * cos ( lon_rad[r][j] ) * sin ( col_rad[r][i] );
           y[l] = rad[r][k] * sin ( lon_rad[r][j] ) * sin ( col_rad[r][i] );
-          z[l] = rad[r][k] * cos ( lon_rad[r][j] );
+          z[l] = rad[r][k] * cos ( col_rad[r][j] );
           l++;
         
         }
@@ -151,7 +225,7 @@ void Model_file::populateRadiansSES3D ()
   
 }
 
-void Model_file::openUp ( Mesh &msh )
+void Model_file::openUp ( )
 {
   
   /** This calculates the quantities of the elastic tensor that are not zero
@@ -160,12 +234,26 @@ void Model_file::openUp ( Mesh &msh )
   NOTE :: eta is set to 1 in this case. This may need to
   be changed in the future.
   */
+  cout << "Changing physics.\n";
   
+  if ( input_model_physics == "TTI" ) {
+  c11 = new double [num_p]();
+  c12 = new double [num_p]();
+  c13 = new double [num_p]();
+  c22 = new double [num_p]();
+  c23 = new double [num_p]();
+  c33 = new double [num_p]();
+  c44 = new double [num_p]();
+  c55 = new double [num_p]();
+  c66 = new double [num_p]();  
+  }
+    
   int l = 0;
   for ( int r=0; r<col_deg.size(); r++ ) {
-    for ( int i=0; i<col_deg[r].size(); i++ ) {
+    for ( int i=0; i<num_p; i++ ) {
       
       if ( input_model_physics == "TTI" ) {
+                
         double N = rho[r][i] * vsh[r][i] * vsh[r][i];
         double L = rho[r][i] * vsv[r][i] * vsv[r][i];
         double A = rho[r][i] * vpp[r][i] * vpp[r][i];
@@ -173,20 +261,24 @@ void Model_file::openUp ( Mesh &msh )
         double C = A;
         double F = A - 2 * L;
       
-        msh.c11[l] = C;
-        msh.c12[l] = F;
-        msh.c13[l] = F;
-        msh.c22[l] = A;
-        msh.c23[l] = A - 2 * N;
-        msh.c33[l] = A;
-        msh.c44[l] = N;
-        msh.c55[l] = L;
-        msh.c66[l] = L;  
+        c11[l] = vsh[r][i];//C;
+        c12[l] = F;
+        c13[l] = F;
+        c22[l] = A;
+        c23[l] = A - 2 * N;
+        c33[l] = A;
+        c44[l] = N;
+        c55[l] = L;
+        c66[l] = L;  
+                
       }
       
       l++;
     }
+    
   }
+  
+  cout << "Physics has been changed.\n";  
   
 }
 

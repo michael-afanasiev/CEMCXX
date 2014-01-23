@@ -4,6 +4,8 @@
 #include <exodusII.h>
 
 class Mesh;
+class Driver;
+class Exodus_file;
 
 class Constants
 {
@@ -47,6 +49,29 @@ public:
   std::vector<double> x;
   std::vector<double> y;
   std::vector<double> z;
+
+  double *c11;
+  double *c12;
+  double *c13;
+  double *c14;
+  double *c15;
+  double *c16;
+  double *c22;
+  double *c23;
+  double *c24;
+  double *c25;
+  double *c26;
+  double *c33;
+  double *c34;
+  double *c35;
+  double *c36;
+  double *c44;
+  double *c45;
+  double *c46;
+  double *c55;
+  double *c56;
+  double *c66;
+
   std::vector<std::vector<double>> col_rad;
   std::vector<std::vector<double>> lon_rad;
   std::vector<std::vector<double>> col_deg;
@@ -70,7 +95,9 @@ public:
   void read                 ();
   void colLonRad2xyzSES3D   ();
   void populateRadiansSES3D ();
-  void openUp               ( Mesh &msh );
+  void openUp               ();
+  void findMinMax           ();
+  void populateParams       ( Driver &drv, Exodus_file &exo );
   
 };
 
@@ -81,11 +108,17 @@ public:
   
   double col2Lat   ( double &in, char flag );
   void rotate      ( Model_file &mod );   
+  
+  void xyz2ColLonRadDeg ( double &x,   double &y,   double &z, 
+                          double &col, double &lon, double &rad );
+  void colLonRadDeg2xyz ( double  col, double  lon, double  rad,
+                          double &x,   double &y,   double &z ); 
+                          
   void convertBary ( double &xp, double &yp, double &zp, 
-                   double &x1, double &x2, double &x3, double &x4,
-                   double &y1, double &y2, double &y3, double &y4,
-                   double &z1, double &z2, double &z3, double &z4,
-                   double &l1, double &l2, double &l3, double &l4 ); 
+                     double &x1, double &x2, double &x3, double &x4,
+                     double &y1, double &y2, double &y3, double &y4,
+                     double &z1, double &z2, double &z3, double &z4,
+                     double &l1, double &l2, double &l3, double &l4 ); 
   
 };
 
@@ -129,8 +162,11 @@ public:
   
   // Internal functions.
   
-  void openFile ( std::string fname );
+  void openFile  ( std::string fname );
   void closeFile ();
+  
+  // This is MOAB.
+  void readFile  ( std::string fname );
   
 };
 
@@ -146,30 +182,30 @@ public:
   int num_node_sets;
   int num_side_sets;
   
-  double * c11;
-  double * c12;
-  double * c13;
-  double * c14;
-  double * c15;
-  double * c16;
-  double * c22;
-  double * c23;
-  double * c24;
-  double * c25;
-  double * c26;
-  double * c33;
-  double * c34;
-  double * c35;
-  double * c36;
-  double * c44;
-  double * c45;
-  double * c46;
-  double * c55;
-  double * c56;
-  double * c66;
-  double * xmsh;
-  double * ymsh;
-  double * zmsh;
+  double *c11;
+  double *c12;
+  double *c13;
+  double *c14;
+  double *c15;
+  double *c16;
+  double *c22;
+  double *c23;
+  double *c24;
+  double *c25;
+  double *c26;
+  double *c33;
+  double *c34;
+  double *c35;
+  double *c36;
+  double *c44;
+  double *c45;
+  double *c46;
+  double *c55;
+  double *c56;
+  double *c66;
+  double *xmsh;
+  double *ymsh;
+  double *zmsh;
   
   char name;
   char title [MAX_LINE_LENGTH+1]; 
@@ -178,9 +214,11 @@ public:
   
   void getInfo          ( int exoid );
   void populateCoord    ( int exoid );
-  void populateParams   ( int eoxid );
+  void populateParams   ( int eoxid , Model_file &mod );
   void allocateMesh     ( int &num_nodes );
   void interpolateModel ( Model_file &mod );
+  void reNormalize      ( Model_file &mod );
+  
   void deallocateMesh   ();
            
 };

@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string.h>
-#include "classes.h"
+#include "classes.hpp"
+
 using namespace std;
 
 void Exodus_file::openFile ( string fname ) 
