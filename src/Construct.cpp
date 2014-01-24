@@ -1,4 +1,5 @@
 #include "classes.hpp"
+#include "kdtree.h"
 
 using namespace std;
 
@@ -9,12 +10,14 @@ int main ()
   
   ifstream myfile;
   
-  Constants   con;
-  Exodus_file exo;
-  Driver      drv;
-  Mesh        msh;
-  Model_file  mod;
-  Utilities   util;
+  Constants    con;
+  Exodus_file  exo;
+  Driver       drv;
+  Mesh         msh;
+  Model_file   mod;
+  Utilities    util;
+  Interpolator inter;
+  kdtree       *tree;
   
   cout << "Begin model building.\n";  
   
@@ -36,7 +39,7 @@ int main ()
   // ********************************************************************* //
 
   exo.openFile ( drv.params[0] );
-  msh.getInfo ( exo.idexo );
+  msh.getInfo  ( exo.idexo );
   
   // ********************************************************************* //
   //                            READ IN PARAMS                             //
@@ -50,10 +53,10 @@ int main ()
   
   mod.read ();  
   
-  if ( mod.rotAng != 0 ) {
-    mod.rotRad = mod.rotAng * con.PI / con.o80;   
-    util.rotate ( mod );
-  }    
+  // if ( mod.rotAng != 0 ) {
+  //   mod.rotRad = mod.rotAng * con.PI / con.o80;   
+  //   util.rotate ( mod );
+  // }    
         
   // ********************************************************************* //
   //                            INTERPOLATE                                //
@@ -63,17 +66,20 @@ int main ()
   cout << "\nWe're working with " << msh.num_nodes << " nodes, and " << 
     msh.num_elem << " elements.\n";
                           
-  msh.getInfo          ( exo.idexo );
-  msh.allocateMesh     ( msh.num_nodes );
-  msh.populateCoord    ( exo.idexo ); 
-  msh.populateParams   ( exo.idexo, mod );
-                          
-  mod.openUp           ();  // Dome rock.. dome rock.. dome rock
+  msh.getInfo        ( exo.idexo );
+  msh.allocateMesh   ( msh.num_nodes );    
   
-  msh.reNormalize      ( mod );    
-  msh.interpolateModel ( mod );
+  msh.populateCoord  ( exo.idexo ); 
+  msh.populateParams ( exo.idexo, mod );
+                       
+  mod.openUp         ();  // Dome rock.. dome rock.. dome rock
   
-  exo.closeFile           ();        
+  msh.reNormalize    ( mod );    
+  
+  inter.interpolate  ( msh, mod );
+  
+  exo.writeParams    ( msh );
+  exo.closeFile      ();        
                    
   return 0;
   

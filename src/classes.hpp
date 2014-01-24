@@ -3,9 +3,12 @@
 #include <vector>
 #include <exodusII.h>
 
+#include "kdtree.h"
+
 class Mesh;
 class Driver;
 class Exodus_file;
+class Interpolator;
 
 class Constants
 {
@@ -153,20 +156,18 @@ public:
   int chrret; 
   int ier; 
   int idexo; 
-  int nump;
   int num_mesh_files;
   
   float vers;
   
   std::string fname;
   
+  
   // Internal functions.
   
-  void openFile  ( std::string fname );
-  void closeFile ();
-  
-  // This is MOAB.
-  void readFile  ( std::string fname );
+  void openFile    ( std::string fname );
+  void closeFile   ();
+  void writeParams ( Mesh &msh );
   
 };
 
@@ -216,7 +217,7 @@ public:
   void populateCoord    ( int exoid );
   void populateParams   ( int eoxid , Model_file &mod );
   void allocateMesh     ( int &num_nodes );
-  void interpolateModel ( Model_file &mod );
+  // void interpolateModel ( Model_file &mod );
   void reNormalize      ( Model_file &mod );
   
   void deallocateMesh   ();
@@ -237,4 +238,12 @@ class Block
   
   double * var;
   
+};
+
+class Interpolator
+{
+public: 
+  void interpolate ( Mesh &msh, Model_file &mod );
+  // void interpolate ( Model_file &mod, Mesh &msh, struct kdtree *tree );
+
 };

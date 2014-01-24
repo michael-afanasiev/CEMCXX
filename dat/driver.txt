@@ -1,7 +1,7 @@
 ## This is a par file for model building.
 
-MESH_FILE             = ./dat/single_scale_tet_earthdims.ex2
-INPUT_MODEL_DIRECTORY = ../../../Japan/
+MESH_FILE             = ./dat/single_scale_hex_highres.e
+INPUT_MODEL_DIRECTORY = ../../../Australia/
 INPUT_MODEL_FILE_TYPE = SES3D
 INPUT_MODEL_PHYSICS   = TTI
 ABSOLUTE_OR_PERTURB   = PERTURB

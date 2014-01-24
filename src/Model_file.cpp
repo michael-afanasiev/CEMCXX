@@ -169,15 +169,15 @@ void Model_file::findMinMax ()
     }
   }
   
-  cout << "Col: " << colMin << " " << colMax << "\n";
-  cout << "Lon: " << lonMin << " " << lonMax << "\n";
-  cout << "Rad: " << radMin << " " << radMax << "\n";
+  // cout << "Col: " << colMin << " " << colMax << "\n";
+  // cout << "Lon: " << lonMin << " " << lonMax << "\n";
+  // cout << "Rad: " << radMin << " " << radMax << "\n";
   
 }
 
 void Model_file::colLonRad2xyzSES3D ()
 {
-    
+      
   int l = 0; 
   for ( int r=0; r<col_rad.size(); r++ ) {
     for ( int i=0; i<col_rad[r].size(); i++ ) {
@@ -186,7 +186,7 @@ void Model_file::colLonRad2xyzSES3D ()
         
           x[l] = rad[r][k] * cos ( lon_rad[r][j] ) * sin ( col_rad[r][i] );
           y[l] = rad[r][k] * sin ( lon_rad[r][j] ) * sin ( col_rad[r][i] );
-          z[l] = rad[r][k] * cos ( col_rad[r][j] );
+          z[l] = rad[r][k] * cos ( col_rad[r][i] );
           l++;
         
         }
@@ -199,22 +199,24 @@ void Model_file::colLonRad2xyzSES3D ()
 void Model_file::populateRadiansSES3D ()
 {
   
-  int i;
-  
   vector<double> sub;
   
   Constants con;
   
   for ( int r=0; r<col_deg.size(); r++ ) {
     
-    for ( i=0; i<col_deg[r].size(); i++ ) {
+    for ( int i=0; i<col_deg[r].size(); i++ ) {
       sub.push_back ( col_deg[r][i] * con.PI / con.o80 );
     }
     
     col_rad.push_back ( sub );
     sub.clear ();
+    
+  }
   
-    for ( i=0; i<lon_deg[r].size(); i++ ) {
+  for ( int r=0; r<lon_deg.size(); r++ ) {
+  
+    for ( int i=0; i<lon_deg[r].size(); i++ ) {
       sub.push_back ( lon_deg[r][i] * con.PI / con.o80 );;
     }
     
@@ -249,8 +251,8 @@ void Model_file::openUp ( )
   }
     
   int l = 0;
-  for ( int r=0; r<col_deg.size(); r++ ) {
-    for ( int i=0; i<num_p; i++ ) {
+  for ( int r=0; r<vsh.size(); r++ ) {
+    for ( int i=0; i<vsh[r].size(); i++ ) {
       
       if ( input_model_physics == "TTI" ) {
                 
@@ -307,7 +309,7 @@ void Model_file::readSES3D ()
   
   populateRadiansSES3D ();
   colLonRad2xyzSES3D   ();  
-  findMinMax           ();
+  // findMinMax           ();
       
 }
 
