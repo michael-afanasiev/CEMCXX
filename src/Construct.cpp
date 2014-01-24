@@ -76,7 +76,8 @@ int main ()
   
   msh.reNormalize    ( mod );    
   
-  inter.interpolate  ( msh, mod );
+  // inter.interpolate  ( msh, mod );
+  inter.exterpolator ( msh, exo );
   
   exo.writeParams    ( msh );
   exo.closeFile      ();        

@@ -49,6 +49,13 @@ public:
   double rotVecY;
   double rotVecZ;
   
+  double colMin = 180.;
+  double colMax = 0.;
+  double lonMin = 180.;
+  double lonMax = -180.;
+  double radMin = 6371.;
+  double radMax = 0.;
+  
   std::vector<double> x;
   std::vector<double> y;
   std::vector<double> z;
@@ -113,6 +120,8 @@ public:
   void rotate      ( Model_file &mod );   
   
   void xyz2ColLonRadDeg ( double &x,   double &y,   double &z, 
+                          double &col, double &lon, double &rad );
+  void xyz2ColLonRadRad ( double &x,   double &y,   double &z, 
                           double &col, double &lon, double &rad );
   void colLonRadDeg2xyz ( double  col, double  lon, double  rad,
                           double &x,   double &y,   double &z ); 
@@ -208,6 +217,8 @@ public:
   double *ymsh;
   double *zmsh;
   
+  std::vector<std::vector<int>> elemOrder;  
+  
   char name;
   char title [MAX_LINE_LENGTH+1]; 
   
@@ -217,9 +228,8 @@ public:
   void populateCoord    ( int exoid );
   void populateParams   ( int eoxid , Model_file &mod );
   void allocateMesh     ( int &num_nodes );
-  // void interpolateModel ( Model_file &mod );
   void reNormalize      ( Model_file &mod );
-  
+  void getConnectivity  ( int exoid );
   void deallocateMesh   ();
            
 };
@@ -242,8 +252,10 @@ class Block
 
 class Interpolator
 {
+  
 public: 
-  void interpolate ( Mesh &msh, Model_file &mod );
-  // void interpolate ( Model_file &mod, Mesh &msh, struct kdtree *tree );
+  void interpolate ( Mesh &msh, Model_file &mod );  
+  double taper     ( double &x, double &y, double &z, Model_file &mod );
+  void exterpolator ( Mesh &msh, Exodus_file &exo );
 
 };

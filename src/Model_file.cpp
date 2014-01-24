@@ -1,4 +1,5 @@
 #include <cmath>
+#include <algorithm>
 #include "classes.hpp"
 using namespace std;
 
@@ -49,7 +50,7 @@ void Model_file::populateSES3D ( string name, int &num_regions,
       // This is here to deal with the fact that the last coordinate in each
       // region is not assigned a parameter.
       if ( ftype == 'c' ) {
-        fix_stride = 0;
+        fix_stride = 1;
       } else if ( ftype == 'p' ) {
         fix_stride = 1;
       }
@@ -178,11 +179,15 @@ void Model_file::findMinMax ()
 void Model_file::colLonRad2xyzSES3D ()
 {
       
+  /* IMPORTANT NOTE :: the range of k goes to rad.size-1, and col_rad and
+  lon_rad don't, because col_rad and lon_rad have already been fixed up for
+  their extra coordinate down below in populate radians. Rad hasn't, so it's
+  done here. */
   int l = 0; 
   for ( int r=0; r<col_rad.size(); r++ ) {
     for ( int i=0; i<col_rad[r].size(); i++ ) {
       for ( int j=0; j<lon_rad[r].size(); j++ ) {
-        for ( int k=0; k<rad[r].size();     k++ ) {
+        for ( int k=0; k<rad[r].size()-1;     k++ ) {
         
           x[l] = rad[r][k] * cos ( lon_rad[r][j] ) * sin ( col_rad[r][i] );
           y[l] = rad[r][k] * sin ( lon_rad[r][j] ) * sin ( col_rad[r][i] );
@@ -202,10 +207,45 @@ void Model_file::populateRadiansSES3D ()
   vector<double> sub;
   
   Constants con;
+    
+  // Compute box ceters and min/max on the fly.
+  for ( int r=0; r<col_deg.size(); r++ ) {
   
+    for ( int i=0; i<col_deg[r].size()-1; i++ ) {
+      col_deg[r][i] = (col_deg[r][i] + col_deg[r][i+1]) / 2.;
+      if ( col_deg[r][i] < colMin ) {
+        colMin = col_deg[r][i];
+      } else if ( col_deg[r][i] > colMax ) {
+        colMax = col_deg[r][i];
+      }
+    }
+    
+    for ( int i=0; i<lon_deg[r].size()-1; i++ ) {
+      lon_deg[r][i] = (lon_deg[r][i] + lon_deg[r][i+1]) / 2.;
+      if ( lon_deg[r][i] < lonMin ) {
+        lonMin = lon_deg[r][i];
+      } else if ( lon_deg[r][i] > lonMax ) {
+        lonMax = lon_deg[r][i];
+      }
+    }
+    
+    for ( int i=0; i<rad[r].size()-1; i++ ) {
+      rad[r][i] = (rad[r][i] + rad[r][i+1]) / 2.;
+      if ( rad[r][i] < radMin ) {
+        radMin = rad[r][i];
+      } else if ( rad[r][i] > radMax ) {
+        radMax = rad[r][i];
+      }
+      
+    }
+        
+  }
+  
+  cout << "MINS: " << colMin << " " << colMax << "\n";
+      
   for ( int r=0; r<col_deg.size(); r++ ) {
     
-    for ( int i=0; i<col_deg[r].size(); i++ ) {
+    for ( int i=0; i<col_deg[r].size()-1; i++ ) {
       sub.push_back ( col_deg[r][i] * con.PI / con.o80 );
     }
     
@@ -216,7 +256,7 @@ void Model_file::populateRadiansSES3D ()
   
   for ( int r=0; r<lon_deg.size(); r++ ) {
   
-    for ( int i=0; i<lon_deg[r].size(); i++ ) {
+    for ( int i=0; i<lon_deg[r].size()-1; i++ ) {
       sub.push_back ( lon_deg[r][i] * con.PI / con.o80 );;
     }
     

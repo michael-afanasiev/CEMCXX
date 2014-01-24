@@ -34,6 +34,18 @@ void Utilities::xyz2ColLonRadDeg ( double &x,   double &y,   double &z,
   lon = atan2 ( y, x ) * con.o80 / con.PI ;
   
 }
+
+void Utilities::xyz2ColLonRadRad ( double &x,   double &y,   double &z, 
+                                   double &col, double &lon, double &rad )
+{
+  
+  Constants con;
+  
+  rad = sqrt  ( x * x + y * y + z * z );
+  col = acos  ( z / rad );
+  lon = atan2 ( y, x );
+  
+}
                                   
 void Utilities::colLonRadDeg2xyz ( double col,  double lon,  double rad,
                                    double &x,   double &y,   double &z ) 
