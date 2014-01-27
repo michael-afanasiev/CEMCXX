@@ -53,13 +53,13 @@ void Mesh::getConnectivity ( int exoid )
   int *ids = new int [num_elem_blk];
   int ier  = ex_get_elem_blk_ids ( exoid, ids );
   
-  int *elemConn = new int [num_elem_blk*num_elem*num_nodes];  
+  int *elemConn = new int [num_elem_blk*num_elem*4];  
   ier           = ex_get_elem_conn ( exoid, ids[0], elemConn );
   
   vector<int> node;
   node.reserve ( 4 );
   
-  for ( int i=0; i<num_elem_blk*num_elem; i++ ) {
+  for ( int i=0; i<num_elem_blk*num_elem*4; i++ ) {
     node.push_back ( elemConn[i] );
     
     if ( (i+1) % 4 == 0 ) {
