@@ -79,10 +79,20 @@ void Interpolator::exterpolator ( Mesh &msh, Exodus_file &exo, Model_file &mod )
   // Create element connectivity map.  
   msh.getConnectivity ( exo.idexo );
   
+  double testX = 1000.;
+  double testY = 1000.;
+  double testZ = 1000.;
+  
+  kdres *set  = kd_nearest3 ( tree, testX, testY, testZ );
+  void *ind_p = kd_res_item_data ( set );
+  int point   = * ( int * ) ind_p;
+  
+  cout << "POINT IS: " << point;
+  
   pair < multimap <int, vector <int> > :: iterator , multimap 
     <int, vector <int> > :: iterator > ext;
   
-  ext = msh.elemOrder.equal_range (1);
+  ext = msh.elemOrder.equal_range (point);
   
   for ( multimap <int, vector <int> > :: iterator it=ext.first; 
     it!=ext.second; ++it ) {                    
