@@ -47,6 +47,8 @@ void Mesh::populateCoord ( int exoid )
 
 void Mesh::getConnectivity ( int exoid )
 {
+  
+  cout << "Building connectivity array.\n";
 
   int *ids = new int [num_elem_blk];
   int ier  = ex_get_elem_blk_ids ( exoid, ids );
@@ -54,117 +56,23 @@ void Mesh::getConnectivity ( int exoid )
   int *elemConn = new int [num_elem_blk*num_elem*num_nodes];  
   ier           = ex_get_elem_conn ( exoid, ids[0], elemConn );
   
-  elemOrder.resize ( num_nodes );
-  
   vector<int> node;
   node.reserve ( 4 );
   
   for ( int i=0; i<num_elem_blk*num_elem; i++ ) {
     node.push_back ( elemConn[i] );
+    
     if ( (i+1) % 4 == 0 ) {
-      elemOrder[node[0]-1].push_back (node[0]);
-      elemOrder[node[0]-1].push_back (node[1]);
-      elemOrder[node[0]-1].push_back (node[2]);
-      elemOrder[node[0]-1].push_back (node[3]);
-                       
-      elemOrder[node[1]-1].push_back (node[0]);
-      elemOrder[node[1]-1].push_back (node[1]);
-      elemOrder[node[1]-1].push_back (node[2]);
-      elemOrder[node[1]-1].push_back (node[3]);
-                       
-      elemOrder[node[2]-1].push_back (node[0]);
-      elemOrder[node[2]-1].push_back (node[1]);
-      elemOrder[node[2]-1].push_back (node[2]);
-      elemOrder[node[2]-1].push_back (node[3]);
-                       
-      elemOrder[node[3]-1].push_back (node[0]);
-      elemOrder[node[3]-1].push_back (node[1]);
-      elemOrder[node[3]-1].push_back (node[2]);
-      elemOrder[node[3]-1].push_back (node[3]);
-                        
-      
-      cout << "elemOrder: " << elemOrder[node[0]][0] << "\n";
-      cout << "elemOrder: " << elemOrder[node[0]][1] << "\n";
-      cout << "elemOrder: " << elemOrder[node[0]][2] << "\n";
-      cout << "elemOrder: " << elemOrder[node[0]][3] << "\n";
-      cout << "elemOrder: " << elemOrder[node[0]][4] << "\n";
-      cout << "elemOrder: " << elemOrder[node[0]][5] << "\n";
-      cout << "elemOrder: " << elemOrder[node[0]][6] << "\n";
-      cout << "elemOrder: " << node[0]-1 << "\n";
-      
-      cout << "node: " << node[0] << "\n";
-      cout << "node: " << node[1] << "\n";
-      cout << "node: " << node[2] << "\n";
-      cout << "node: " << node[3] << "\n";
+      elemOrder.insert ( pair <int, vector <int> > (node[0], node) );
+      elemOrder.insert ( pair <int, vector <int> > (node[1], node) );
+      elemOrder.insert ( pair <int, vector <int> > (node[2], node) );
+      elemOrder.insert ( pair <int, vector <int> > (node[3], node) );                               
       
       node.clear ();
-      cin.get ();
     }
   }
-    
-  // list <int> table [num_nodes];
-  // list <int>::iterator it;
-  // for ( int i=0; i<num_elem_blk*num_elem; i++ ) {
-  //   table[0].push_back (elemOrder[i][0]);
-  //   table[0].push_back (elemOrder[i][1]);
-  //   table[0].push_back (elemOrder[i][2]);
-  //   table[0].push_back (elemOrder[i][3]); 
-  //         
-  //   table[0].push_back (elemOrder[i][0]);
-  //   table[0].push_back (elemOrder[i][1]);
-  //   table[0].push_back (elemOrder[i][2]);
-  //   table[0].push_back (elemOrder[i][3]);  
-  //         
-  //   table[0].push_back (elemOrder[i][0]);
-  //   table[0].push_back (elemOrder[i][1]);
-  //   table[0].push_back (elemOrder[i][2]);
-  //   table[0].push_back (elemOrder[i][3]);  
-  //         
-  //   table[0].push_back (elemOrder[i][0]);
-  //   table[0].push_back (elemOrder[i][1]);
-  //   table[0].push_back (elemOrder[i][2]);
-  //   table[0].push_back (elemOrder[i][3]);    
-  //   
-  //   // for ( it=table[0].begin(); it!=table[0].end(); it++ )
-  //   //   cout << " " << setw(5) << *it;
-  //   cin.get ();
-  // }
-
-
-  // for ( int i=0; i<num_elem_blk*num_elem; i++ ) {
-  //   sort ( elemOrder[i].begin(), elemOrder[i].end() );
-  // }
-  // stable_sort ( elemOrder.begin(), elemOrder.end() );
-  // 
-  // int *nodePointer = new int [num_elem*num_nodes];
-  // int j            = 1;
-  // nodePointer[0]   = 0;
-  // for ( int i=0; i<num_elem_blk*num_elem-1; i++ ) {
-  //   // if ( elemOrder[i+1][0] > elemOrder[i][0] ) {
-  //     cout << "elemOrder: " << elemOrder[i][0] << "\n";
-  //     cout << "elemOrder: " << elemOrder[i][1] << "\n";
-  //     cout << "elemOrder: " << elemOrder[i][2] << "\n";
-  //     cout << "elemOrder: " << elemOrder[i][3] << "\n";
-  //     cin.get ();
-  //     nodePointer[j] = i + 1;
-  //     j++;
-  //   // }
-  // }
-  
+      
   delete [] elemConn;
-
-  // cout << "elemOrder: " << elemOrder[3][0] << "\n";
-  // cout << "elemOrder: " << elemOrder[3][1] << "\n";
-  // cout << "elemOrder: " << elemOrder[3][2] << "\n";
-  // cout << "elemOrder: " << elemOrder[3][3] << "\n";
-  // 
-    
-  // cout << "elemOrder: " << elemOrder[3][0] << "\n";
-  // cout << "elemOrder: " << elemOrder[3][1] << "\n";
-  // cout << "elemOrder: " << elemOrder[3][2] << "\n";
-  // cout << "elemOrder: " << elemOrder[3][3] << "\n";
-  // cout << "EXIT\n";
-  // exit (EXIT_SUCCESS);
   
 }
 

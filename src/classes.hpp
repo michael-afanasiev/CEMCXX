@@ -1,6 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
+#include <map>
 #include <exodusII.h>
 
 #include "kdtree.h"
@@ -217,7 +218,7 @@ public:
   double *ymsh;
   double *zmsh;
   
-  std::vector<std::vector<int>> elemOrder;  
+  std::multimap <int, std::vector <int> > elemOrder;  
   
   char name;
   char title [MAX_LINE_LENGTH+1]; 
@@ -256,6 +257,6 @@ class Interpolator
 public: 
   void interpolate ( Mesh &msh, Model_file &mod );  
   double taper     ( double &x, double &y, double &z, Model_file &mod );
-  void exterpolator ( Mesh &msh, Exodus_file &exo );
+  void exterpolator ( Mesh &msh, Exodus_file &exo, Model_file &mod );
 
 };
