@@ -1,5 +1,8 @@
 #include <cmath>
 #include <algorithm>
+#include <iostream>
+#include <fstream>
+
 #include "classes.hpp"
 using namespace std;
 
@@ -240,9 +243,7 @@ void Model_file::populateRadiansSES3D ()
     }
         
   }
-  
-  cout << "MINS: " << colMin << " " << colMax << "\n";
-      
+
   for ( int r=0; r<col_deg.size(); r++ ) {
     
     for ( int i=0; i<col_deg[r].size()-1; i++ ) {
@@ -279,47 +280,50 @@ void Model_file::openUp ( )
   cout << "Changing physics.\n";
   
   if ( input_model_physics == "TTI" ) {
-  c11 = new double [num_p]();
-  c12 = new double [num_p]();
-  c13 = new double [num_p]();
-  c22 = new double [num_p]();
-  c23 = new double [num_p]();
-  c33 = new double [num_p]();
-  c44 = new double [num_p]();
-  c55 = new double [num_p]();
-  c66 = new double [num_p]();  
+  c11    = new double [num_p]();
+  c12    = new double [num_p]();
+  c13    = new double [num_p]();
+  c22    = new double [num_p]();
+  c23    = new double [num_p]();
+  c33    = new double [num_p]();
+  c44    = new double [num_p]();
+  c55    = new double [num_p]();
+  c66    = new double [num_p]();  
+  rhoMsh = new double [num_p]();
   }
     
-  int l = 0;
-  for ( int r=0; r<vsh.size(); r++ ) {
-    for ( int i=0; i<vsh[r].size(); i++ ) {
+  if ( intentions == "INTERPOLATE" ) {
+    int l = 0;
+    for ( int r=0; r<vsh.size(); r++ ) {
+      for ( int i=0; i<vsh[r].size(); i++ ) {
       
-      if ( input_model_physics == "TTI" ) {
+        if ( input_model_physics == "TTI" ) {
                 
-        double N = rho[r][i] * vsh[r][i] * vsh[r][i];
-        double L = rho[r][i] * vsv[r][i] * vsv[r][i];
-        double A = rho[r][i] * vpp[r][i] * vpp[r][i];
+          double N = rho[r][i] * vsh[r][i] * vsh[r][i];
+          double L = rho[r][i] * vsv[r][i] * vsv[r][i];
+          double A = rho[r][i] * vpp[r][i] * vpp[r][i];
     
-        double C = A;
-        double F = A - 2 * L;
+          double C = A;
+          double F = A - 2 * L;
       
-        c11[l] = vsh[r][i];//C;
-        c12[l] = F;
-        c13[l] = F;
-        c22[l] = A;
-        c23[l] = A - 2 * N;
-        c33[l] = A;
-        c44[l] = N;
-        c55[l] = L;
-        c66[l] = L;  
+          c11[l]    = vsh[r][i];//C;
+          c12[l]    = F;
+          c13[l]    = F;
+          c22[l]    = A;
+          c23[l]    = A - 2 * N;
+          c33[l]    = A;
+          c44[l]    = N;
+          c55[l]    = L;
+          c66[l]    = L;            
+          rhoMsh[l] = rho[r][i];
                 
+        }
+      
+        l++;
       }
-      
-      l++;
-    }
     
+    }
   }
-  
   cout << "Physics has been changed.\n";  
   
 }
@@ -335,13 +339,28 @@ void Model_file::readSES3D ()
   populateSES3D ( imd + "block_m_z", num_regions, num_z, rad, 'c' );
   
   // Options for specific physics systems.
-  if ( input_model_physics == "TTI" ) {
-  populateSES3D ( imd + "dRHO", num_regions, num_p, rho, 'p' );
-  populateSES3D ( imd + "dVSV", num_regions, num_p, vsv, 'p' );
-  populateSES3D ( imd + "dVSH", num_regions, num_p, vsh, 'p' );
-  populateSES3D ( imd + "dVPP", num_regions, num_p, vpp, 'p' );
+  
+  if ( intentions == "INTERPOLATE" ) {
+    if ( input_model_physics == "TTI" ) {
+    populateSES3D ( imd + "dRHO", num_regions, num_p, rho, 'p' );
+    populateSES3D ( imd + "dVSV", num_regions, num_p, vsv, 'p' );
+    populateSES3D ( imd + "dVSH", num_regions, num_p, vsh, 'p' );
+    populateSES3D ( imd + "dVPP", num_regions, num_p, vpp, 'p' );
+    }
+  } else if ( intentions == "EXTRACT" ) {
+    num_p = (num_x - 1) * (num_y - 1) * (num_z - 1);     
+    rho.resize ( num_regions );
+    vsv.resize ( num_regions );
+    vsh.resize ( num_regions );
+    vpp.resize ( num_regions );       
+    for ( int r=0; r!=num_regions; r++ ) {
+      rho[r].resize ( num_p );
+      vsv[r].resize ( num_p );
+      vsh[r].resize ( num_p );
+      vpp[r].resize ( num_p );     
+    }
   }
-    
+  
   // Put aside space for cartesian vectors (for speed).
   x.resize ( num_p );
   y.resize ( num_p );
@@ -349,8 +368,19 @@ void Model_file::readSES3D ()
   
   populateRadiansSES3D ();
   colLonRad2xyzSES3D   ();  
-  // findMinMax           ();
       
+}
+
+void Model_file::writeSES3D ()
+{
+  cout << "writing.\n"; 
+  ofstream myfile ("test.txt", ios::out );
+  
+  for ( int r=0; r<vsv.size(); r++ ) {
+    for ( int i=0; i<vsv[r].size(); i++ ) {    
+      myfile << vsv[r][i] << "\n";
+    }
+  }
 }
 
 void Model_file::readSPECFEM3D ()

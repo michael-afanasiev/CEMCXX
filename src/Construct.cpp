@@ -16,7 +16,6 @@ int main ()
   Mesh         msh;
   Model_file   mod;
   Utilities    util;
-  Interpolator inter;
   kdtree       *tree;
   
   cout << "Begin model building.\n";  
@@ -62,26 +61,48 @@ int main ()
   //                            INTERPOLATE                                //
   // ********************************************************************* //
       
-  // Report to the friendly user.    
-  cout << "\nWe're working with " << msh.num_nodes << " nodes, and " << 
-    msh.num_elem << " elements.\n";
+  if ( mod.intentions == "INTERPOLATE" )  {   
+    cout << "\nWe're working with " << msh.num_nodes << " nodes, and " << 
+      msh.num_elem << " elements.\n";
                           
-  msh.getInfo        ( exo.idexo );
-  msh.allocateMesh   ( msh.num_nodes );    
+    msh.getInfo        ( exo.idexo );
+    msh.allocateMesh   ( msh.num_nodes );    
   
-  msh.populateCoord  ( exo.idexo ); 
-  msh.populateParams ( exo.idexo, mod );
+    msh.populateCoord  ( exo.idexo ); 
+    msh.populateParams ( exo.idexo, mod );
                        
-  mod.openUp         ();  // Dome rock.. dome rock.. dome rock
+    mod.openUp         ();  // Dome rock.. dome rock.. dome rock
   
-  msh.reNormalize    ( mod );    
+    msh.reNormalize    ( mod );    
   
-  // inter.interpolate  ( msh, mod );
-  inter.exterpolator ( msh, exo, mod );
+    Interpolator inter ( mod.input_model_physics, mod.num_p );
+    inter.interpolate  ( msh, mod );
   
-  exo.writeParams    ( msh );
-  exo.closeFile      ();        
-                   
+    exo.writeParams    ( msh );
+    exo.closeFile      ();        
+  }
+  // ********************************************************************* //
+  //                               EXTRACT                                 //
+  // ********************************************************************* //
+  
+  if ( mod.intentions == "EXTRACT" ) {
+    msh.getInfo        ( exo.idexo );
+    msh.allocateMesh   ( msh.num_nodes );    
+  
+    msh.populateCoord  ( exo.idexo ); 
+    msh.populateParams ( exo.idexo, mod );
+    
+    mod.openUp          ();
+  
+    msh.reNormalize    ( mod );    
+    
+    Interpolator inter ( mod.input_model_physics, mod.num_p );  
+    inter.exterpolator ( msh, exo, mod );
+    
+    mod.writeSES3D     ();
+  
+    exo.closeFile      ();        
+  } 
   return 0;
   
 }

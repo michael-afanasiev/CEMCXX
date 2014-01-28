@@ -25,10 +25,28 @@ void Mesh::getInfo (int exoid)
 
 void Mesh::populateParams ( int exoid, Model_file &mod ) 
 {
-  
-  if ( mod.intentions == "INITIZALIZE" ) {
-  ier = ex_get_nodal_var ( exoid, 0, 0, num_nodes, c11 );
-  }
+
+  ier = ex_get_nodal_var ( exoid, 1, 1, num_nodes,  c11 );
+  ier = ex_get_nodal_var ( exoid, 1, 2, num_nodes,  c12 );
+  ier = ex_get_nodal_var ( exoid, 1, 3, num_nodes,  c13 );
+  ier = ex_get_nodal_var ( exoid, 1, 4, num_nodes,  c14 );
+  ier = ex_get_nodal_var ( exoid, 1, 5, num_nodes,  c15 );
+  ier = ex_get_nodal_var ( exoid, 1, 6, num_nodes,  c16 );
+  ier = ex_get_nodal_var ( exoid, 1, 7, num_nodes,  c22 );
+  ier = ex_get_nodal_var ( exoid, 1, 8, num_nodes,  c23 );
+  ier = ex_get_nodal_var ( exoid, 1, 9, num_nodes,  c24 );
+  ier = ex_get_nodal_var ( exoid, 1, 10, num_nodes, c25 );
+  ier = ex_get_nodal_var ( exoid, 1, 11, num_nodes, c26 );
+  ier = ex_get_nodal_var ( exoid, 1, 12, num_nodes, c33 );
+  ier = ex_get_nodal_var ( exoid, 1, 13, num_nodes, c34 );
+  ier = ex_get_nodal_var ( exoid, 1, 14, num_nodes, c35 );
+  ier = ex_get_nodal_var ( exoid, 1, 15, num_nodes, c36 );
+  ier = ex_get_nodal_var ( exoid, 1, 16, num_nodes, c44 );
+  ier = ex_get_nodal_var ( exoid, 1, 17, num_nodes, c45 );
+  ier = ex_get_nodal_var ( exoid, 1, 18, num_nodes, c46 );
+  ier = ex_get_nodal_var ( exoid, 1, 19, num_nodes, c55 );
+  ier = ex_get_nodal_var ( exoid, 1, 20, num_nodes, c56 );
+  ier = ex_get_nodal_var ( exoid, 1, 21, num_nodes, c66 );
   
 }
 
@@ -104,6 +122,7 @@ void Mesh::allocateMesh ( int &num_nodes )
   c55 = new double [num_nodes]();
   c56 = new double [num_nodes]();
   c66 = new double [num_nodes](); 
+  rho = new double [num_nodes]();
    
 }
 
@@ -135,6 +154,8 @@ void Mesh::deallocateMesh ()
   delete [] c55;
   delete [] c56;
   delete [] c66;
+  
+delete [] rho;
     
 }
 

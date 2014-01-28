@@ -82,6 +82,7 @@ public:
   double *c55;
   double *c56;
   double *c66;
+  double *rhoMsh;
 
   std::vector<std::vector<double>> col_rad;
   std::vector<std::vector<double>> lon_rad;
@@ -109,6 +110,7 @@ public:
   void openUp               ();
   void findMinMax           ();
   void populateParams       ( Driver &drv, Exodus_file &exo );
+  void writeSES3D           ();
   
 };
 
@@ -214,6 +216,7 @@ public:
   double *c55;
   double *c56;
   double *c66;
+  double *rho;
   double *xmsh;
   double *ymsh;
   double *zmsh;
@@ -255,8 +258,25 @@ class Interpolator
 {
   
 public: 
+  
+  double *vsvOut;
+  double *vshOut;
+  double *vppOut;
+  double *rhoOut;
+  
+  
+  Interpolator ( std::string, int );
+  
   void interpolate ( Mesh &msh, Model_file &mod );  
   double taper     ( double &x, double &y, double &z, Model_file &mod );
   void exterpolator ( Mesh &msh, Exodus_file &exo, Model_file &mod );
+  void recover ( double &testX, double &testY, double &testZ, kdtree *tree,
+                 Mesh &msh,
+                 double &c11, double &c12, double &c13, double &c14, 
+                 double &c15, double &c16, double &c22, double &c23, 
+                 double &c24, double &c25, double &c26, double &c33, 
+                 double &c34, double &c35, double &c36, double &c44, 
+                 double &c45, double &c46, double &c55, double &c56, 
+                 double &c66, double &rho ); 
 
 };
