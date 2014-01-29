@@ -52,9 +52,22 @@ void Utilities::colLonRadDeg2xyz ( double col,  double lon,  double rad,
 {
   
   Constants con;
+    
   
   col = col * con.PI / con.o80;
   lon = lon * con.PI / con.o80;
+  
+  x = rad * cos (lon) * sin (col);
+  y = rad * sin (lon) * sin (col);
+  z = rad * cos (col);  
+  
+}    
+
+void Utilities::colLonRadRad2xyz ( double col,  double lon,  double rad,
+                                   double &x,   double &y,   double &z ) 
+{
+  
+  Constants con;
   
   x = rad * cos (lon) * sin (col);
   y = rad * sin (lon) * sin (col);

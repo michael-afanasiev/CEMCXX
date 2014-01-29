@@ -37,7 +37,7 @@ void Exodus_file::writeParams ( Mesh &msh )
 {
 
   char *cstr = new char [MAX_LINE_LENGTH];
-  const char *varnames[21];
+  const char *varnames[22];
 
   int ndim;
   int nump;
@@ -67,6 +67,7 @@ void Exodus_file::writeParams ( Mesh &msh )
   varnames [18] = "c55";
   varnames [19] = "c56";
   varnames [20] = "c66";
+  varnames [21] = "rho";
       
   ier = ex_get_init ( idexo, cstr, &ndim, &nump, &numel, &numelblk, &numnps, 
     &numess );
@@ -102,5 +103,6 @@ void Exodus_file::writeParams ( Mesh &msh )
   ier = ex_put_nodal_var ( idexo, 1, 19, msh.num_nodes, msh.c55 );
   ier = ex_put_nodal_var ( idexo, 1, 20, msh.num_nodes, msh.c56 );
   ier = ex_put_nodal_var ( idexo, 1, 21, msh.num_nodes, msh.c66 );
+  ier = ex_put_nodal_var ( idexo, 1, 22, msh.num_nodes, msh.rho );
     
 }

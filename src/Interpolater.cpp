@@ -104,13 +104,13 @@ void Interpolator::exterpolator ( Mesh &msh, Exodus_file &exo, Model_file &mod )
     int l = 0;
     for ( int r=0; r<mod.col_deg.size(); r++ ) {
       for ( int i=0; i<mod.col_rad[r].size(); i++ ) {
-        for ( int j=0; j<mod.lon_deg[r].size(); j++ ) {
+        for ( int j=0; j<mod.lon_rad[r].size(); j++ ) {
           for ( int k=0; k<(mod.rad[r].size()-1); k++ ) {
           
             // Test point (DEBUG).
-            util.colLonRadDeg2xyz ( mod.col_rad[r][i], mod.lon_deg[r][j], 
+            util.colLonRadRad2xyz ( mod.col_rad[r][i], mod.lon_rad[r][j], 
               mod.rad[r][k], testX, testY, testZ );
-            
+                          
             recover ( testX, testY, testZ, tree, msh,
               c11, c12, c13, c14, c15, c16, c22, c23, c24, c25, c26,
               c33, c34, c35, c36, c44, c45, c46, c55, c56, c66,
@@ -226,6 +226,9 @@ void Interpolator::recover ( double &testX, double &testY, double &testZ,
   kdres *set  = kd_nearest3 ( tree, testX, testY, testZ );
   void *ind_p = kd_res_item_data ( set );
   int point   = * ( int * ) ind_p;
+  
+  // cout << "Point for this query :: " << point << "\n";
+  // TODO :: Walk down multimap tree.
 
   // Set up connectivity iterator.
   pair < multimap <int, vector <int> > :: iterator , multimap 
@@ -235,10 +238,10 @@ void Interpolator::recover ( double &testX, double &testY, double &testZ,
   ext = msh.elemOrder.equal_range (point);
 
   // Loop over connecting elements (node indices contained in iterator).
-  double l1;
-  double l2;
-  double l3;
-  double l4;
+  double l1, l2, l3, l4;
+  bool found=false;
+  int nFound = 0;
+  ofstream myfi ( "Bary.txt", ios::out );
   for ( multimap <int, vector <int> > :: iterator it=ext.first; 
     it!=ext.second; ++it ) {                    
 
@@ -251,9 +254,21 @@ void Interpolator::recover ( double &testX, double &testY, double &testZ,
       msh.zmsh[it->second[0]], msh.zmsh[it->second[1]],
       msh.zmsh[it->second[2]], msh.zmsh[it->second[3]],
       l1, l2, l3, l4 ); 
+      
+    // myfi << "Target point: " << testX << " " << testY << " " << testZ << "\n";
+    // myfi << "Edge one: " << msh.xmsh[it->second[0]] << " " << 
+    //   msh.ymsh[it->second[0]] << " " << msh.zmsh[it->second[0]] << "\n";
+    // myfi << "Edge two: " << msh.xmsh[it->second[1]] << " " << 
+    //   msh.ymsh[it->second[1]] << " " << msh.zmsh[it->second[1]] << "\n";
+    // myfi << "Edge three: " << msh.xmsh[it->second[2]] << " " << 
+    //   msh.ymsh[it->second[2]] << " " << msh.zmsh[it->second[2]] << "\n";
+    // myfi << "Edge four: " << msh.xmsh[it->second[3]] << " " << 
+    //   msh.ymsh[it->second[3]] << " " << msh.zmsh[it->second[3]] << "\n";
                        
     if ( l1 > 0 && l2 > 0 && l3 > 0 && l4 > 0 ) {
       
+      found = true;
+      nFound++;
       
       double c11p0 = msh.c11[it->second[0]];
       double c12p0 = msh.c12[it->second[0]];
@@ -276,7 +291,31 @@ void Interpolator::recover ( double &testX, double &testY, double &testZ,
       double c55p0 = msh.c55[it->second[0]];
       double c56p0 = msh.c56[it->second[0]];
       double c66p0 = msh.c66[it->second[0]]; 
-      double rhop0 = msh.rho[it->second[0]];     
+      double rhop0 = msh.rho[it->second[0]];   
+      
+      // myfi << "Target point: " << testX << " " << testY << " " << testZ << "\n";
+      // myfi << "Edge one: " << it->second[0] << " " << 
+      //   it->second[0] << " " << it->second[0] << "\n";
+      // myfi << "Edge two: " << it->second[1] << " " << 
+      //   it->second[1] << " " << it->second[1] << "\n";
+      // myfi << "Edge three: " << it->second[2] << " " << 
+      //   it->second[2] << " " << it->second[2] << "\n";
+      // myfi << "Edge four: " << it->second[3] << " " << 
+      //   it->second[3] << " " << it->second[3] << "\n";
+        
+      
+      // myfi << "Target point: " << testX << " " << testY << " " << testZ << "\n";
+      // myfi << "Edge one: " << msh.xmsh[it->second[0]] << " " << 
+      //   msh.ymsh[it->second[0]] << " " << msh.zmsh[it->second[0]] << "\n";
+      // myfi << "Edge two: " << msh.xmsh[it->second[1]] << " " << 
+      //   msh.ymsh[it->second[1]] << " " << msh.zmsh[it->second[1]] << "\n";
+      // myfi << "Edge three: " << msh.xmsh[it->second[2]] << " " << 
+      //   msh.ymsh[it->second[2]] << " " << msh.zmsh[it->second[2]] << "\n";
+      // myfi << "Edge four: " << msh.xmsh[it->second[3]] << " " << 
+      //   msh.ymsh[it->second[3]] << " " << msh.zmsh[it->second[3]] << "\n";
+      // 
+      // 
+      // cout << "FOUND." << "\n";
       
       double c11p1 = msh.c11[it->second[1]];
       double c12p1 = msh.c12[it->second[1]];
@@ -371,4 +410,20 @@ void Interpolator::recover ( double &testX, double &testY, double &testZ,
                   
     }    
   }
+  
+  myfi.close();
+  
+  
+  // if ( found == false ) {
+  //   double debugCol, debugLon, debugRad;
+  //   util.xyz2ColLonRadDeg ( testX, testY, testZ, debugCol, debugLon, debugRad);
+  //   cout << "DEBUG :: Didn't find the point bro.\nCOL LON RAD = " 
+  //     << debugCol << " " << debugLon << " " << debugRad << "\n";    
+  // }
+  // if ( found == true ) {
+  //   cout << "Found this many bro: " << nFound << "\n";
+  // }
+  
+  // cin.get ();
+  
 }  

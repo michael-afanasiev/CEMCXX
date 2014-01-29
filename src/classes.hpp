@@ -128,6 +128,8 @@ public:
                           double &col, double &lon, double &rad );
   void colLonRadDeg2xyz ( double  col, double  lon, double  rad,
                           double &x,   double &y,   double &z ); 
+  void colLonRadRad2xyz ( double col,  double lon,  double rad,
+                          double &x,   double &y,   double &z );
                           
   void convertBary ( double &xp, double &yp, double &zp, 
                      double &x1, double &x2, double &x3, double &x4,

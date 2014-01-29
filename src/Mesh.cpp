@@ -19,22 +19,22 @@ void Mesh::getInfo (int exoid)
   
   ier = ex_inquire ( exoid, EX_INQ_NODES,    &num_nodes,    &dum1, &dum2 );
   ier = ex_inquire ( exoid, EX_INQ_ELEM,     &num_elem,     &dum1, &dum2 ); 
-  ier = ex_inquire ( exoid, EX_INQ_ELEM_BLK, &num_elem_blk, &dum1, &dum2);
+  ier = ex_inquire ( exoid, EX_INQ_ELEM_BLK, &num_elem_blk, &dum1, &dum2 );
   
 }
 
 void Mesh::populateParams ( int exoid, Model_file &mod ) 
 {
 
-  ier = ex_get_nodal_var ( exoid, 1, 1, num_nodes,  c11 );
-  ier = ex_get_nodal_var ( exoid, 1, 2, num_nodes,  c12 );
-  ier = ex_get_nodal_var ( exoid, 1, 3, num_nodes,  c13 );
-  ier = ex_get_nodal_var ( exoid, 1, 4, num_nodes,  c14 );
-  ier = ex_get_nodal_var ( exoid, 1, 5, num_nodes,  c15 );
-  ier = ex_get_nodal_var ( exoid, 1, 6, num_nodes,  c16 );
-  ier = ex_get_nodal_var ( exoid, 1, 7, num_nodes,  c22 );
-  ier = ex_get_nodal_var ( exoid, 1, 8, num_nodes,  c23 );
-  ier = ex_get_nodal_var ( exoid, 1, 9, num_nodes,  c24 );
+  ier = ex_get_nodal_var ( exoid, 1, 1,  num_nodes, c11 );
+  ier = ex_get_nodal_var ( exoid, 1, 2,  num_nodes, c12 );
+  ier = ex_get_nodal_var ( exoid, 1, 3,  num_nodes, c13 );
+  ier = ex_get_nodal_var ( exoid, 1, 4,  num_nodes, c14 );
+  ier = ex_get_nodal_var ( exoid, 1, 5,  num_nodes, c15 );
+  ier = ex_get_nodal_var ( exoid, 1, 6,  num_nodes, c16 );
+  ier = ex_get_nodal_var ( exoid, 1, 7,  num_nodes, c22 );
+  ier = ex_get_nodal_var ( exoid, 1, 8,  num_nodes, c23 );
+  ier = ex_get_nodal_var ( exoid, 1, 9,  num_nodes, c24 );
   ier = ex_get_nodal_var ( exoid, 1, 10, num_nodes, c25 );
   ier = ex_get_nodal_var ( exoid, 1, 11, num_nodes, c26 );
   ier = ex_get_nodal_var ( exoid, 1, 12, num_nodes, c33 );
@@ -47,6 +47,12 @@ void Mesh::populateParams ( int exoid, Model_file &mod )
   ier = ex_get_nodal_var ( exoid, 1, 19, num_nodes, c55 );
   ier = ex_get_nodal_var ( exoid, 1, 20, num_nodes, c56 );
   ier = ex_get_nodal_var ( exoid, 1, 21, num_nodes, c66 );
+  ier = ex_get_nodal_var ( exoid, 1, 22, num_nodes, rho );
+  
+  if ( ier != 0 ) {
+    cout << "Error reading in mesh variables.\n";
+    exit (EXIT_FAILURE);
+  }
   
 }
 
@@ -66,7 +72,7 @@ void Mesh::populateCoord ( int exoid )
 void Mesh::getConnectivity ( int exoid )
 {
   
-  cout << "Building connectivity array.\n";
+  cout << "\nBuilding connectivity array.\n";
 
   int *ids = new int [num_elem_blk];
   int ier  = ex_get_elem_blk_ids ( exoid, ids );
@@ -77,11 +83,34 @@ void Mesh::getConnectivity ( int exoid )
   vector<int> node;
   node.reserve ( 4 );
   
+  // ofstream myfi ( "Bary.txt", ios::out );  
   for ( int i=0; i<num_elem_blk*num_elem*4; i++ ) {
-    node.push_back ( elemConn[i] );
+    node.push_back ( elemConn[i] - 1 );
     
     if ( (i+1) % 4 == 0 ) {
+      
+      // myfi << "Target point: " << xmsh[node[0]] << " " << ymsh[node[0]] 
+      //   << " " << zmsh[node[0]] << "\n";
+      // 
+      // myfi << "Edge one: " << xmsh[node[0]] << " " << 
+      //   ymsh[node[0]] << " " << zmsh[node[0]] << "\n";
+      // 
+      // myfi << "Edge two: " << xmsh[node[1]] << " " << 
+      //   ymsh[node[1]] << " " << zmsh[node[1]] << "\n";
+      // 
+      // myfi << "Edge three: " << xmsh[node[2]] << " " << 
+      //   ymsh[node[2]] << " " << zmsh[node[2]] << "\n";
+      // 
+      // myfi << "Edge four: " << xmsh[node[3]] << " " << 
+      //   ymsh[node[3]] << " " << zmsh[node[3]] << "\n";
+      
       elemOrder.insert ( pair <int, vector <int> > (node[0], node) );
+      
+      // cout << node[0] << " " << node[1] << " " << node[2] << " " << node[3] 
+      //   <<"\n";
+        
+      // cin.get ();
+      
       elemOrder.insert ( pair <int, vector <int> > (node[1], node) );
       elemOrder.insert ( pair <int, vector <int> > (node[2], node) );
       elemOrder.insert ( pair <int, vector <int> > (node[3], node) );                               
