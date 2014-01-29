@@ -57,9 +57,9 @@ public:
   double radMin = 6371.;
   double radMax = 0.;
   
-  std::vector<double> x;
-  std::vector<double> y;
-  std::vector<double> z;
+  std::vector <double> x;
+  std::vector <double> y;
+  std::vector <double> z;
 
   double *c11;
   double *c12;
@@ -84,15 +84,15 @@ public:
   double *c66;
   double *rhoMsh;
 
-  std::vector<std::vector<double>> col_rad;
-  std::vector<std::vector<double>> lon_rad;
-  std::vector<std::vector<double>> col_deg;
-  std::vector<std::vector<double>> lon_deg;
-  std::vector<std::vector<double>> rad;
-  std::vector<std::vector<double>> vsh;
-  std::vector<std::vector<double>> vsv;
-  std::vector<std::vector<double>> rho;
-  std::vector<std::vector<double>> vpp;
+  std::vector <std::vector <double> > col_rad;
+  std::vector <std::vector <double> > lon_rad;
+  std::vector <std::vector <double> > col_deg;
+  std::vector <std::vector <double> > lon_deg;
+  std::vector <std::vector <double> > rad;
+  std::vector <std::vector <double> > vsh;
+  std::vector <std::vector <double> > vsv;
+  std::vector <std::vector <double> > rho;
+  std::vector <std::vector <double> > vpp;
   
   std::string input_model_directory;
   std::string input_model_file_type;
@@ -196,6 +196,7 @@ public:
   int num_elem_blk;
   int num_node_sets;
   int num_side_sets;
+  int num_node_per_elem=4;
   
   double *c11;
   double *c12;

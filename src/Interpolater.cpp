@@ -23,18 +23,19 @@ Interpolator::Interpolator ( string input_model_physics, int num_p )
 
 void Interpolator::interpolate ( Mesh &msh, Model_file &mod ) 
 {
-  
-  kdtree *tree = kd_create (3);
+
   Utilities util;
   
-  int *dat = new int [mod.num_p];
+  // Create KDTree.
+  cout << "Creating KDTree.\n";
+  kdtree *tree = kd_create (3);  
+  int *dat     = new int [mod.num_p];
   for ( int i=0; i<mod.num_p; i++ ) {
     dat[i] = i;
     kd_insert3 ( tree, mod.x[i], mod.y[i], mod.z[i], &dat[i] );
-    cout << "Creating tree. " << mod.num_p - (i + 1) << " nodes left.\xd";
   }      
   
-  cout << "\n";
+  cout << "Interpolating.\n";
   
   for ( int i=0; i<msh.num_nodes; i++ ) {
     
@@ -67,12 +68,9 @@ void Interpolator::interpolate ( Mesh &msh, Model_file &mod )
       msh.c66[i] = mod.c66[point]    + msh.c66[i];
       msh.rho[i] = mod.rhoMsh[point] + msh.rho[i];
       
-    }
-    
-    cout << "Interpolating. " << msh.num_nodes - (i + 1) << " nodes left.\xd";
-    
+    }    
   }
-        
+          
 }
 
 void Interpolator::exterpolator ( Mesh &msh, Exodus_file &exo, Model_file &mod )
@@ -85,15 +83,15 @@ void Interpolator::exterpolator ( Mesh &msh, Exodus_file &exo, Model_file &mod )
   double testY;
   double testZ;
   
-  kdtree *tree = kd_create (3);
   Utilities util;
   
   // Create KDTree.
-  int *dat = new int [msh.num_nodes];
+  cout << "Creating KDTree.\n";
+  kdtree *tree = kd_create (3);
+  int *dat     = new int [msh.num_nodes];
   for ( int i=0; i<msh.num_nodes; i++ ) {
     dat[i] = i;
     kd_insert3 ( tree, msh.xmsh[i], msh.ymsh[i], msh.zmsh[i], &dat[i] );
-    cout << "Creating tree. " << msh.num_nodes - (i + 1) << " nodes left.\xd";
   }       
   
   // Create element connectivity map.  
@@ -122,20 +120,14 @@ void Interpolator::exterpolator ( Mesh &msh, Exodus_file &exo, Model_file &mod )
               mod.vsv[r][l] = sqrt (c55 / rho);
               mod.vpp[r][l] = sqrt (c22 / rho);
               mod.rho[r][l] = rho;
-              // cout << c44 / rho << "\n";
-              // cout << c55 / rho << "\n";
-              // cout << c22 / rho << "\n";
-              // cout << rho << "\n";
-              // cin .get ();
               l++;
+              
             }
-                    
           }
         }
       }
     }
   }
-  cout << "Done extracting model.\n";
   
   if ( mod.input_model_file_type == "SPECFEM" ) {
     // TODO Write specfem in.    
@@ -233,15 +225,12 @@ void Interpolator::recover ( double &testX, double &testY, double &testZ,
   double origZ = testZ;
   
   bool found=false;  
-  int  nMiss=0;
   while ( found == false ) {
+    
     // Extract point from KDTree.
     kdres *set  = kd_nearest3 ( tree, testX, testY, testZ );
     void *ind_p = kd_res_item_data ( set );
     int point   = * ( int * ) ind_p;
-  
-    // cout << "Point for this query :: " << point << "\n";
-    // TODO :: Walk down multimap tree.
 
     // Set up connectivity iterator.
     pair < multimap <int, vector <int> > :: iterator , multimap 
@@ -253,7 +242,7 @@ void Interpolator::recover ( double &testX, double &testY, double &testZ,
     // Loop over connecting elements (node indices contained in iterator).
     double l1, l2, l3, l4;
     int nFound = 0;
-    // ofstream myfi ( "Bary.txt", ios::out );
+    
     for ( multimap <int, vector <int> > :: iterator it=ext.first; 
       it!=ext.second; ++it ) {                    
 
@@ -266,17 +255,7 @@ void Interpolator::recover ( double &testX, double &testY, double &testZ,
         msh.zmsh[it->second[0]], msh.zmsh[it->second[1]],
         msh.zmsh[it->second[2]], msh.zmsh[it->second[3]],
         l1, l2, l3, l4 ); 
-      
-      // myfi << "Target point: " << origX << " " << origY << " " << origZ << "\n";
-      // myfi << "Edge one: " << msh.xmsh[it->second[0]] << " " << 
-      //   msh.ymsh[it->second[0]] << " " << msh.zmsh[it->second[0]] << "\n";
-      // myfi << "Edge two: " << msh.xmsh[it->second[1]] << " " << 
-      //   msh.ymsh[it->second[1]] << " " << msh.zmsh[it->second[1]] << "\n";
-      // myfi << "Edge three: " << msh.xmsh[it->second[2]] << " " << 
-      //   msh.ymsh[it->second[2]] << " " << msh.zmsh[it->second[2]] << "\n";
-      // myfi << "Edge four: " << msh.xmsh[it->second[3]] << " " << 
-      //   msh.ymsh[it->second[3]] << " " << msh.zmsh[it->second[3]] << "\n";
-                             
+                                   
       if ( l1 > 0 && l2 > 0 && l3 > 0 && l4 > 0 ) {
       
         found = true;
@@ -303,31 +282,7 @@ void Interpolator::recover ( double &testX, double &testY, double &testZ,
         double c56p0 = msh.c56[it->second[0]];
         double c66p0 = msh.c66[it->second[0]]; 
         double rhop0 = msh.rho[it->second[0]];  
-              
-        // myfi << "Target point: " << testX << " " << testY << " " << testZ << "\n";
-        // myfi << "Edge one: " << it->second[0] << " " << 
-        //   it->second[0] << " " << it->second[0] << "\n";
-        // myfi << "Edge two: " << it->second[1] << " " << 
-        //   it->second[1] << " " << it->second[1] << "\n";
-        // myfi << "Edge three: " << it->second[2] << " " << 
-        //   it->second[2] << " " << it->second[2] << "\n";
-        // myfi << "Edge four: " << it->second[3] << " " << 
-        //   it->second[3] << " " << it->second[3] << "\n";
-        
-      
-        // myfi << "Target point: " << testX << " " << testY << " " << testZ << "\n";
-        // myfi << "Edge one: " << msh.xmsh[it->second[0]] << " " << 
-        //   msh.ymsh[it->second[0]] << " " << msh.zmsh[it->second[0]] << "\n";
-        // myfi << "Edge two: " << msh.xmsh[it->second[1]] << " " << 
-        //   msh.ymsh[it->second[1]] << " " << msh.zmsh[it->second[1]] << "\n";
-        // myfi << "Edge three: " << msh.xmsh[it->second[2]] << " " << 
-        //   msh.ymsh[it->second[2]] << " " << msh.zmsh[it->second[2]] << "\n";
-        // myfi << "Edge four: " << msh.xmsh[it->second[3]] << " " << 
-        //   msh.ymsh[it->second[3]] << " " << msh.zmsh[it->second[3]] << "\n";
-        // 
-        // 
-        // cout << "FOUND." << "\n";
-      
+                    
         double c11p1 = msh.c11[it->second[1]];
         double c12p1 = msh.c12[it->second[1]];
         double c13p1 = msh.c13[it->second[1]];
@@ -418,32 +373,19 @@ void Interpolator::recover ( double &testX, double &testY, double &testZ,
         c55 = l1 * c55p0 + l2 * c55p1 + l3 * c55p2 + l4 * c55p3;    
         c56 = l1 * c56p0 + l2 * c56p1 + l3 * c56p2 + l4 * c56p3;    
         c66 = l1 * c66p0 + l2 * c66p1 + l3 * c66p2 + l4 * c66p3;  
-        
-        // cout << "COMPONENTS\n";
-        // cout << rhop0 << " " << rhop1 << " " << rhop2 << " " << rhop3 << "\n";
         rho = l1 * rhop0 + l2 * rhop1 + l3 * rhop2 + l4 * rhop3;              
                   
       }    
     }
-  
-    // myfi.close();
-    
-    if ( nMiss > 0 ) {
-      // cout << "Trying this: \n";
-      // cin.get ();
-    }
-    
+      
     if ( found == false ) {
-      double debugCol, debugLon, debugRad;
-      // util.xyz2ColLonRadDeg ( origX, origY, origZ, debugCol, debugLon, debugRad);
-      // cout << "DEBUG :: Didn't find the point bro.\nCOL LON RAD = " 
-      //   << debugCol << " " << debugLon << " " << debugRad << "\n"; 
-    
+      
       double edLnX = 0;
       double edLnY = 0;
       double edLnZ = 0;
-      int l = 0;
-      ext   = msh.elemOrder.equal_range (point);    
+      int l        = 0;
+      ext          = msh.elemOrder.equal_range (point);    
+      
       for ( multimap <int, vector <int> > :: iterator it=ext.first; 
         it!=ext.second; ++it ) {
           edLnX += abs (msh.xmsh[it->second[0]] - msh.xmsh[it->second[1]]);
@@ -453,7 +395,6 @@ void Interpolator::recover ( double &testX, double &testY, double &testZ,
       }
     
       double eDL = (edLnX + edLnY + edLnZ) / float(l*3);
-      // cout << "EdgeLength: " << eDL << "\n";
       
       testX = origX;
       testY = origY;
@@ -470,27 +411,11 @@ void Interpolator::recover ( double &testX, double &testY, double &testZ,
       double randX = irandX / 100.;
       double randY = irandY / 100.;
       double randZ = irandZ / 100.;
-      
-      // cout << "testX before: " << testX << "\n";
     
       testX = testX + randX * eDL * irandXs;
       testY = testY + randY * eDL * irandYs;
       testZ = testZ + randZ * eDL * irandZs;
-    
-      // cout << "randX" << randX << "\n";
-      // cout << "testX after: " << testX << "\n";
       
-      nMiss = nMiss + 1;
-    
-      // cin.get ();
-    }
-    
-    // cin.get();
-  }
-  // if ( found == true ) {
-  //   cout << "Found this many bro: " << nFound << "\n";
-  // }
-  
-  // cin.get ();
-  
+    }    
+  }  
 }  

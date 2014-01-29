@@ -1,5 +1,5 @@
-CXXFLAGS = -g -std=c++11
-CFLAGS   = -g
+CXXFLAGS = -g -O0 -std=c++11
+CFLAGS   = -g -O0
 LDFLAGS  = -L/usr/local/lib -lexoIIv2c -lnetcdf -lhdf5
 
 OBJS= ./src/Exodus_file.o \

@@ -280,16 +280,16 @@ void Model_file::openUp ( )
   cout << "Changing physics.\n";
   
   if ( input_model_physics == "TTI" ) {
-  c11    = new double [num_p]();
-  c12    = new double [num_p]();
-  c13    = new double [num_p]();
-  c22    = new double [num_p]();
-  c23    = new double [num_p]();
-  c33    = new double [num_p]();
-  c44    = new double [num_p]();
-  c55    = new double [num_p]();
-  c66    = new double [num_p]();  
-  rhoMsh = new double [num_p]();
+    c11    = new double [num_p]();
+    c12    = new double [num_p]();
+    c13    = new double [num_p]();
+    c22    = new double [num_p]();
+    c23    = new double [num_p]();
+    c33    = new double [num_p]();
+    c44    = new double [num_p]();
+    c55    = new double [num_p]();
+    c66    = new double [num_p]();  
+    rhoMsh = new double [num_p]();
   }
     
   if ( intentions == "INTERPOLATE" ) {
@@ -352,13 +352,24 @@ void Model_file::readSES3D ()
     vsv.resize ( num_regions );
     vsh.resize ( num_regions );
     vpp.resize ( num_regions );       
-    for ( int r=0; r!=num_regions; r++ ) {
-      rho[r].resize ( num_p );
-      vsv[r].resize ( num_p );
-      vsh[r].resize ( num_p );
-      vpp[r].resize ( num_p );     
-    }
   }
+  
+  // Calculate the proper number of parameters as there might be multiple
+  // zones.
+  num_p = 0;
+  for ( int r=0; r!=num_regions; r++ ) {
+    
+    rho[r].resize ( (col_deg[r].size() - 1) * (lon_deg[r].size() - 1) * 
+      (rad[r].size() - 1) );
+    vsv[r].resize ( (col_deg[r].size() - 1) * (lon_deg[r].size() - 1) * 
+      (rad[r].size() - 1) );
+    vsh[r].resize ( (col_deg[r].size() - 1) * (lon_deg[r].size() - 1) * 
+      (rad[r].size() - 1) );
+    vpp[r].resize ( (col_deg[r].size() - 1) * (lon_deg[r].size() - 1) * 
+      (rad[r].size() - 1) );     
+    num_p = rho[r].size() + num_p;
+  }
+  
   
   // Put aside space for cartesian vectors (for speed).
   x.resize ( num_p );
@@ -372,9 +383,9 @@ void Model_file::readSES3D ()
 
 void Model_file::writeSES3D ()
 {
-  cout << "writing.\n"; 
+  cout << "Writing.\n"; 
   ofstream myfile ("test.txt", ios::out );
-  
+ 
   for ( int r=0; r<vsv.size(); r++ ) {
     for ( int i=0; i<vsv[r].size(); i++ ) {    
       myfile << vsv[r][i] << "\n";

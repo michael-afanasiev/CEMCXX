@@ -61,62 +61,36 @@ void Mesh::populateCoord ( int exoid )
        
   ier = ex_get_coord ( exoid, xmsh, ymsh, zmsh );
   
-  if (ier != 0) 
-  {
+  if (ier != 0) {
     std::cout << "***Fatal error reading in coordinates. Exiting.\n";
     exit (EXIT_FAILURE);
   }
-        
 }
-
+    
 void Mesh::getConnectivity ( int exoid )
 {
   
-  cout << "\nBuilding connectivity array.\n";
-
   int *ids = new int [num_elem_blk];
   int ier  = ex_get_elem_blk_ids ( exoid, ids );
   
-  int *elemConn = new int [num_elem_blk*num_elem*4];  
+  int *elemConn = new int [num_elem_blk*num_elem*num_node_per_elem];  
   ier           = ex_get_elem_conn ( exoid, ids[0], elemConn );
   
   vector<int> node;
-  node.reserve ( 4 );
-  
-  // ofstream myfi ( "Bary.txt", ios::out );  
-  for ( int i=0; i<num_elem_blk*num_elem*4; i++ ) {
+  node.reserve ( num_node_per_elem );
+
+  cout << "Building connectivity array.\n";  
+  for ( int i=0; i<num_elem_blk*num_elem*num_node_per_elem; i++ ) {
     node.push_back ( elemConn[i] - 1 );
     
-    if ( (i+1) % 4 == 0 ) {
-      
-      // myfi << "Target point: " << xmsh[node[0]] << " " << ymsh[node[0]] 
-      //   << " " << zmsh[node[0]] << "\n";
-      // 
-      // myfi << "Edge one: " << xmsh[node[0]] << " " << 
-      //   ymsh[node[0]] << " " << zmsh[node[0]] << "\n";
-      // 
-      // myfi << "Edge two: " << xmsh[node[1]] << " " << 
-      //   ymsh[node[1]] << " " << zmsh[node[1]] << "\n";
-      // 
-      // myfi << "Edge three: " << xmsh[node[2]] << " " << 
-      //   ymsh[node[2]] << " " << zmsh[node[2]] << "\n";
-      // 
-      // myfi << "Edge four: " << xmsh[node[3]] << " " << 
-      //   ymsh[node[3]] << " " << zmsh[node[3]] << "\n";
-      
+    if ( (i+1) % num_node_per_elem == 0 ) {            
       elemOrder.insert ( pair <int, vector <int> > (node[0], node) );
-      
-      // cout << node[0] << " " << node[1] << " " << node[2] << " " << node[3] 
-      //   <<"\n";
-        
-      // cin.get ();
-      
       elemOrder.insert ( pair <int, vector <int> > (node[1], node) );
       elemOrder.insert ( pair <int, vector <int> > (node[2], node) );
       elemOrder.insert ( pair <int, vector <int> > (node[3], node) );                               
       
       node.clear ();
-    }
+    }    
   }
       
   delete [] elemConn;
