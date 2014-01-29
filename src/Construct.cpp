@@ -1,4 +1,5 @@
 #include "classes.hpp"
+#include <time.h>
 #include "kdtree.h"
 
 using namespace std;
@@ -19,6 +20,8 @@ int main ()
   kdtree       *tree;
   
   cout << "Begin model building.\n";  
+  
+  srand (time(NULL));  
   
   // ********************************************************************* //
   //                       READING THE PARAMETER FILE                      //

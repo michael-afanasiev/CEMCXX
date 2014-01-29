@@ -306,7 +306,7 @@ void Model_file::openUp ( )
           double C = A;
           double F = A - 2 * L;
       
-          c11[l]    = vsh[r][i];//C;
+          c11[l]    = C;
           c12[l]    = F;
           c13[l]    = F;
           c22[l]    = A;
@@ -338,8 +338,7 @@ void Model_file::readSES3D ()
   populateSES3D ( imd + "block_m_y", num_regions, num_y, lon_deg, 'c' );
   populateSES3D ( imd + "block_m_z", num_regions, num_z, rad, 'c' );
   
-  // Options for specific physics systems.
-  
+  // Options for specific physics systems.  
   if ( intentions == "INTERPOLATE" ) {
     if ( input_model_physics == "TTI" ) {
     populateSES3D ( imd + "dRHO", num_regions, num_p, rho, 'p' );

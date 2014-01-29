@@ -2,6 +2,7 @@
 #include <cmath>
 #include <assert.h>
 #include <ctype.h>
+#include <time.h>
 
 #include "kdtree.h"
 #include "classes.hpp"
@@ -121,6 +122,11 @@ void Interpolator::exterpolator ( Mesh &msh, Exodus_file &exo, Model_file &mod )
               mod.vsv[r][l] = sqrt (c55 / rho);
               mod.vpp[r][l] = sqrt (c22 / rho);
               mod.rho[r][l] = rho;
+              // cout << c44 / rho << "\n";
+              // cout << c55 / rho << "\n";
+              // cout << c22 / rho << "\n";
+              // cout << rho << "\n";
+              // cin .get ();
               l++;
             }
                     
@@ -222,89 +228,46 @@ void Interpolator::recover ( double &testX, double &testY, double &testZ,
   
   Utilities util;
   
-  // Extract point from KDTree.
-  kdres *set  = kd_nearest3 ( tree, testX, testY, testZ );
-  void *ind_p = kd_res_item_data ( set );
-  int point   = * ( int * ) ind_p;
+  double origX = testX;
+  double origY = testY;
+  double origZ = testZ;
   
-  // cout << "Point for this query :: " << point << "\n";
-  // TODO :: Walk down multimap tree.
+  bool found=false;  
+  int  nMiss=0;
+  while ( found == false ) {
+    // Extract point from KDTree.
+    kdres *set  = kd_nearest3 ( tree, testX, testY, testZ );
+    void *ind_p = kd_res_item_data ( set );
+    int point   = * ( int * ) ind_p;
+  
+    // cout << "Point for this query :: " << point << "\n";
+    // TODO :: Walk down multimap tree.
 
-  // Set up connectivity iterator.
-  pair < multimap <int, vector <int> > :: iterator , multimap 
-    <int, vector <int> > :: iterator > ext;
+    // Set up connectivity iterator.
+    pair < multimap <int, vector <int> > :: iterator , multimap 
+      <int, vector <int> > :: iterator > ext;
 
-  // Extract iterator for current point.
-  ext = msh.elemOrder.equal_range (point);
+    // Extract iterator for current point.
+    ext = msh.elemOrder.equal_range (point);
 
-  // Loop over connecting elements (node indices contained in iterator).
-  double l1, l2, l3, l4;
-  bool found=false;
-  int nFound = 0;
-  ofstream myfi ( "Bary.txt", ios::out );
-  for ( multimap <int, vector <int> > :: iterator it=ext.first; 
-    it!=ext.second; ++it ) {                    
+    // Loop over connecting elements (node indices contained in iterator).
+    double l1, l2, l3, l4;
+    int nFound = 0;
+    // ofstream myfi ( "Bary.txt", ios::out );
+    for ( multimap <int, vector <int> > :: iterator it=ext.first; 
+      it!=ext.second; ++it ) {                    
 
-    // Convert to barycentric coordinates (l*).
-    util.convertBary ( testX, testY, testZ,
-      msh.xmsh[it->second[0]], msh.xmsh[it->second[1]], 
-      msh.xmsh[it->second[2]], msh.xmsh[it->second[3]],
-      msh.ymsh[it->second[0]], msh.ymsh[it->second[1]],
-      msh.ymsh[it->second[2]], msh.ymsh[it->second[3]],
-      msh.zmsh[it->second[0]], msh.zmsh[it->second[1]],
-      msh.zmsh[it->second[2]], msh.zmsh[it->second[3]],
-      l1, l2, l3, l4 ); 
+      // Convert to barycentric coordinates (l*).
+      util.convertBary ( origX, origY, origZ,
+        msh.xmsh[it->second[0]], msh.xmsh[it->second[1]], 
+        msh.xmsh[it->second[2]], msh.xmsh[it->second[3]],
+        msh.ymsh[it->second[0]], msh.ymsh[it->second[1]],
+        msh.ymsh[it->second[2]], msh.ymsh[it->second[3]],
+        msh.zmsh[it->second[0]], msh.zmsh[it->second[1]],
+        msh.zmsh[it->second[2]], msh.zmsh[it->second[3]],
+        l1, l2, l3, l4 ); 
       
-    // myfi << "Target point: " << testX << " " << testY << " " << testZ << "\n";
-    // myfi << "Edge one: " << msh.xmsh[it->second[0]] << " " << 
-    //   msh.ymsh[it->second[0]] << " " << msh.zmsh[it->second[0]] << "\n";
-    // myfi << "Edge two: " << msh.xmsh[it->second[1]] << " " << 
-    //   msh.ymsh[it->second[1]] << " " << msh.zmsh[it->second[1]] << "\n";
-    // myfi << "Edge three: " << msh.xmsh[it->second[2]] << " " << 
-    //   msh.ymsh[it->second[2]] << " " << msh.zmsh[it->second[2]] << "\n";
-    // myfi << "Edge four: " << msh.xmsh[it->second[3]] << " " << 
-    //   msh.ymsh[it->second[3]] << " " << msh.zmsh[it->second[3]] << "\n";
-                       
-    if ( l1 > 0 && l2 > 0 && l3 > 0 && l4 > 0 ) {
-      
-      found = true;
-      nFound++;
-      
-      double c11p0 = msh.c11[it->second[0]];
-      double c12p0 = msh.c12[it->second[0]];
-      double c13p0 = msh.c13[it->second[0]];
-      double c14p0 = msh.c14[it->second[0]];
-      double c15p0 = msh.c15[it->second[0]];
-      double c16p0 = msh.c16[it->second[0]];
-      double c22p0 = msh.c22[it->second[0]];
-      double c23p0 = msh.c23[it->second[0]];
-      double c24p0 = msh.c24[it->second[0]];
-      double c25p0 = msh.c25[it->second[0]];
-      double c26p0 = msh.c26[it->second[0]];
-      double c33p0 = msh.c33[it->second[0]];
-      double c34p0 = msh.c34[it->second[0]];
-      double c35p0 = msh.c35[it->second[0]];
-      double c36p0 = msh.c36[it->second[0]];
-      double c44p0 = msh.c44[it->second[0]];
-      double c45p0 = msh.c45[it->second[0]];
-      double c46p0 = msh.c46[it->second[0]];
-      double c55p0 = msh.c55[it->second[0]];
-      double c56p0 = msh.c56[it->second[0]];
-      double c66p0 = msh.c66[it->second[0]]; 
-      double rhop0 = msh.rho[it->second[0]];   
-      
-      // myfi << "Target point: " << testX << " " << testY << " " << testZ << "\n";
-      // myfi << "Edge one: " << it->second[0] << " " << 
-      //   it->second[0] << " " << it->second[0] << "\n";
-      // myfi << "Edge two: " << it->second[1] << " " << 
-      //   it->second[1] << " " << it->second[1] << "\n";
-      // myfi << "Edge three: " << it->second[2] << " " << 
-      //   it->second[2] << " " << it->second[2] << "\n";
-      // myfi << "Edge four: " << it->second[3] << " " << 
-      //   it->second[3] << " " << it->second[3] << "\n";
-        
-      
-      // myfi << "Target point: " << testX << " " << testY << " " << testZ << "\n";
+      // myfi << "Target point: " << origX << " " << origY << " " << origZ << "\n";
       // myfi << "Edge one: " << msh.xmsh[it->second[0]] << " " << 
       //   msh.ymsh[it->second[0]] << " " << msh.zmsh[it->second[0]] << "\n";
       // myfi << "Edge two: " << msh.xmsh[it->second[1]] << " " << 
@@ -313,113 +276,217 @@ void Interpolator::recover ( double &testX, double &testY, double &testZ,
       //   msh.ymsh[it->second[2]] << " " << msh.zmsh[it->second[2]] << "\n";
       // myfi << "Edge four: " << msh.xmsh[it->second[3]] << " " << 
       //   msh.ymsh[it->second[3]] << " " << msh.zmsh[it->second[3]] << "\n";
-      // 
-      // 
-      // cout << "FOUND." << "\n";
+                             
+      if ( l1 > 0 && l2 > 0 && l3 > 0 && l4 > 0 ) {
       
-      double c11p1 = msh.c11[it->second[1]];
-      double c12p1 = msh.c12[it->second[1]];
-      double c13p1 = msh.c13[it->second[1]];
-      double c14p1 = msh.c14[it->second[1]];
-      double c15p1 = msh.c15[it->second[1]];
-      double c16p1 = msh.c16[it->second[1]];
-      double c22p1 = msh.c22[it->second[1]];
-      double c23p1 = msh.c23[it->second[1]];
-      double c24p1 = msh.c24[it->second[1]];
-      double c25p1 = msh.c25[it->second[1]];
-      double c26p1 = msh.c26[it->second[1]];
-      double c33p1 = msh.c33[it->second[1]];
-      double c34p1 = msh.c34[it->second[1]];
-      double c35p1 = msh.c35[it->second[1]];
-      double c36p1 = msh.c36[it->second[1]];
-      double c44p1 = msh.c44[it->second[1]];
-      double c45p1 = msh.c45[it->second[1]];
-      double c46p1 = msh.c46[it->second[1]];
-      double c55p1 = msh.c55[it->second[1]];
-      double c56p1 = msh.c56[it->second[1]];
-      double c66p1 = msh.c66[it->second[1]];
-      double rhop1 = msh.rho[it->second[0]];     
+        found = true;
       
-      double c11p2 = msh.c11[it->second[2]];
-      double c12p2 = msh.c12[it->second[2]];
-      double c13p2 = msh.c13[it->second[2]];
-      double c14p2 = msh.c14[it->second[2]];
-      double c15p2 = msh.c15[it->second[2]];
-      double c16p2 = msh.c16[it->second[2]];
-      double c22p2 = msh.c22[it->second[2]];
-      double c23p2 = msh.c23[it->second[2]];
-      double c24p2 = msh.c24[it->second[2]];
-      double c25p2 = msh.c25[it->second[2]];
-      double c26p2 = msh.c26[it->second[2]];
-      double c33p2 = msh.c33[it->second[2]];
-      double c34p2 = msh.c34[it->second[2]];
-      double c35p2 = msh.c35[it->second[2]];
-      double c36p2 = msh.c36[it->second[2]];
-      double c44p2 = msh.c44[it->second[2]];
-      double c45p2 = msh.c45[it->second[2]];
-      double c46p2 = msh.c46[it->second[2]];
-      double c55p2 = msh.c55[it->second[2]];
-      double c56p2 = msh.c56[it->second[2]];
-      double c66p2 = msh.c66[it->second[2]];    
-      double rhop2 = msh.rho[it->second[0]];     
+        double c11p0 = msh.c11[it->second[0]];
+        double c12p0 = msh.c12[it->second[0]];
+        double c13p0 = msh.c13[it->second[0]];
+        double c14p0 = msh.c14[it->second[0]];
+        double c15p0 = msh.c15[it->second[0]];
+        double c16p0 = msh.c16[it->second[0]];
+        double c22p0 = msh.c22[it->second[0]];
+        double c23p0 = msh.c23[it->second[0]];
+        double c24p0 = msh.c24[it->second[0]];
+        double c25p0 = msh.c25[it->second[0]];
+        double c26p0 = msh.c26[it->second[0]];
+        double c33p0 = msh.c33[it->second[0]];
+        double c34p0 = msh.c34[it->second[0]];
+        double c35p0 = msh.c35[it->second[0]];
+        double c36p0 = msh.c36[it->second[0]];
+        double c44p0 = msh.c44[it->second[0]];
+        double c45p0 = msh.c45[it->second[0]];
+        double c46p0 = msh.c46[it->second[0]];
+        double c55p0 = msh.c55[it->second[0]];
+        double c56p0 = msh.c56[it->second[0]];
+        double c66p0 = msh.c66[it->second[0]]; 
+        double rhop0 = msh.rho[it->second[0]];  
+              
+        // myfi << "Target point: " << testX << " " << testY << " " << testZ << "\n";
+        // myfi << "Edge one: " << it->second[0] << " " << 
+        //   it->second[0] << " " << it->second[0] << "\n";
+        // myfi << "Edge two: " << it->second[1] << " " << 
+        //   it->second[1] << " " << it->second[1] << "\n";
+        // myfi << "Edge three: " << it->second[2] << " " << 
+        //   it->second[2] << " " << it->second[2] << "\n";
+        // myfi << "Edge four: " << it->second[3] << " " << 
+        //   it->second[3] << " " << it->second[3] << "\n";
+        
       
-      double c11p3 = msh.c11[it->second[3]];
-      double c12p3 = msh.c12[it->second[3]];
-      double c13p3 = msh.c13[it->second[3]];
-      double c14p3 = msh.c14[it->second[3]];
-      double c15p3 = msh.c15[it->second[3]];
-      double c16p3 = msh.c16[it->second[3]];
-      double c22p3 = msh.c22[it->second[3]];
-      double c23p3 = msh.c23[it->second[3]];
-      double c24p3 = msh.c24[it->second[3]];
-      double c25p3 = msh.c25[it->second[3]];
-      double c26p3 = msh.c26[it->second[3]];
-      double c33p3 = msh.c33[it->second[3]];
-      double c34p3 = msh.c34[it->second[3]];
-      double c35p3 = msh.c35[it->second[3]];
-      double c36p3 = msh.c36[it->second[3]];
-      double c44p3 = msh.c44[it->second[3]];
-      double c45p3 = msh.c45[it->second[3]];
-      double c46p3 = msh.c46[it->second[3]];
-      double c55p3 = msh.c55[it->second[3]];
-      double c56p3 = msh.c56[it->second[3]];
-      double c66p3 = msh.c66[it->second[3]];    
-      double rhop3 = msh.rho[it->second[0]];     
+        // myfi << "Target point: " << testX << " " << testY << " " << testZ << "\n";
+        // myfi << "Edge one: " << msh.xmsh[it->second[0]] << " " << 
+        //   msh.ymsh[it->second[0]] << " " << msh.zmsh[it->second[0]] << "\n";
+        // myfi << "Edge two: " << msh.xmsh[it->second[1]] << " " << 
+        //   msh.ymsh[it->second[1]] << " " << msh.zmsh[it->second[1]] << "\n";
+        // myfi << "Edge three: " << msh.xmsh[it->second[2]] << " " << 
+        //   msh.ymsh[it->second[2]] << " " << msh.zmsh[it->second[2]] << "\n";
+        // myfi << "Edge four: " << msh.xmsh[it->second[3]] << " " << 
+        //   msh.ymsh[it->second[3]] << " " << msh.zmsh[it->second[3]] << "\n";
+        // 
+        // 
+        // cout << "FOUND." << "\n";
       
-      c11 = l1 * c11p0 + l2 * c11p1 + l3 * c11p2 + l4 * c11p3;    
-      c12 = l1 * c12p0 + l2 * c12p1 + l3 * c12p2 + l4 * c12p3;    
-      c13 = l1 * c13p0 + l2 * c13p1 + l3 * c13p2 + l4 * c13p3;    
-      c14 = l1 * c14p0 + l2 * c14p1 + l3 * c14p2 + l4 * c14p3;    
-      c15 = l1 * c15p0 + l2 * c15p1 + l3 * c15p2 + l4 * c15p3;    
-      c16 = l1 * c16p0 + l2 * c16p1 + l3 * c16p2 + l4 * c16p3;    
-      c22 = l1 * c22p0 + l2 * c22p1 + l3 * c22p2 + l4 * c22p3;    
-      c23 = l1 * c23p0 + l2 * c23p1 + l3 * c23p2 + l4 * c23p3;    
-      c24 = l1 * c24p0 + l2 * c24p1 + l3 * c24p2 + l4 * c24p3;    
-      c25 = l1 * c25p0 + l2 * c25p1 + l3 * c25p2 + l4 * c25p3;    
-      c26 = l1 * c26p0 + l2 * c26p1 + l3 * c26p2 + l4 * c26p3;    
-      c33 = l1 * c33p0 + l2 * c33p1 + l3 * c33p2 + l4 * c33p3;    
-      c34 = l1 * c34p0 + l2 * c34p1 + l3 * c34p2 + l4 * c34p3;    
-      c35 = l1 * c35p0 + l2 * c35p1 + l3 * c35p2 + l4 * c35p3;    
-      c36 = l1 * c36p0 + l2 * c36p1 + l3 * c36p2 + l4 * c36p3;    
-      c44 = l1 * c44p0 + l2 * c44p1 + l3 * c44p2 + l4 * c44p3;    
-      c45 = l1 * c45p0 + l2 * c45p1 + l3 * c45p2 + l4 * c45p3;    
-      c46 = l1 * c46p0 + l2 * c46p1 + l3 * c46p2 + l4 * c46p3;    
-      c55 = l1 * c55p0 + l2 * c55p1 + l3 * c55p2 + l4 * c55p3;    
-      c56 = l1 * c56p0 + l2 * c56p1 + l3 * c56p2 + l4 * c56p3;    
-      c66 = l1 * c66p0 + l2 * c66p1 + l3 * c66p2 + l4 * c66p3;                
+        double c11p1 = msh.c11[it->second[1]];
+        double c12p1 = msh.c12[it->second[1]];
+        double c13p1 = msh.c13[it->second[1]];
+        double c14p1 = msh.c14[it->second[1]];
+        double c15p1 = msh.c15[it->second[1]];
+        double c16p1 = msh.c16[it->second[1]];
+        double c22p1 = msh.c22[it->second[1]];
+        double c23p1 = msh.c23[it->second[1]];
+        double c24p1 = msh.c24[it->second[1]];
+        double c25p1 = msh.c25[it->second[1]];
+        double c26p1 = msh.c26[it->second[1]];
+        double c33p1 = msh.c33[it->second[1]];
+        double c34p1 = msh.c34[it->second[1]];
+        double c35p1 = msh.c35[it->second[1]];
+        double c36p1 = msh.c36[it->second[1]];
+        double c44p1 = msh.c44[it->second[1]];
+        double c45p1 = msh.c45[it->second[1]];
+        double c46p1 = msh.c46[it->second[1]];
+        double c55p1 = msh.c55[it->second[1]];
+        double c56p1 = msh.c56[it->second[1]];
+        double c66p1 = msh.c66[it->second[1]];
+        double rhop1 = msh.rho[it->second[1]];     
+      
+        double c11p2 = msh.c11[it->second[2]];
+        double c12p2 = msh.c12[it->second[2]];
+        double c13p2 = msh.c13[it->second[2]];
+        double c14p2 = msh.c14[it->second[2]];
+        double c15p2 = msh.c15[it->second[2]];
+        double c16p2 = msh.c16[it->second[2]];
+        double c22p2 = msh.c22[it->second[2]];
+        double c23p2 = msh.c23[it->second[2]];
+        double c24p2 = msh.c24[it->second[2]];
+        double c25p2 = msh.c25[it->second[2]];
+        double c26p2 = msh.c26[it->second[2]];
+        double c33p2 = msh.c33[it->second[2]];
+        double c34p2 = msh.c34[it->second[2]];
+        double c35p2 = msh.c35[it->second[2]];
+        double c36p2 = msh.c36[it->second[2]];
+        double c44p2 = msh.c44[it->second[2]];
+        double c45p2 = msh.c45[it->second[2]];
+        double c46p2 = msh.c46[it->second[2]];
+        double c55p2 = msh.c55[it->second[2]];
+        double c56p2 = msh.c56[it->second[2]];
+        double c66p2 = msh.c66[it->second[2]];    
+        double rhop2 = msh.rho[it->second[2]];     
+      
+        double c11p3 = msh.c11[it->second[3]];
+        double c12p3 = msh.c12[it->second[3]];
+        double c13p3 = msh.c13[it->second[3]];
+        double c14p3 = msh.c14[it->second[3]];
+        double c15p3 = msh.c15[it->second[3]];
+        double c16p3 = msh.c16[it->second[3]];
+        double c22p3 = msh.c22[it->second[3]];
+        double c23p3 = msh.c23[it->second[3]];
+        double c24p3 = msh.c24[it->second[3]];
+        double c25p3 = msh.c25[it->second[3]];
+        double c26p3 = msh.c26[it->second[3]];
+        double c33p3 = msh.c33[it->second[3]];
+        double c34p3 = msh.c34[it->second[3]];
+        double c35p3 = msh.c35[it->second[3]];
+        double c36p3 = msh.c36[it->second[3]];
+        double c44p3 = msh.c44[it->second[3]];
+        double c45p3 = msh.c45[it->second[3]];
+        double c46p3 = msh.c46[it->second[3]];
+        double c55p3 = msh.c55[it->second[3]];
+        double c56p3 = msh.c56[it->second[3]];
+        double c66p3 = msh.c66[it->second[3]];    
+        double rhop3 = msh.rho[it->second[3]];     
+      
+        c11 = l1 * c11p0 + l2 * c11p1 + l3 * c11p2 + l4 * c11p3;    
+        c12 = l1 * c12p0 + l2 * c12p1 + l3 * c12p2 + l4 * c12p3;    
+        c13 = l1 * c13p0 + l2 * c13p1 + l3 * c13p2 + l4 * c13p3;    
+        c14 = l1 * c14p0 + l2 * c14p1 + l3 * c14p2 + l4 * c14p3;    
+        c15 = l1 * c15p0 + l2 * c15p1 + l3 * c15p2 + l4 * c15p3;    
+        c16 = l1 * c16p0 + l2 * c16p1 + l3 * c16p2 + l4 * c16p3;    
+        c22 = l1 * c22p0 + l2 * c22p1 + l3 * c22p2 + l4 * c22p3;    
+        c23 = l1 * c23p0 + l2 * c23p1 + l3 * c23p2 + l4 * c23p3;    
+        c24 = l1 * c24p0 + l2 * c24p1 + l3 * c24p2 + l4 * c24p3;    
+        c25 = l1 * c25p0 + l2 * c25p1 + l3 * c25p2 + l4 * c25p3;    
+        c26 = l1 * c26p0 + l2 * c26p1 + l3 * c26p2 + l4 * c26p3;    
+        c33 = l1 * c33p0 + l2 * c33p1 + l3 * c33p2 + l4 * c33p3;    
+        c34 = l1 * c34p0 + l2 * c34p1 + l3 * c34p2 + l4 * c34p3;    
+        c35 = l1 * c35p0 + l2 * c35p1 + l3 * c35p2 + l4 * c35p3;    
+        c36 = l1 * c36p0 + l2 * c36p1 + l3 * c36p2 + l4 * c36p3;    
+        c44 = l1 * c44p0 + l2 * c44p1 + l3 * c44p2 + l4 * c44p3;    
+        c45 = l1 * c45p0 + l2 * c45p1 + l3 * c45p2 + l4 * c45p3;    
+        c46 = l1 * c46p0 + l2 * c46p1 + l3 * c46p2 + l4 * c46p3;    
+        c55 = l1 * c55p0 + l2 * c55p1 + l3 * c55p2 + l4 * c55p3;    
+        c56 = l1 * c56p0 + l2 * c56p1 + l3 * c56p2 + l4 * c56p3;    
+        c66 = l1 * c66p0 + l2 * c66p1 + l3 * c66p2 + l4 * c66p3;  
+        
+        // cout << "COMPONENTS\n";
+        // cout << rhop0 << " " << rhop1 << " " << rhop2 << " " << rhop3 << "\n";
+        rho = l1 * rhop0 + l2 * rhop1 + l3 * rhop2 + l4 * rhop3;              
                   
-    }    
+      }    
+    }
+  
+    // myfi.close();
+    
+    if ( nMiss > 0 ) {
+      // cout << "Trying this: \n";
+      // cin.get ();
+    }
+    
+    if ( found == false ) {
+      double debugCol, debugLon, debugRad;
+      // util.xyz2ColLonRadDeg ( origX, origY, origZ, debugCol, debugLon, debugRad);
+      // cout << "DEBUG :: Didn't find the point bro.\nCOL LON RAD = " 
+      //   << debugCol << " " << debugLon << " " << debugRad << "\n"; 
+    
+      double edLnX = 0;
+      double edLnY = 0;
+      double edLnZ = 0;
+      int l = 0;
+      ext   = msh.elemOrder.equal_range (point);    
+      for ( multimap <int, vector <int> > :: iterator it=ext.first; 
+        it!=ext.second; ++it ) {
+          edLnX += abs (msh.xmsh[it->second[0]] - msh.xmsh[it->second[1]]);
+          edLnY += abs (msh.ymsh[it->second[0]] - msh.ymsh[it->second[1]]);
+          edLnZ += abs (msh.zmsh[it->second[0]] - msh.zmsh[it->second[1]]);
+          l++;
+      }
+    
+      double eDL = (edLnX + edLnY + edLnZ) / float(l*3);
+      // cout << "EdgeLength: " << eDL << "\n";
+      
+      testX = origX;
+      testY = origY;
+      testZ = origZ;
+      
+      int irandXs = rand () % 2 ? 1 : -1;
+      int irandYs = rand () % 2 ? 1 : -1;
+      int irandZs = rand () % 2 ? 1 : -1;        
+        
+      int irandX = rand () % 200 + 25;
+      int irandY = rand () % 200 + 25;
+      int irandZ = rand () % 200 + 25;
+
+      double randX = irandX / 100.;
+      double randY = irandY / 100.;
+      double randZ = irandZ / 100.;
+      
+      // cout << "testX before: " << testX << "\n";
+    
+      testX = testX + randX * eDL * irandXs;
+      testY = testY + randY * eDL * irandYs;
+      testZ = testZ + randZ * eDL * irandZs;
+    
+      // cout << "randX" << randX << "\n";
+      // cout << "testX after: " << testX << "\n";
+      
+      nMiss = nMiss + 1;
+    
+      // cin.get ();
+    }
+    
+    // cin.get();
   }
-  
-  myfi.close();
-  
-  
-  // if ( found == false ) {
-  //   double debugCol, debugLon, debugRad;
-  //   util.xyz2ColLonRadDeg ( testX, testY, testZ, debugCol, debugLon, debugRad);
-  //   cout << "DEBUG :: Didn't find the point bro.\nCOL LON RAD = " 
-  //     << debugCol << " " << debugLon << " " << debugRad << "\n";    
-  // }
   // if ( found == true ) {
   //   cout << "Found this many bro: " << nFound << "\n";
   // }
