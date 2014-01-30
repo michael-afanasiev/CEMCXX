@@ -376,9 +376,39 @@ void Interpolator::recover ( double &testX, double &testY, double &testZ,
         c66 = l1 * c66p0 + l2 * c66p1 + l3 * c66p2 + l4 * c66p3;  
         rho = l1 * rhop0 + l2 * rhop1 + l3 * rhop2 + l4 * rhop3;   
         
-        cout << c11 << " " << c11p0 << " " << c11p1 << " " << c11p2 << " " <<
+
+        double tC, tL, tR;        
+        
+        util.xyz2ColLonRadDeg ( origX, origY,
+          origZ, tC, tL, tR );          
+          
+        if ( tC> 40 && tL > 120 ) {
+        cout << "Target pt : " << tC << " " << tL << " " << tR 
+          << " " << c11 << "\n";
+        
+        util.xyz2ColLonRadDeg ( msh.xmsh[it->second[0]], msh.ymsh[it->second[0]],
+          msh.zmsh[it->second[0]], tC, tL, tR );  
+        cout << "Edge one  : " << tC << " " << tL << " " << tR << " " << 
+          c11p0 << "\n";
+
+        
+        util.xyz2ColLonRadDeg ( msh.xmsh[it->second[1]], msh.ymsh[it->second[1]],
+          msh.zmsh[it->second[1]], tC, tL, tR );
+        cout << "Edge two  : " << tC << " " << tL << " " << tR << " " <<
+          c11p1 << "\n";
+        
+        util.xyz2ColLonRadDeg ( msh.xmsh[it->second[2]], msh.ymsh[it->second[2]],
+          msh.zmsh[it->second[2]], tC, tL, tR );     
+        cout << "Edge three: " << tC << " " << tL << " " << tR << " " <<
+          c11p2 << "\n";
+        
+        util.xyz2ColLonRadDeg ( msh.xmsh[it->second[3]], msh.ymsh[it->second[3]],
+          msh.zmsh[it->second[3]], tC, tL, tR );     
+        cout << "Edge four : " << tC << " " << tL << " " << tR << " " << 
           c11p3 << "\n";
-        cin.get();           
+                
+        cin.get();          
+       }
                   
       }    
     }
