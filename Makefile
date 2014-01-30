@@ -1,6 +1,6 @@
-CXXFLAGS = -g -O0 -std=c++11
-CFLAGS   = -g -O0
-LDFLAGS  = -L/usr/local/lib -lexoIIv2c -lnetcdf -lhdf5
+CXXFLAGS = -O3 -std=c++11
+CFLAGS   = -O3
+LDFLAGS  = -L/usr/local/lib -lexoIIv2c -lnetcdf -lhdf5 -fopenmp
 
 OBJS= ./src/Exodus_file.o \
       ./src/Mesh.o \

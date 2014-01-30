@@ -3,6 +3,7 @@
 #include <assert.h>
 #include <ctype.h>
 #include <time.h>
+#include <omp.h>
 
 #include "kdtree.h"
 #include "classes.hpp"
@@ -97,15 +98,15 @@ void Interpolator::exterpolator ( Mesh &msh, Exodus_file &exo, Model_file &mod )
   // Create element connectivity map.  
   msh.getConnectivity ( exo.idexo );
   
-  cout << "Extracting model.\n";
-  
+  cout << "Extracting model.\n";  
+
   if ( mod.input_model_file_type == "SES3D" ) {
     int l = 0;
     for ( int r=0; r<mod.col_deg.size(); r++ ) {
       for ( int i=0; i<mod.col_rad[r].size(); i++ ) {
         for ( int j=0; j<mod.lon_rad[r].size(); j++ ) {
           for ( int k=0; k<(mod.rad[r].size()-1); k++ ) {
-          
+                      
             // Test point (DEBUG).
             util.colLonRadRad2xyz ( mod.col_rad[r][i], mod.lon_rad[r][j], 
               mod.rad[r][k], testX, testY, testZ );
@@ -121,14 +122,14 @@ void Interpolator::exterpolator ( Mesh &msh, Exodus_file &exo, Model_file &mod )
               mod.vpp[r][l] = sqrt (c22 / rho);
               mod.rho[r][l] = rho;
               l++;
-              
+                            
             }
           }
         }
-      }
+      }  
     }
   }
-  
+   
   if ( mod.input_model_file_type == "SPECFEM" ) {
     // TODO Write specfem in.    
   }
