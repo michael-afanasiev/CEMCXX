@@ -101,6 +101,7 @@ public:
   std::string intentions;
   std::string dimensions;
   std::string interpolation;
+  std::string output_model_physics;
   
   // Internal functions.
   
@@ -110,6 +111,7 @@ public:
   void openUp               ();
   void findMinMax           ();
   void populateParams       ( Driver &drv, Exodus_file &exo );
+  void dePopulateSES3D      ( std::string, std::vector<std::vector<double>>);
   void writeSES3D           ();
   
 };

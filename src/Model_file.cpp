@@ -3,6 +3,9 @@
 #include <iostream>
 #include <fstream>
 
+#include <sys/types.h>
+#include <sys/stat.h>
+
 #include "classes.hpp"
 using namespace std;
 
@@ -38,6 +41,8 @@ void Model_file::populateSES3D ( string name, int &num_regions,
   int * region;  
   int fix_stride;
 
+  cout << "Reading: " << name << "\n";
+    
   myfile.open ( name, ios::in );
   
   int lineno = 0;
@@ -119,6 +124,7 @@ void Model_file::populateParams ( Driver &drv, Exodus_file &exo )
   intentions            = drv.params[9];
   dimensions            = drv.params[10];
   interpolation         = drv.params[11];
+  output_model_physics  = drv.params[12];
        
   cout << "\nModel information:\n* INPUT_MODEL_DIRECTORY: " <<
     input_model_directory << "\n* INPUT_MODEL_FILE_TYPE: "  <<
@@ -382,15 +388,36 @@ void Model_file::readSES3D ()
 }
 
 void Model_file::writeSES3D ()
+{  
+  string imd = input_model_directory;
+  string omd = imd + "CEM";
+  
+  int status = mkdir ( omd.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH );
+  
+  if ( output_model_physics == "TTI" ) {
+    dePopulateSES3D ( omd + "/rho", rho );
+    dePopulateSES3D ( omd + "/vsv", vsv );
+    dePopulateSES3D ( omd + "/vsh", vsh );
+    dePopulateSES3D ( omd + "/vp",  vpp );    
+  }
+}
+
+void Model_file::dePopulateSES3D ( string omf, vector < vector <double > > ou )
 {
-  cout << "Writing.\n"; 
-  ofstream myfile ("test.txt", ios::out );
- 
-  for ( int r=0; r<vsv.size(); r++ ) {
-    for ( int i=0; i<vsv[r].size(); i++ ) {    
-      myfile << vsv[r][i] << "\n";
+  
+  cout << "Writing: " << omf << "\n";
+  ofstream myfile ( omf, ios::out );
+  
+  myfile << ou.size() << "\n";
+  for ( int r=0; r<ou.size(); r++ ) {
+    myfile << ou[r].size() << "\n";
+    for ( int i=0; i<ou[r].size(); i++ ) {
+      myfile << ou[r][i] << "\n";
     }
   }
+  
+  myfile.close();
+  
 }
 
 void Model_file::readSPECFEM3D ()
