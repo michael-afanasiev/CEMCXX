@@ -58,16 +58,16 @@ void Interpolator::interpolate ( Mesh &msh, Model_file &mod )
       
       double tap = taper ( mshCol, mshLon, mshRad, mod );
     
-      msh.c11[i] = mod.c11[point]    + msh.c11[i];
-      msh.c12[i] = mod.c12[point]    + msh.c12[i];
-      msh.c13[i] = mod.c13[point]    + msh.c13[i];
-      msh.c22[i] = mod.c22[point]    + msh.c22[i];
-      msh.c23[i] = mod.c23[point]    + msh.c23[i];
-      msh.c33[i] = mod.c33[point]    + msh.c33[i];
-      msh.c44[i] = mod.c44[point]    + msh.c44[i];
-      msh.c55[i] = mod.c55[point]    + msh.c55[i];
-      msh.c66[i] = mod.c66[point]    + msh.c66[i];
-      msh.rho[i] = mod.rhoMsh[point] + msh.rho[i];
+      msh.c11[i] = tap*1;//mod.c11[point]    + msh.c11[i];
+      msh.c12[i] = tap*1;//mod.c12[point]    + msh.c12[i];
+      msh.c13[i] = tap*1;//mod.c13[point]    + msh.c13[i];
+      msh.c22[i] = tap*1;//mod.c22[point]    + msh.c22[i];
+      msh.c23[i] = tap*1;//mod.c23[point]    + msh.c23[i];
+      msh.c33[i] = tap*1;//mod.c33[point]    + msh.c33[i];
+      msh.c44[i] = tap*1;//mod.c44[point]    + msh.c44[i];
+      msh.c55[i] = tap*1;//mod.c55[point]    + msh.c55[i];
+      msh.c66[i] = tap*1;//mod.c66[point]    + msh.c66[i];
+      msh.rho[i] = tap*1;//mod.rhoMsh[point] + msh.rho[i];
       
     }    
   }
@@ -374,7 +374,11 @@ void Interpolator::recover ( double &testX, double &testY, double &testZ,
         c55 = l1 * c55p0 + l2 * c55p1 + l3 * c55p2 + l4 * c55p3;    
         c56 = l1 * c56p0 + l2 * c56p1 + l3 * c56p2 + l4 * c56p3;    
         c66 = l1 * c66p0 + l2 * c66p1 + l3 * c66p2 + l4 * c66p3;  
-        rho = l1 * rhop0 + l2 * rhop1 + l3 * rhop2 + l4 * rhop3;              
+        rho = l1 * rhop0 + l2 * rhop1 + l3 * rhop2 + l4 * rhop3;   
+        
+        cout << c11 << " " << c11p0 << " " << c11p1 << " " << c11p2 << " " <<
+          c11p3 << "\n";
+        cin.get();           
                   
       }    
     }
