@@ -17,11 +17,8 @@ int main ()
   Mesh         msh;
   Model_file   mod;
   Utilities    util;
-  kdtree       *tree;
   
   cout << "Begin model building.\n";  
-  
-  srand (time(NULL));  
   
   // ********************************************************************* //
   //                       READING THE PARAMETER FILE                      //

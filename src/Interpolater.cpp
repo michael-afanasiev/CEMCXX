@@ -58,16 +58,16 @@ void Interpolator::interpolate ( Mesh &msh, Model_file &mod )
       
       double tap = taper ( mshCol, mshLon, mshRad, mod );
     
-      msh.c11[i] = tap*1;//mod.c11[point]    + msh.c11[i];
-      msh.c12[i] = tap*1;//mod.c12[point]    + msh.c12[i];
-      msh.c13[i] = tap*1;//mod.c13[point]    + msh.c13[i];
-      msh.c22[i] = tap*1;//mod.c22[point]    + msh.c22[i];
-      msh.c23[i] = tap*1;//mod.c23[point]    + msh.c23[i];
-      msh.c33[i] = tap*1;//mod.c33[point]    + msh.c33[i];
-      msh.c44[i] = tap*1;//mod.c44[point]    + msh.c44[i];
-      msh.c55[i] = tap*1;//mod.c55[point]    + msh.c55[i];
-      msh.c66[i] = tap*1;//mod.c66[point]    + msh.c66[i];
-      msh.rho[i] = tap*1;//mod.rhoMsh[point] + msh.rho[i];
+      msh.c11[i] = tap * mod.c11[point]    + msh.c11[i];
+      msh.c12[i] = tap * mod.c12[point]    + msh.c12[i];
+      msh.c13[i] = tap * mod.c13[point]    + msh.c13[i];
+      msh.c22[i] = tap * mod.c22[point]    + msh.c22[i];
+      msh.c23[i] = tap * mod.c23[point]    + msh.c23[i];
+      msh.c33[i] = tap * mod.c33[point]    + msh.c33[i];
+      msh.c44[i] = tap * mod.c44[point]    + msh.c44[i];
+      msh.c55[i] = tap * mod.c55[point]    + msh.c55[i];
+      msh.c66[i] = tap * mod.c66[point]    + msh.c66[i];
+      msh.rho[i] = tap * mod.rhoMsh[point] + msh.rho[i];
       
     }    
   }
@@ -85,22 +85,23 @@ void Interpolator::exterpolator ( Mesh &msh, Exodus_file &exo, Model_file &mod )
   double testZ;
   
   Utilities util;
-  
-  // Create KDTree.
-  cout << "Creating KDTree.\n";
-  kdtree *tree = kd_create (3);
-  int *dat     = new int [msh.num_nodes];
-  for ( int i=0; i<msh.num_nodes; i++ ) {
-    dat[i] = i;
-    kd_insert3 ( tree, msh.xmsh[i], msh.ymsh[i], msh.zmsh[i], &dat[i] );
-  }       
-  
+    
   // Create element connectivity map.  
   msh.getConnectivity ( exo.idexo );
   
   cout << "Extracting model.\n";  
 
   if ( mod.input_model_file_type == "SES3D" ) {
+    
+    // Create KDTree.
+    cout << "Creating KDTree.\n";
+    kdtree *tree = kd_create (3);
+    int *dat     = new int [msh.num_nodes];
+    for ( int i=0; i<msh.num_nodes; i++ ) {
+      dat[i] = i;
+      kd_insert3 ( tree, msh.xmsh[i], msh.ymsh[i], msh.zmsh[i], &dat[i] );
+    }                   
+    
     int l = 0;
     for ( int r=0; r<mod.col_deg.size(); r++ ) {
       for ( int i=0; i<mod.col_rad[r].size(); i++ ) {
@@ -375,42 +376,8 @@ void Interpolator::recover ( double &testX, double &testY, double &testZ,
         c56 = l1 * c56p0 + l2 * c56p1 + l3 * c56p2 + l4 * c56p3;    
         c66 = l1 * c66p0 + l2 * c66p1 + l3 * c66p2 + l4 * c66p3;  
         rho = l1 * rhop0 + l2 * rhop1 + l3 * rhop2 + l4 * rhop3;   
-        
-
-        double tC, tL, tR;        
-        
-        util.xyz2ColLonRadDeg ( origX, origY,
-          origZ, tC, tL, tR );          
-          
-        if ( tC> 40 && tL > 120 ) {
-        cout << "Target pt : " << tC << " " << tL << " " << tR 
-          << " " << c11 << "\n";
-        
-        util.xyz2ColLonRadDeg ( msh.xmsh[it->second[0]], msh.ymsh[it->second[0]],
-          msh.zmsh[it->second[0]], tC, tL, tR );  
-        cout << "Edge one  : " << tC << " " << tL << " " << tR << " " << 
-          c11p0 << "\n";
-
-        
-        util.xyz2ColLonRadDeg ( msh.xmsh[it->second[1]], msh.ymsh[it->second[1]],
-          msh.zmsh[it->second[1]], tC, tL, tR );
-        cout << "Edge two  : " << tC << " " << tL << " " << tR << " " <<
-          c11p1 << "\n";
-        
-        util.xyz2ColLonRadDeg ( msh.xmsh[it->second[2]], msh.ymsh[it->second[2]],
-          msh.zmsh[it->second[2]], tC, tL, tR );     
-        cout << "Edge three: " << tC << " " << tL << " " << tR << " " <<
-          c11p2 << "\n";
-        
-        util.xyz2ColLonRadDeg ( msh.xmsh[it->second[3]], msh.ymsh[it->second[3]],
-          msh.zmsh[it->second[3]], tC, tL, tR );     
-        cout << "Edge four : " << tC << " " << tL << " " << tR << " " << 
-          c11p3 << "\n";
-                
-        cin.get();          
-       }
-                  
-      }    
+            
+       }                     
     }
       
     if ( found == false ) {
