@@ -32,19 +32,24 @@ int main ()
   
   // Close driver.
   drv.closeDriver ( myfile );
-    
-  // ********************************************************************* //
-  //                            QUERY THE MESH                             //
-  // ********************************************************************* //
-
-  exo.openFile ( drv.params[0] );
-  msh.getInfo  ( exo.idexo );
   
   // ********************************************************************* //
   //                            READ IN PARAMS                             //
   // ********************************************************************* //
   
   mod.populateParams ( drv, exo );
+    
+  // ********************************************************************* //
+  //                           CONSTRUCT THE MESH                          //
+  // ********************************************************************* //
+  
+  exo.merge ( mod );
+    
+  // ********************************************************************* //
+  //                            QUERY THE MESH                             //
+  // ********************************************************************* //
+
+  exo.openFile ( drv.params[0] );
 
   // ********************************************************************* //
   //                            READ IN MODEL                              //
@@ -61,21 +66,12 @@ int main ()
   //                            INTERPOLATE                                //
   // ********************************************************************* //
       
-  if ( mod.intentions == "INTERPOLATE" )  {   
-    cout << "\nWe're working with " << msh.num_nodes << " nodes, and " << 
-      msh.num_elem << " elements.\n";
-                          
+  if ( mod.intentions == "INTERPOLATE" )  {                             
     msh.getInfo        ( exo.idexo );
-    msh.allocateMesh   ( msh.num_nodes );    
-  
-    msh.populateCoord  ( exo.idexo ); 
-    msh.populateParams ( exo.idexo, mod );
                        
     mod.openUp         ();  // Dome rock.. dome rock.. dome rock
   
-    msh.reNormalize    ( mod );    
-  
-    Interpolator inter ( mod.input_model_physics, mod.num_p );
+    Interpolator inter;
     inter.interpolate  ( msh, mod );
   
     exo.writeParams    ( msh );
@@ -87,16 +83,10 @@ int main ()
   
   if ( mod.intentions == "EXTRACT" ) {
     msh.getInfo        ( exo.idexo );
-    msh.allocateMesh   ( msh.num_nodes );    
-  
-    msh.populateCoord  ( exo.idexo ); 
-    msh.populateParams ( exo.idexo, mod );
     
     mod.openUp          ();
-  
-    msh.reNormalize    ( mod );    
     
-    Interpolator inter ( mod.input_model_physics, mod.num_p );  
+    Interpolator inter;
     inter.exterpolator ( msh, exo, mod );
     
     mod.writeSES3D     ();

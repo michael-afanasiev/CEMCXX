@@ -10,18 +10,6 @@
 
 using namespace std;
 
-Interpolator::Interpolator ( string input_model_physics, int num_p )
-{
-  
-  if ( input_model_physics == "TTI" ) {
-    vshOut = new double [num_p]();
-    vsvOut = new double [num_p]();
-    vppOut = new double [num_p]();
-    rhoOut = new double [num_p]();
-  }
-  
-}
-
 void Interpolator::interpolate ( Mesh &msh, Model_file &mod ) 
 {
 

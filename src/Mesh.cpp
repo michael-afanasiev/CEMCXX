@@ -11,19 +11,25 @@
 
 using namespace std;
 
-void Mesh::getInfo (int exoid) 
+void Mesh::getInfo ( int in_exoid ) 
 {
     
+  exoid = in_exoid;  
+  
   float dum1;
   char  dum2;
   
   ier = ex_inquire ( exoid, EX_INQ_NODES,    &num_nodes,    &dum1, &dum2 );
   ier = ex_inquire ( exoid, EX_INQ_ELEM,     &num_elem,     &dum1, &dum2 ); 
   ier = ex_inquire ( exoid, EX_INQ_ELEM_BLK, &num_elem_blk, &dum1, &dum2 );
+
+  allocateMesh   ();  
+  populateParams ();
+  populateCoord  ();
   
 }
 
-void Mesh::populateParams ( int exoid, Model_file &mod ) 
+void Mesh::populateParams ( ) 
 {
 
   ier = ex_get_nodal_var ( exoid, 1, 1,  num_nodes, c11 );
@@ -56,7 +62,7 @@ void Mesh::populateParams ( int exoid, Model_file &mod )
   
 }
 
-void Mesh::populateCoord ( int exoid ) 
+void Mesh::populateCoord ( ) 
 { 
        
   ier = ex_get_coord ( exoid, xmsh, ymsh, zmsh );
@@ -65,39 +71,9 @@ void Mesh::populateCoord ( int exoid )
     std::cout << "***Fatal error reading in coordinates. Exiting.\n";
     exit (EXIT_FAILURE);
   }
-}
-    
-void Mesh::getConnectivity ( int exoid )
-{
-  
-  int *ids = new int [num_elem_blk];
-  int ier  = ex_get_elem_blk_ids ( exoid, ids );
-  
-  int *elemConn = new int [num_elem_blk*num_elem*num_node_per_elem];  
-  ier           = ex_get_elem_conn ( exoid, ids[0], elemConn );
-  
-  vector<int> node;
-  node.reserve ( num_node_per_elem );
+}    
 
-  cout << "Building connectivity array.\n";  
-  for ( int i=0; i<num_elem_blk*num_elem*num_node_per_elem; i++ ) {
-    node.push_back ( elemConn[i] - 1 );
-    
-    if ( (i+1) % num_node_per_elem == 0 ) {            
-      elemOrder.insert ( pair <int, vector <int> > (node[0], node) );
-      elemOrder.insert ( pair <int, vector <int> > (node[1], node) );
-      elemOrder.insert ( pair <int, vector <int> > (node[2], node) );
-      elemOrder.insert ( pair <int, vector <int> > (node[3], node) );                               
-      
-      node.clear ();
-    }    
-  }
-      
-  delete [] elemConn;
-  
-}
-
-void Mesh::allocateMesh ( int &num_nodes ) 
+void Mesh::allocateMesh ( ) 
 {  
   
   xmsh = new double [num_nodes]();
@@ -127,6 +103,36 @@ void Mesh::allocateMesh ( int &num_nodes )
   c66 = new double [num_nodes](); 
   rho = new double [num_nodes]();
    
+}
+
+void Mesh::getConnectivity ( int exoid )
+{
+  
+  int *ids = new int [num_elem_blk];
+  int ier  = ex_get_elem_blk_ids ( exoid, ids );
+  
+  int *elemConn = new int [num_elem_blk*num_elem*num_node_per_elem];  
+  ier           = ex_get_elem_conn ( exoid, ids[0], elemConn );
+  
+  vector<int> node;
+  node.reserve ( num_node_per_elem );
+
+  cout << "Building connectivity array.\n";  
+  for ( int i=0; i<num_elem_blk*num_elem*num_node_per_elem; i++ ) {
+    node.push_back ( elemConn[i] - 1 );
+    
+    if ( (i+1) % num_node_per_elem == 0 ) {            
+      elemOrder.insert ( pair <int, vector <int> > (node[0], node) );
+      elemOrder.insert ( pair <int, vector <int> > (node[1], node) );
+      elemOrder.insert ( pair <int, vector <int> > (node[2], node) );
+      elemOrder.insert ( pair <int, vector <int> > (node[3], node) );                               
+      
+      node.clear ();
+    }    
+  }
+      
+  delete [] elemConn;
+  
 }
 
 void Mesh::deallocateMesh ()

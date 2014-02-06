@@ -33,6 +33,13 @@ void Exodus_file::closeFile ()
   
 }
 
+void Exodus_file::merge ( Model_file &mod ) 
+{
+  
+  
+  
+}
+
 void Exodus_file::writeParams ( Mesh &msh )
 {
 

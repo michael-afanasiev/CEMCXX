@@ -184,6 +184,7 @@ public:
   void openFile    ( std::string fname );
   void closeFile   ();
   void writeParams ( Mesh &msh );
+  void merge       ( Model_file &mod );
   
 };
 
@@ -199,6 +200,7 @@ public:
   int num_node_sets;
   int num_side_sets;
   int num_node_per_elem=4;
+  int exoid;
   
   double *c11;
   double *c12;
@@ -234,9 +236,9 @@ public:
   // Internal functions.
   
   void getInfo          ( int exoid );
-  void populateCoord    ( int exoid );
-  void populateParams   ( int eoxid , Model_file &mod );
-  void allocateMesh     ( int &num_nodes );
+  void populateCoord    ( );
+  void populateParams   ( );
+  void allocateMesh     ( );
   void reNormalize      ( Model_file &mod );
   void getConnectivity  ( int exoid );
   void deallocateMesh   ();
@@ -263,25 +265,17 @@ class Interpolator
 {
   
 public: 
-  
-  double *vsvOut;
-  double *vshOut;
-  double *vppOut;
-  double *rhoOut;
-  
-  
-  Interpolator ( std::string, int );
-  
-  void interpolate ( Mesh &msh, Model_file &mod );  
-  double taper     ( double &x, double &y, double &z, Model_file &mod );
+    
+  void interpolate  ( Mesh &msh, Model_file &mod );  
+  double taper      ( double &x, double &y, double &z, Model_file &mod );
   void exterpolator ( Mesh &msh, Exodus_file &exo, Model_file &mod );
-  void recover ( double &testX, double &testY, double &testZ, kdtree *tree,
-                 Mesh &msh,
-                 double &c11, double &c12, double &c13, double &c14, 
-                 double &c15, double &c16, double &c22, double &c23, 
-                 double &c24, double &c25, double &c26, double &c33, 
-                 double &c34, double &c35, double &c36, double &c44, 
-                 double &c45, double &c46, double &c55, double &c56, 
-                 double &c66, double &rho ); 
+  void recover      ( double &testX, double &testY, double &testZ, kdtree *tree,
+                      Mesh &msh,
+                      double &c11, double &c12, double &c13, double &c14, 
+                      double &c15, double &c16, double &c22, double &c23, 
+                      double &c24, double &c25, double &c26, double &c33, 
+                      double &c34, double &c35, double &c36, double &c44, 
+                      double &c45, double &c46, double &c55, double &c56, 
+                      double &c66, double &rho ); 
 
 };
