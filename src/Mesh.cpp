@@ -22,7 +22,7 @@ void Mesh::getInfo ( int in_exoid )
   ier = ex_inquire ( exoid, EX_INQ_NODES,    &num_nodes,    &dum1, &dum2 );
   ier = ex_inquire ( exoid, EX_INQ_ELEM,     &num_elem,     &dum1, &dum2 ); 
   ier = ex_inquire ( exoid, EX_INQ_ELEM_BLK, &num_elem_blk, &dum1, &dum2 );
-
+  
   allocateMesh   ();  
   populateParams ();
   populateCoord  ();

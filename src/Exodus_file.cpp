@@ -36,8 +36,54 @@ void Exodus_file::closeFile ()
 void Exodus_file::merge ( Model_file &mod ) 
 {
   
-  
-  
+  // vector < string > colReg;
+  // vector < string > lonReg;
+  // vector < string > radReg;
+  //   
+  // 
+  // if ( mod.colMax <= 90. ) {
+  //   colReg.push_back ("col0-90");    
+  // }
+  // if ( (mod.colMax >= 90.) && (mod.colMin >= 90.) ) {
+  //   colReg.push_back ("col90-180");
+  // }
+  // if ( (mod.colMax >= 90.) && (mod.colMin <= 90.) ) {
+  //   colReg.push_back ("col0-90");
+  //   colReg.push_back ("col90-180");
+  // } 
+  // 
+  // double lonMinLoc = mod.lonMin;
+  // double lonMaxLoc = mod.lonMax;
+  // 
+  // for ( int l=0; l<=270; l+=90 ) {
+  //     
+  //   if ( lonMinLoc < 0. ) {
+  //     lonMinLoc = 180. - lonMinLoc;                
+  //   }
+  //   if ( lonMaxLoc < 0. ) {
+  //     lonMaxLoc = 180. - lonMaxLoc;        
+  //   }
+  //   
+  //   if ( (lonMinLoc >= l) && (lonMaxLoc <= l+90) ) {
+  //     
+  //     string dum1 = to_string (l);
+  //     string dum2 = to_string (l+90);            
+  //     string full = "lon";
+  //     
+  //     full.append (dum1);
+  //     full.append ("-");
+  //     full.append (dum2);
+  //     
+  //     cout << full << "\n";
+  //     cin.get ();
+  //     
+  //   }      
+  // }
+  // 
+  // if ( mod.)
+  // 
+  // 
+      
 }
 
 void Exodus_file::writeParams ( Mesh &msh )

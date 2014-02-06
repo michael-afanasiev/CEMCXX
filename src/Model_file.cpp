@@ -381,9 +381,10 @@ void Model_file::readSES3D ()
   x.resize ( num_p );
   y.resize ( num_p );
   z.resize ( num_p );
-  
+    
   populateRadiansSES3D ();
   colLonRad2xyzSES3D   ();  
+      
       
 }
 

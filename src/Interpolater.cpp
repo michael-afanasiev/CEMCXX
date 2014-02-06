@@ -3,7 +3,6 @@
 #include <assert.h>
 #include <ctype.h>
 #include <time.h>
-#include <omp.h>
 
 #include "kdtree.h"
 #include "classes.hpp"
