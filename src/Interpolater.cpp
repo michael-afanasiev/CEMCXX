@@ -88,7 +88,8 @@ void Interpolator::exterpolator ( Mesh &msh, Exodus_file &exo, Model_file &mod )
       dat[i] = i;
       kd_insert3 ( tree, msh.xmsh[i], msh.ymsh[i], msh.zmsh[i], &dat[i] );
     }                   
-    
+
+    cout << "Recovering values.\n";
     int l = 0;
     for ( int r=0; r<mod.col_deg.size(); r++ ) {
       for ( int i=0; i<mod.col_rad[r].size(); i++ ) {
@@ -215,6 +216,9 @@ void Interpolator::recover ( double &testX, double &testY, double &testZ,
   
   bool found=false;  
   while ( found == false ) {
+    
+    cout << "Original: " << origX << " " << origY << " " << origZ << "\n";
+    cout << "Test:     " << testX << " " << testY << " " << testZ << "\n";
     
     // Extract point from KDTree.
     kdres *set  = kd_nearest3 ( tree, testX, testY, testZ );
@@ -384,6 +388,7 @@ void Interpolator::recover ( double &testX, double &testY, double &testZ,
       }
     
       double eDL = (edLnX + edLnY + edLnZ) / float(l*3);
+      eDL = 5;
       
       testX = origX;
       testY = origY;

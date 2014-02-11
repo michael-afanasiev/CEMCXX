@@ -107,32 +107,43 @@ void Mesh::allocateMesh ( )
 
 void Mesh::getConnectivity ( int exoid )
 {
-  
+        
   int *ids = new int [num_elem_blk];
   int ier  = ex_get_elem_blk_ids ( exoid, ids );
   
-  int *elemConn = new int [num_elem_blk*num_elem*num_node_per_elem];  
-  ier           = ex_get_elem_conn ( exoid, ids[0], elemConn );
+  vector <int> masterElemConn;
+  for ( int i=0; i!=num_elem_blk; i++ ) {
+    
+    ier = ex_get_elem_block ( exoid, ids[i], elem_type, &num_elem_in_blk, 
+      &num_nodes_in_elem, &num_attr );
   
-  vector<int> node;
+    int *elemConn = new int [num_elem_in_blk*num_node_per_elem];  
+    ier           = ex_get_elem_conn ( exoid, ids[i], elemConn );
+    
+    for ( int j=0; j!= num_elem_in_blk*num_node_per_elem; j++ ) {
+      masterElemConn.push_back (elemConn[j]);
+    }
+    
+    delete [] elemConn;
+    
+  }
+    
+  vector <int> node;
   node.reserve ( num_node_per_elem );
-
+  
   cout << "Building connectivity array.\n";  
-  for ( int i=0; i<num_elem_blk*num_elem*num_node_per_elem; i++ ) {
-    node.push_back ( elemConn[i] - 1 );
+  for ( int i=0; i<num_elem*num_node_per_elem; i++ ) {
+    node.push_back ( masterElemConn[i] - 1 );
     
     if ( (i+1) % num_node_per_elem == 0 ) {            
       elemOrder.insert ( pair <int, vector <int> > (node[0], node) );
       elemOrder.insert ( pair <int, vector <int> > (node[1], node) );
       elemOrder.insert ( pair <int, vector <int> > (node[2], node) );
-      elemOrder.insert ( pair <int, vector <int> > (node[3], node) );                               
-      
+      elemOrder.insert ( pair <int, vector <int> > (node[3], node) );  
+            
       node.clear ();
     }    
-  }
-      
-  delete [] elemConn;
-  
+  }   
 }
 
 void Mesh::deallocateMesh ()

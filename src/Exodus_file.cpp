@@ -79,13 +79,13 @@ void Exodus_file::merge ( Model_file &mod )
     }      
   }
     
-  if ( mod.radMin < 5371 ) {
+  if ( mod.radMin <= 5371 ) {
     radReg.push_back ("rad0-5271");
   }
   
   if ( mod.radMin < 6271 ) {
     for ( int l=5371; l<6271; l+=5 ) {
-      if ( mod.radMin < l ) {
+      if ( mod.radMin <= l ) {
         
         string dum1 = to_string (l);
         string dum2 = to_string (l+5);
@@ -103,7 +103,7 @@ void Exodus_file::merge ( Model_file &mod )
    
   if ( mod.radMin < 6319 ) {
     for ( int l=6271; l<6319; l+=3 ) {
-      if ( mod.radMin < l ) {        
+      if ( mod.radMin <= l ) {        
         
         string dum1 = to_string (l);
         string dum2 = to_string (l+3);
@@ -121,7 +121,7 @@ void Exodus_file::merge ( Model_file &mod )
     
   if ( mod.radMin < 6351 ) {
     for ( int l=6319; l<6351; l+=2 ) {
-      if ( mod.radMin < l ) {    
+      if ( mod.radMin <= l ) {    
             
         string dum1 = to_string (l);
         string dum2 = to_string (l+2);
@@ -139,7 +139,7 @@ void Exodus_file::merge ( Model_file &mod )
    
   if ( mod.radMin < 6371 ) {    
     for ( int l=6351; l<6371; l+=1 ) {
-      if ( mod.radMin < l ) {      
+      if ( mod.radMin <= l ) {      
           
         string dum1 = to_string (l);
         string dum2 = to_string (l+1);

@@ -198,9 +198,12 @@ public:
   int ier;
   int num_dim;
   int num_elem_blk;
+  int num_elem_in_blk;
   int num_node_sets;
   int num_side_sets;
   int num_node_per_elem=4;
+  int num_nodes_in_elem;
+  int num_attr;
   int exoid;
   
   double *c11;
@@ -233,6 +236,7 @@ public:
   
   char name;
   char title [MAX_LINE_LENGTH+1]; 
+  char elem_type [MAX_LINE_LENGTH+1];
   
   // Internal functions.
   
