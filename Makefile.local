@@ -1,4 +1,4 @@
-CXXFLAGS = -O3 -std=c++11
+CXXFLAGS = -O3 -std=c++11 -I/Users/michaelafanasiev/Development/include
 CFLAGS   = -O3
 LDFLAGS  = -L/Users/michaelafanasiev/Development/lib -lexodus -L/usr/local/lib -lnetcdf
 
