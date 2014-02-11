@@ -1,6 +1,6 @@
 ## This is a par file for model building.
 
-MESH_FILE             = ./dat/tet22Var.ex2
+INPUT_MESH_DIRECTORY  = ../../Exodus/scaleUp/
 INPUT_MODEL_DIRECTORY = ../../Japan/
 INPUT_MODEL_FILE_TYPE = SES3D
 INPUT_MODEL_PHYSICS   = TTI

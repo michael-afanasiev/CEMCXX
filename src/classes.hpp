@@ -102,6 +102,7 @@ public:
   std::string dimensions;
   std::string interpolation;
   std::string output_model_physics;
+  std::string mesh_directory;
   
   // Internal functions.
   

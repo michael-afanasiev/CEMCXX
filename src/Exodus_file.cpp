@@ -36,54 +36,148 @@ void Exodus_file::closeFile ()
 void Exodus_file::merge ( Model_file &mod ) 
 {
   
-  // vector < string > colReg;
-  // vector < string > lonReg;
-  // vector < string > radReg;
-  //   
-  // 
-  // if ( mod.colMax <= 90. ) {
-  //   colReg.push_back ("col0-90");    
-  // }
-  // if ( (mod.colMax >= 90.) && (mod.colMin >= 90.) ) {
-  //   colReg.push_back ("col90-180");
-  // }
-  // if ( (mod.colMax >= 90.) && (mod.colMin <= 90.) ) {
-  //   colReg.push_back ("col0-90");
-  //   colReg.push_back ("col90-180");
-  // } 
-  // 
-  // double lonMinLoc = mod.lonMin;
-  // double lonMaxLoc = mod.lonMax;
-  // 
-  // for ( int l=0; l<=270; l+=90 ) {
-  //     
-  //   if ( lonMinLoc < 0. ) {
-  //     lonMinLoc = 180. - lonMinLoc;                
-  //   }
-  //   if ( lonMaxLoc < 0. ) {
-  //     lonMaxLoc = 180. - lonMaxLoc;        
-  //   }
-  //   
-  //   if ( (lonMinLoc >= l) && (lonMaxLoc <= l+90) ) {
-  //     
-  //     string dum1 = to_string (l);
-  //     string dum2 = to_string (l+90);            
-  //     string full = "lon";
-  //     
-  //     full.append (dum1);
-  //     full.append ("-");
-  //     full.append (dum2);
-  //     
-  //     cout << full << "\n";
-  //     cin.get ();
-  //     
-  //   }      
-  // }
-  // 
-  // if ( mod.)
-  // 
-  // 
+  cout << "Merging model.\n";
+  vector < string > colReg;
+  vector < string > lonReg;
+  vector < string > radReg;
+    
+  if ( mod.colMax <= 90. ) {
+    colReg.push_back ("col0-90");    
+  }
+  if ( (mod.colMax >= 90.) && (mod.colMin >= 90.) ) {
+    colReg.push_back ("col90-180");
+  }
+  if ( (mod.colMax >= 90.) && (mod.colMin <= 90.) ) {
+    colReg.push_back ("col0-90");
+    colReg.push_back ("col90-180");
+  } 
+  
+  double lonMinLoc = mod.lonMin;
+  double lonMaxLoc = mod.lonMax;
+  
+  for ( int l=0; l<=270; l+=90 ) {
       
+    if ( lonMinLoc < 0. ) {
+      lonMinLoc = 180. - lonMinLoc;                
+    }
+    if ( lonMaxLoc < 0. ) {
+      lonMaxLoc = 180. - lonMaxLoc;        
+    }
+    
+    if ( (lonMinLoc >= l) && (lonMaxLoc <= l+90) ) {
+      
+      string dum1 = to_string (l);
+      string dum2 = to_string (l+90);            
+      string full = "lon";
+      
+      full.append (dum1);
+      full.append ("-");
+      full.append (dum2);
+      
+      lonReg.push_back (full);      
+      
+    }      
+  }
+    
+  if ( mod.radMin < 5371 ) {
+    radReg.push_back ("rad0-5271");
+  }
+  
+  if ( mod.radMin < 6271 ) {
+    for ( int l=5371; l<6271; l+=5 ) {
+      if ( mod.radMin < l ) {
+        
+        string dum1 = to_string (l);
+        string dum2 = to_string (l+5);
+        string full = "rad";
+        
+        full.append (dum1);
+        full.append ("-");
+        full.append (dum2);
+        
+        radReg.push_back (full);
+        
+      }
+    }
+  }
+   
+  if ( mod.radMin < 6319 ) {
+    for ( int l=6271; l<6319; l+=3 ) {
+      if ( mod.radMin < l ) {        
+        
+        string dum1 = to_string (l);
+        string dum2 = to_string (l+3);
+        string full = "rad";
+        
+        full.append (dum1);
+        full.append ("-");
+        full.append (dum2);    
+        
+        radReg.push_back (full);        
+                    
+      }
+    }
+  }
+    
+  if ( mod.radMin < 6351 ) {
+    for ( int l=6319; l<6351; l+=2 ) {
+      if ( mod.radMin < l ) {    
+            
+        string dum1 = to_string (l);
+        string dum2 = to_string (l+2);
+        string full = "rad";
+        
+        full.append (dum1);
+        full.append ("-");        
+        full.append (dum2);    
+        
+        radReg.push_back (full);                    
+        
+      }
+    }
+  }
+   
+  if ( mod.radMin < 6371 ) {    
+    for ( int l=6351; l<6371; l+=1 ) {
+      if ( mod.radMin < l ) {      
+          
+        string dum1 = to_string (l);
+        string dum2 = to_string (l+1);
+        string full = "rad";
+        
+        full.append (dum1);
+        full.append ("-");
+        full.append (dum2);    
+        
+        radReg.push_back (full);
+                    
+      }      
+    }
+  }
+    
+  string masterCall = "ejoin -output ./dat/input.ex2 ";
+  for ( vector <string>::iterator i=colReg.begin(); i!=colReg.end(); ++i ) {
+    for ( vector <string>::iterator j=lonReg.begin(); j!=lonReg.end(); ++j ) {
+      for ( vector <string>::iterator k=radReg.begin(); k!=radReg.end(); ++k ) {
+        
+        string call = mod.mesh_directory;
+        
+        call.append (*i);
+        call.append (".");
+        call.append (*j);
+        call.append (".");
+        call.append (*k);
+        call.append (".ex2");
+        
+        masterCall.append (call);
+        masterCall.append (" ");
+                
+      }
+    }
+  }
+  
+  system ( masterCall.c_str() );  
+             
 }
 
 void Exodus_file::writeParams ( Mesh &msh )

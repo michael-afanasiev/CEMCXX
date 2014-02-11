@@ -112,7 +112,8 @@ void Model_file::populateSES3D ( string name, int &num_regions,
 
 void Model_file::populateParams ( Driver &drv, Exodus_file &exo ) 
 {
-  
+ 
+  mesh_directory        = drv.params[0]; 
   input_model_directory = drv.params[1];
   input_model_file_type = drv.params[2];
   input_model_physics   = drv.params[3];
