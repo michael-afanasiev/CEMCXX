@@ -53,12 +53,17 @@ void Mesh::populateParams ( )
   ier = ex_get_nodal_var ( exoid, 1, 19, num_nodes, c55 );
   ier = ex_get_nodal_var ( exoid, 1, 20, num_nodes, c56 );
   ier = ex_get_nodal_var ( exoid, 1, 21, num_nodes, c66 );
-  ier = ex_get_nodal_var ( exoid, 1, 22, num_nodes, rho );
+  ier = ex_get_nodal_var ( exoid, 1, 27, num_nodes, rho );
+  
+  /* FIXME There is a bug in the getting of the rho variable. It looks like all
+  variables need to be filled when writing an exodus file, otherwise the last 
+  variable will be written at the end. So, elv, dum1, dum2, and dum3 need to be
+  written to make this work properly. */  
   
   if ( ier != 0 ) {
     cout << "Error reading in mesh variables.\n";
     exit (EXIT_FAILURE);
-  }
+  }    
   
 }
 
@@ -102,7 +107,7 @@ void Mesh::allocateMesh ( )
   c56 = new double [num_nodes]();
   c66 = new double [num_nodes](); 
   rho = new double [num_nodes]();
-   
+     
 }
 
 void Mesh::getConnectivity ( int exoid )
@@ -175,7 +180,7 @@ void Mesh::deallocateMesh ()
   delete [] c56;
   delete [] c66;
   
-delete [] rho;
+  delete [] rho;
     
 }
 

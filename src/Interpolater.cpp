@@ -113,11 +113,10 @@ void Interpolator::exterpolator ( Mesh &msh, Exodus_file &exo, Model_file &mod )
               l++;              
                             
             }
-           // cout <<"RadIndex: " << k << "\n"; 
           }
-          // cout << "LonIndex: " << j << "\n";
         }
-        cout << "Col Index: " << i << "\n";
+        cout << "CoLat loops left in this region: " << 
+          ( mod.col_rad[r].size() - (i + 1) ) << "\xd" << std::flush;
       }  
     }
   }
@@ -213,15 +212,22 @@ void Interpolator::recover ( double &testX, double &testY, double &testZ,
   
   Utilities util;
   
+  /* orig* holds the originally requested points. The test* variables are used
+  to recursively search in a random region around the selected point if we don't
+  manage to find it on the first try */
   double origX = testX;
   double origY = testY;
   double origZ = testZ;
+
+  // These variables hold the orignally requested col, lon, and lat.
   double col, lon, rad;
   double colPoint, lonPoint, radPoint;
   
+  /* Here we keep track of whether we've found the variable, and if this is our
+  first try. Assume we haven't found it at first.*/
   bool found=false;  
   bool first=true;
-  int misses=0;
+  
   while ( found == false ) {
         
     // Extract point from KDTree.
@@ -229,12 +235,9 @@ void Interpolator::recover ( double &testX, double &testY, double &testZ,
     void *ind_p = kd_res_item_data ( set );
     int point   = * ( int * ) ind_p;
     
-    if ( first == true ) {
-      
-      util.xyz2ColLonRadRad ( origX, origY, origZ, col, lon, rad );  
-      util.xyz2ColLonRadRad ( msh.xmsh[point], msh.ymsh[point], msh.zmsh[point],
-        colPoint, lonPoint, radPoint );
-      
+    // Find the originally requested col, lon, and rad.
+    if ( first == true ) {      
+      util.xyz2ColLonRadRad ( origX, origY, origZ, col, lon, rad );        
       first = false;      
     }
 
@@ -246,14 +249,14 @@ void Interpolator::recover ( double &testX, double &testY, double &testZ,
     ext = msh.elemOrder.equal_range (point);
 
     // Loop over connecting elements (node indices contained in iterator).
+    int nFound = 0;    
     double l1, l2, l3, l4;
-    int nFound = 0;
-    
-    // ofstream myfi ("Bary.txt");
     for ( multimap <int, vector <int> > :: iterator it=ext.first; 
       it!=ext.second; ++it ) {                    
 
-      // Convert to barycentric coordinates (l*).
+      /* Convert to barycentric coordinates (l*). The vector second contains 
+        all the indices of the nodes belonging to a element (4 for a tet). So
+        we need to extract 12 values, 4 for each dimension */
       util.convertBary ( origX, origY, origZ,
         msh.xmsh[it->second[0]], msh.xmsh[it->second[1]], 
         msh.xmsh[it->second[2]], msh.xmsh[it->second[3]],
@@ -262,18 +265,8 @@ void Interpolator::recover ( double &testX, double &testY, double &testZ,
         msh.zmsh[it->second[0]], msh.zmsh[it->second[1]],
         msh.zmsh[it->second[2]], msh.zmsh[it->second[3]],
         l1, l2, l3, l4 ); 
-        
-        // myfi << "Target point: " << origX << " " << origY << " " << origZ << 
-        //   "\n";
-        // myfi << "Edge one: " << msh.xmsh[it->second[0]] << " " << 
-        //   msh.ymsh[it->second[0]] << " " << msh.zmsh[it->second[0]] << "\n";
-        // myfi << "Edge two: " << msh.xmsh[it->second[1]] << " " << 
-        //   msh.ymsh[it->second[1]] << " " << msh.zmsh[it->second[1]] << "\n";
-        // myfi << "Edge three: " << msh.xmsh[it->second[2]] << " " << 
-        //   msh.ymsh[it->second[2]] << " " << msh.zmsh[it->second[2]] << "\n";
-        // myfi << "Edge four: " << msh.xmsh[it->second[3]] << " " << 
-        //   msh.ymsh[it->second[3]] << " " << msh.zmsh[it->second[3]] << "\n";
-                                   
+
+      // If barycentric coordinates are all >= 0.
       if ( l1 >= 0 && l2 >= 0 && l3 >= 0 && l4 >= 0 ) {
       
         found = true;
@@ -391,34 +384,46 @@ void Interpolator::recover ( double &testX, double &testY, double &testZ,
         c55 = l1 * c55p0 + l2 * c55p1 + l3 * c55p2 + l4 * c55p3;    
         c56 = l1 * c56p0 + l2 * c56p1 + l3 * c56p2 + l4 * c56p3;    
         c66 = l1 * c66p0 + l2 * c66p1 + l3 * c66p2 + l4 * c66p3;  
-        rho = l1 * rhop0 + l2 * rhop1 + l3 * rhop2 + l4 * rhop3;   
-            
+        rho = l1 * rhop0 + l2 * rhop1 + l3 * rhop2 + l4 * rhop3; 
+                
+        break;              
        }                     
     }
     
-    // myfi.close ();
-    // cout << "Look in python.\n";
-    // cin.get ();
-      
+    /* If we haven't found the point on the first try, need to do some magical
+    stuff */
     if ( found == false ) {                
       
-      misses++;            
+      /* For col and lon, randomly choose which direction to look. This might
+      be able to be switched to a more direction search (i.e. we look in the
+      direction which is towards the requested point), but this is certainly
+      a bit more robust. For radius, we do a directional search (i.e. search 
+      only down if we are higher in radius). This is because radial 
+      discretization is much finer than lat/lon. */
       int signC = rand () % 2 ? 1 : -1;  
       int signL = rand () % 2 ? 1 : -1;
       int signR = radPoint < rad ? 1 : -1;
       
       // TODO Make this average edge length a variable.
-      
+      /* The theta discretization is controlled by the average edge length of an
+      element in the lat/lon direction */      
       double dTheta = 85 / rad;
       
+      /* Allow the search radius to range from 0 to 1 times some values */
       double randC = (rand () % 100) / 100.;
       double randL = (rand () % 100) / 100.;      
       double randR = (rand () % 100) / 100.;
       
+      /* Col and Lon are allowed to vary between their original values (0) and
+      one edge length away. This seems to work. Radius is allowed to vary by
+      1 km. This also seems to work, although I think it's a bit sketchier. 
+      Could add a parameter to the radius search to make this variable, 
+      dependent on depth. It does work quite well now though */
       double colTest = col + ( signC * randC * dTheta );
       double lonTest = lon + ( signL * randL * dTheta );
       double radTest = rad + ( signR * randR );
       
+      /* Create a new testX, Y, and Z, point for the recursive search. */
       util.colLonRadRad2xyz ( colTest, lonTest, radTest, testX, testY, testZ );
       
     }    
