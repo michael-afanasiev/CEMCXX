@@ -110,11 +110,13 @@ void Interpolator::exterpolator ( Mesh &msh, Exodus_file &exo, Model_file &mod )
               mod.vsv[r][l] = sqrt (c55 / rho);
               mod.vpp[r][l] = sqrt (c22 / rho);
               mod.rho[r][l] = rho;
-              l++;
+              l++;              
                             
             }
+           // cout << k << "\n"; 
           }
         }
+        cout << i << "\n";
       }  
     }
   }
@@ -217,8 +219,8 @@ void Interpolator::recover ( double &testX, double &testY, double &testZ,
   bool found=false;  
   while ( found == false ) {
     
-    cout << "Original: " << origX << " " << origY << " " << origZ << "\n";
-    cout << "Test:     " << testX << " " << testY << " " << testZ << "\n";
+    // cout << "Original: " << origX << " " << origY << " " << origZ << "\n";
+    // cout << "Test:     " << testX << " " << testY << " " << testZ << "\n";
     
     // Extract point from KDTree.
     kdres *set  = kd_nearest3 ( tree, testX, testY, testZ );
@@ -236,7 +238,7 @@ void Interpolator::recover ( double &testX, double &testY, double &testZ,
     double l1, l2, l3, l4;
     int nFound = 0;
     
-    ofstream myfi ("Bary.txt");
+    // ofstream myfi ("Bary.txt");
     for ( multimap <int, vector <int> > :: iterator it=ext.first; 
       it!=ext.second; ++it ) {                    
 
@@ -250,18 +252,18 @@ void Interpolator::recover ( double &testX, double &testY, double &testZ,
         msh.zmsh[it->second[2]], msh.zmsh[it->second[3]],
         l1, l2, l3, l4 ); 
         
-        myfi << "Target point: " << origX << " " << origY << " " << origZ << 
-          "\n";
-        myfi << "Edge one: " << msh.xmsh[it->second[0]] << " " << 
-          msh.ymsh[it->second[0]] << " " << msh.zmsh[it->second[0]] << "\n";
-        myfi << "Edge two: " << msh.xmsh[it->second[1]] << " " << 
-          msh.ymsh[it->second[1]] << " " << msh.zmsh[it->second[1]] << "\n";
-        myfi << "Edge three: " << msh.xmsh[it->second[2]] << " " << 
-          msh.ymsh[it->second[2]] << " " << msh.zmsh[it->second[2]] << "\n";
-        myfi << "Edge four: " << msh.xmsh[it->second[3]] << " " << 
-          msh.ymsh[it->second[3]] << " " << msh.zmsh[it->second[3]] << "\n";
+        // myfi << "Target point: " << origX << " " << origY << " " << origZ << 
+        //   "\n";
+        // myfi << "Edge one: " << msh.xmsh[it->second[0]] << " " << 
+        //   msh.ymsh[it->second[0]] << " " << msh.zmsh[it->second[0]] << "\n";
+        // myfi << "Edge two: " << msh.xmsh[it->second[1]] << " " << 
+        //   msh.ymsh[it->second[1]] << " " << msh.zmsh[it->second[1]] << "\n";
+        // myfi << "Edge three: " << msh.xmsh[it->second[2]] << " " << 
+        //   msh.ymsh[it->second[2]] << " " << msh.zmsh[it->second[2]] << "\n";
+        // myfi << "Edge four: " << msh.xmsh[it->second[3]] << " " << 
+        //   msh.ymsh[it->second[3]] << " " << msh.zmsh[it->second[3]] << "\n";
                                    
-      if ( l1 > 0 && l2 > 0 && l3 > 0 && l4 > 0 ) {
+      if ( l1 >= 0 && l2 >= 0 && l3 >= 0 && l4 >= 0 ) {
       
         found = true;
       
@@ -287,7 +289,7 @@ void Interpolator::recover ( double &testX, double &testY, double &testZ,
         double c56p0 = msh.c56[it->second[0]];
         double c66p0 = msh.c66[it->second[0]]; 
         double rhop0 = msh.rho[it->second[0]];  
-                    
+                            
         double c11p1 = msh.c11[it->second[1]];
         double c12p1 = msh.c12[it->second[1]];
         double c13p1 = msh.c13[it->second[1]];
@@ -383,9 +385,9 @@ void Interpolator::recover ( double &testX, double &testY, double &testZ,
        }                     
     }
     
-    myfi.close ();
-    cout << "Look in python.\n";
-    cin.get ();
+    // myfi.close ();
+    // cout << "Look in python.\n";
+    // cin.get ();
       
     if ( found == false ) {
       
@@ -414,9 +416,9 @@ void Interpolator::recover ( double &testX, double &testY, double &testZ,
       int irandYs = rand () % 2 ? 1 : -1;
       int irandZs = rand () % 2 ? 1 : -1;        
         
-      int irandX = rand () % 200 + 25;
-      int irandY = rand () % 200 + 25;
-      int irandZ = rand () % 200 + 25;
+      int irandX = rand () % 1000 + 25;
+      int irandY = rand () % 1000 + 25;
+      int irandZ = rand () % 1000 + 25;
 
       double randX = irandX / 100.;
       double randY = irandY / 100.;

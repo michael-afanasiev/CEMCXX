@@ -33,7 +33,6 @@ plt.ion()
 plt.show()
 
 i = 0
-ll = 0
 for line in f:
 
   fields = line.split()
@@ -79,13 +78,11 @@ for line in f:
     ax.set_ylim (point[1]-200, point[1]+200)    
     ax.set_zlim (point[2]-200, point[2]+200)
     
-    plt.savefig ('search' + str (ll) + '.png')
+    plt.draw()
     
     x = []
     y = []
     z = []
-    
-    ll = ll + 1
     
     check = raw_input()
 
