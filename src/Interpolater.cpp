@@ -113,10 +113,11 @@ void Interpolator::exterpolator ( Mesh &msh, Exodus_file &exo, Model_file &mod )
               l++;              
                             
             }
-           // cout << k << "\n"; 
+           // cout <<"RadIndex: " << k << "\n"; 
           }
+          // cout << "LonIndex: " << j << "\n";
         }
-        cout << i << "\n";
+        cout << "Col Index: " << i << "\n";
       }  
     }
   }
@@ -215,17 +216,27 @@ void Interpolator::recover ( double &testX, double &testY, double &testZ,
   double origX = testX;
   double origY = testY;
   double origZ = testZ;
+  double col, lon, rad;
+  double colPoint, lonPoint, radPoint;
   
   bool found=false;  
+  bool first=true;
+  int misses=0;
   while ( found == false ) {
-    
-    // cout << "Original: " << origX << " " << origY << " " << origZ << "\n";
-    // cout << "Test:     " << testX << " " << testY << " " << testZ << "\n";
-    
+        
     // Extract point from KDTree.
     kdres *set  = kd_nearest3 ( tree, testX, testY, testZ );
     void *ind_p = kd_res_item_data ( set );
     int point   = * ( int * ) ind_p;
+    
+    if ( first == true ) {
+      
+      util.xyz2ColLonRadRad ( origX, origY, origZ, col, lon, rad );  
+      util.xyz2ColLonRadRad ( msh.xmsh[point], msh.ymsh[point], msh.zmsh[point],
+        colPoint, lonPoint, radPoint );
+      
+      first = false;      
+    }
 
     // Set up connectivity iterator.
     pair < multimap <int, vector <int> > :: iterator , multimap 
@@ -389,44 +400,26 @@ void Interpolator::recover ( double &testX, double &testY, double &testZ,
     // cout << "Look in python.\n";
     // cin.get ();
       
-    if ( found == false ) {
+    if ( found == false ) {                
       
-      double edLnX = 0;
-      double edLnY = 0;
-      double edLnZ = 0;
-      int l        = 0;
-      ext          = msh.elemOrder.equal_range (point);    
+      misses++;            
+      int signC = rand () % 2 ? 1 : -1;  
+      int signL = rand () % 2 ? 1 : -1;
+      int signR = radPoint < rad ? 1 : -1;
       
-      for ( multimap <int, vector <int> > :: iterator it=ext.first; 
-        it!=ext.second; ++it ) {
-          edLnX += abs (msh.xmsh[it->second[0]] - msh.xmsh[it->second[1]]);
-          edLnY += abs (msh.ymsh[it->second[0]] - msh.ymsh[it->second[1]]);
-          edLnZ += abs (msh.zmsh[it->second[0]] - msh.zmsh[it->second[1]]);
-          l++;
-      }
-    
-      double eDL = (edLnX + edLnY + edLnZ) / float(l*3);
-      eDL = 5;
+      // TODO Make this average edge length a variable.
       
-      testX = origX;
-      testY = origY;
-      testZ = origZ;
+      double dTheta = 85 / rad;
       
-      int irandXs = rand () % 2 ? 1 : -1;
-      int irandYs = rand () % 2 ? 1 : -1;
-      int irandZs = rand () % 2 ? 1 : -1;        
-        
-      int irandX = rand () % 1000 + 25;
-      int irandY = rand () % 1000 + 25;
-      int irandZ = rand () % 1000 + 25;
-
-      double randX = irandX / 100.;
-      double randY = irandY / 100.;
-      double randZ = irandZ / 100.;
-    
-      testX = testX + randX * eDL * irandXs;
-      testY = testY + randY * eDL * irandYs;
-      testZ = testZ + randZ * eDL * irandZs;
+      double randC = (rand () % 100) / 100.;
+      double randL = (rand () % 100) / 100.;      
+      double randR = (rand () % 100) / 100.;
+      
+      double colTest = col + ( signC * randC * dTheta );
+      double lonTest = lon + ( signL * randL * dTheta );
+      double radTest = rad + ( signR * randR );
+      
+      util.colLonRadRad2xyz ( colTest, lonTest, radTest, testX, testY, testZ );
       
     }    
   }  
