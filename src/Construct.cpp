@@ -51,6 +51,7 @@ int main ()
 
   
   mod.read ();  
+  mod.readDiscontinuities ();
   
   // if ( mod.rotAng != 0 ) {
   //   mod.rotRad = mod.rotAng * con.PI / con.o80;   

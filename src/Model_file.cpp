@@ -135,57 +135,6 @@ void Model_file::populateParams ( Driver &drv, Exodus_file &exo )
   
 }
 
-void Model_file::findMinMax ()
-{
-  
-  double colMin = 180.0;
-  double colMax = 0.0;
-  
-  for ( int r=0; r<col_deg.size(); r++ ) {
-    for ( int i=0; i<col_deg[r].size(); i++ ) {
-      if ( col_deg[r][i] < colMin ) {
-        colMin = col_deg[r][i];
-      }
-      if ( col_deg[r][i] > colMax ) {
-        colMax = col_deg[r][i];
-      }
-    }
-  }
-  
-  double lonMin = 180.0;
-  double lonMax = -180.0;
-  
-  for ( int r=0; r<lon_deg.size(); r++ ) {
-    for ( int i=0; i<lon_deg[r].size(); i++ ) {
-      if ( lon_deg[r][i] < lonMin ) {
-        lonMin = lon_deg[r][i];
-      }
-      if ( lon_deg[r][i] > lonMax ) {
-        lonMax = lon_deg[r][i];
-      }
-    }
-  }
-  
-  double radMax = 0.0;
-  double radMin = 6371.0;
-  
-  for ( int r=0; r<rad.size(); r++ ) {
-    for ( int i=0; i<rad[r].size(); i++ ) {
-      if ( rad[r][i] < radMin ) {
-        radMin = rad[r][i];
-      }
-      if ( rad[r][i] > radMax ) {
-        radMax = rad[r][i];
-      }
-    }
-  }
-  
-  // cout << "Col: " << colMin << " " << colMax << "\n";
-  // cout << "Lon: " << lonMin << " " << lonMax << "\n";
-  // cout << "Rad: " << radMin << " " << radMax << "\n";
-  
-}
-
 void Model_file::colLonRad2xyzSES3D ()
 {
       
@@ -273,6 +222,26 @@ void Model_file::populateRadiansSES3D ()
     
   }
   
+}
+
+void Model_file::populateRadians ( vector < vector <double> > &deg, 
+                                   vector < vector <double> > &rad )
+{
+  
+  Constants con;
+  
+  vector <double> sub;
+  
+  for ( int r=0; r<deg.size(); r++ ) {
+    
+    for ( int i=0; i<deg[r].size()-1; i++ ) {
+      sub.push_back ( deg[r][i] * con.PI / con.o80 );
+    }
+    
+    rad.push_back ( sub );
+    sub.clear ();
+      
+  }  
 }
 
 void Model_file::openUp ( )
@@ -385,8 +354,24 @@ void Model_file::readSES3D ()
     
   populateRadiansSES3D ();
   colLonRad2xyzSES3D   ();  
-      
-      
+        
+}
+
+void Model_file::readDiscontinuities ()
+{
+  
+  string cmd = "./dat/discontinuities";
+  int dum1, dum2;
+  
+  // Read moho depth and crustal parameters.
+  populateSES3D ( cmd + "/crust_x",   dum1, dum2, crust_col_deg, 'c' );
+  populateSES3D ( cmd + "/crust_y",   dum1, dum2, crust_lon_deg, 'c' );
+  populateSES3D ( cmd + "/crust_vs",  dum1, dum2, crust_vs, 'p' );
+  populateSES3D ( cmd + "/crust_dep", dum1, dum2, crust_dp, 'p' );    
+  
+  populateRadians ( crust_col_deg, crust_col_rad );
+  populateRadians ( crust_lon_deg, crust_lon_rad );
+    
 }
 
 void Model_file::writeSES3D ()

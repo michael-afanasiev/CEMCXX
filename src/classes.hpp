@@ -94,6 +94,13 @@ public:
   std::vector <std::vector <double> > rho;
   std::vector <std::vector <double> > vpp;
   
+  std::vector <std::vector <double> > crust_col_deg;
+  std::vector <std::vector <double> > crust_lon_deg;
+  std::vector <std::vector <double> > crust_col_rad;
+  std::vector <std::vector <double> > crust_lon_rad;
+  std::vector <std::vector <double> > crust_vs;
+  std::vector <std::vector <double> > crust_dp;
+  
   std::string input_model_directory;
   std::string input_model_file_type;
   std::string input_model_physics;
@@ -110,10 +117,12 @@ public:
   void colLonRad2xyzSES3D   ();
   void populateRadiansSES3D ();
   void openUp               ();
-  void findMinMax           ();
   void populateParams       ( Driver &drv, Exodus_file &exo );
   void dePopulateSES3D      ( std::string, std::vector<std::vector<double>>);
   void writeSES3D           ();
+  void readDiscontinuities  ();
+  void populateRadians      ( std::vector < std::vector <double> > &deg, 
+                              std::vector < std::vector <double> > &rad );
   
 };
 

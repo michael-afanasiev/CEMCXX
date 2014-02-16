@@ -13,6 +13,9 @@ void Interpolator::interpolate ( Mesh &msh, Model_file &mod )
 {
 
   Utilities util;
+  Constants con;
+  
+  bool crust=false;
   
   // Create KDTree.
   cout << "Creating KDTree.\n";
@@ -22,6 +25,22 @@ void Interpolator::interpolate ( Mesh &msh, Model_file &mod )
     dat[i] = i;
     kd_insert3 ( tree, mod.x[i], mod.y[i], mod.z[i], &dat[i] );
   }      
+  
+  
+  kdtree *crustTree = kd_create (3);
+  int l             = 0
+  int *cDat         = new int [crust_col_rad[0].size()*crust_lon_rad[0].size()];
+  for ( int r=0; r!= mod.crust_col_rad.size(); r++ ) {
+    for ( int i=0; i!=mod.crust_col_rad[r].size(); i++ ) {
+      for ( int j=0; j!=mod.crust_lon_rad[r].size(); j++ ) {
+      
+        kd_insert3 ( crustTree, mod.crust_col_rad[r][i], 
+                     mod.crust_lon_rad[r][i], 1., &cDat[l] );
+        l++;
+      
+      }
+    }               
+  }
   
   cout << "Interpolating.\n";
   
@@ -33,10 +52,23 @@ void Interpolator::interpolate ( Mesh &msh, Model_file &mod )
     
     util.xyz2ColLonRadDeg ( msh.xmsh[i], msh.ymsh[i], msh.zmsh[i], 
       mshCol, mshLon, mshRad );
-    
+      
+    // Look for crust.
+    if ( mshRad > (con.R_EARTH - 100) ) {
+      kdres *cSet = kd_nearest3 ( crustTree, mshLat, mshLon, 
+        msh.zmsh[i] ) 
+      void *ind_c = kd_res_item_data ( cSet );
+      int cPoint  = * ( int * ) ind_c;
+      
+      if ( mshRad >= (con.r_EARTH - mod.crust_dep[cPoint]) ) {
+        crust = true;
+      }
+    }
+        
+    // Add kernel.
     if ( (mshCol >= mod.colMin && mshCol <= mod.colMax) &&
-          (mshLon >= mod.lonMin && mshLon <= mod.lonMax) &&
-            (mshRad >= mod.radMin) ) {
+         (mshLon >= mod.lonMin && mshLon <= mod.lonMax) &&
+         (mshRad >= mod.radMin) ) {
                         
       kdres *set   = kd_nearest3 ( tree, msh.xmsh[i], msh.ymsh[i], 
         msh.zmsh[i] );    
@@ -87,8 +119,8 @@ void Interpolator::exterpolator ( Mesh &msh, Exodus_file &exo, Model_file &mod )
     for ( int i=0; i<msh.num_nodes; i++ ) {
       dat[i] = i;
       kd_insert3 ( tree, msh.xmsh[i], msh.ymsh[i], msh.zmsh[i], &dat[i] );
-    }                   
-
+    }    
+    
     cout << "Recovering values.\n";
     int l = 0;
     for ( int r=0; r<mod.col_deg.size(); r++ ) {
