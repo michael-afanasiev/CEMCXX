@@ -28,8 +28,9 @@ void Interpolator::interpolate ( Mesh &msh, Model_file &mod )
   
   
   kdtree *crustTree = kd_create (3);
-  int l             = 0
-  int *cDat         = new int [crust_col_rad[0].size()*crust_lon_rad[0].size()];
+  int l             = 0;
+  int *cDat         = new int [mod.crust_col_rad[0].size()*
+    mod.crust_lon_rad[0].size()];
   for ( int r=0; r!= mod.crust_col_rad.size(); r++ ) {
     for ( int i=0; i!=mod.crust_col_rad[r].size(); i++ ) {
       for ( int j=0; j!=mod.crust_lon_rad[r].size(); j++ ) {
@@ -55,12 +56,15 @@ void Interpolator::interpolate ( Mesh &msh, Model_file &mod )
       
     // Look for crust.
     if ( mshRad > (con.R_EARTH - 100) ) {
-      kdres *cSet = kd_nearest3 ( crustTree, mshLat, mshLon, 
-        msh.zmsh[i] ) 
+      kdres *cSet = kd_nearest3 ( crustTree, mshCol, mshLon, 
+        msh.zmsh[i] ); 
       void *ind_c = kd_res_item_data ( cSet );
       int cPoint  = * ( int * ) ind_c;
       
-      if ( mshRad >= (con.r_EARTH - mod.crust_dep[cPoint]) ) {
+      // TODO This [0] in cpoint should be changed to a region to make it more
+      // general.
+      
+      if ( mshRad >= (con.R_EARTH - mod.crust_dp[0][cPoint]) ) {
         crust = true;
       }
     }

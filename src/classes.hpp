@@ -188,6 +188,9 @@ public:
   
   std::string fname;
   
+  std::vector < std::string > colReg;
+  std::vector < std::string > lonReg;
+  std::vector < std::string > radReg;    
   
   // Internal functions.
   
