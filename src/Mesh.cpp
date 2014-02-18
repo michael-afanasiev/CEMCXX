@@ -11,7 +11,7 @@
 
 using namespace std;
 
-void Mesh::getInfo ( int in_exoid ) 
+void Mesh::getInfo ( int in_exoid, char mode ) 
 {
     
   exoid = in_exoid;  
@@ -24,9 +24,11 @@ void Mesh::getInfo ( int in_exoid )
   ier = ex_inquire ( exoid, EX_INQ_ELEM_BLK, &num_elem_blk, &dum1, &dum2 );
   
   allocateMesh   ();  
-  populateParams ();
   populateCoord  ();
   
+  if ( mode == 'p' ) {
+    populateParams ();
+  }
 }
 
 void Mesh::populateParams ( ) 

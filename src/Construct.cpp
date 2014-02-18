@@ -62,7 +62,7 @@ int main ()
   //                           CONSTRUCT THE MESH                          //
   // ********************************************************************* //
   
-  // exo.merge ( mod );
+  exo.merge ( mod );
   exo.openFile ( "./dat/input.ex2" );
         
   // ********************************************************************* //
@@ -70,7 +70,7 @@ int main ()
   // ********************************************************************* //
       
   if ( mod.intentions == "INTERPOLATE" )  {                             
-    msh.getInfo        ( exo.idexo );
+    msh.getInfo        ( exo.idexo, 'p' );
                        
     mod.openUp         ();  // Dome rock.. dome rock.. dome rock
   
@@ -79,13 +79,15 @@ int main ()
   
     exo.writeParams    ( msh );
     exo.closeFile      ();        
+    
+    exo.splitBack ();
   }
   // ********************************************************************* //
   //                               EXTRACT                                 //
   // ********************************************************************* //
   
   if ( mod.intentions == "EXTRACT" ) {        
-    msh.getInfo        ( exo.idexo );
+    msh.getInfo        ( exo.idexo, 'p' );
     
     mod.openUp          ();
     
@@ -94,7 +96,7 @@ int main ()
     
     mod.writeSES3D     ();
   
-    exo.closeFile      ();        
+    exo.closeFile      ();                
   } 
   return 0;
   

@@ -198,6 +198,8 @@ public:
   void closeFile   ();
   void writeParams ( Mesh &msh );
   void merge       ( Model_file &mod );
+  void splitBack   ();
+  void writeSize   ( Mesh &msh );
   
 };
 
@@ -243,6 +245,7 @@ public:
   double *xmsh;
   double *ymsh;
   double *zmsh;
+  double *siz;
   
   std::multimap <int, std::vector <int> > elemOrder;  
   
@@ -252,7 +255,7 @@ public:
   
   // Internal functions.
   
-  void getInfo          ( int exoid );
+  void getInfo          ( int exoid, char mode );
   void populateCoord    ( );
   void populateParams   ( );
   void allocateMesh     ( );
@@ -286,13 +289,13 @@ public:
   void interpolate  ( Mesh &msh, Model_file &mod );  
   double taper      ( double &x, double &y, double &z, Model_file &mod );
   void exterpolator ( Mesh &msh, Exodus_file &exo, Model_file &mod );
-  void recover      ( double &testX, double &testY, double &testZ, kdtree *tree,
+  int  recover      ( double &testX, double &testY, double &testZ, kdtree *tree,
                       Mesh &msh,
                       double &c11, double &c12, double &c13, double &c14, 
                       double &c15, double &c16, double &c22, double &c23, 
                       double &c24, double &c25, double &c26, double &c33, 
                       double &c34, double &c35, double &c36, double &c44, 
                       double &c45, double &c46, double &c55, double &c56, 
-                      double &c66, double &rho ); 
+                      double &c66, double &rho, char mode ); 
 
 };

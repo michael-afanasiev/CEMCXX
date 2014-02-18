@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <cstdio>
 #include <string.h>
+#include <unistd.h>
 #include "classes.hpp"
 
 using namespace std;
@@ -37,10 +38,7 @@ void Exodus_file::merge ( Model_file &mod )
 {
   
   cout << "Merging model.\n";
-  vector < string > colReg;
-  vector < string > lonReg;
-  vector < string > radReg;
-    
+      
   if ( mod.colMax <= 90. ) {
     colReg.push_back ("col0-90");    
   }
@@ -55,6 +53,8 @@ void Exodus_file::merge ( Model_file &mod )
   double lonMinLoc = mod.lonMin;
   double lonMaxLoc = mod.lonMax;
   
+  mod.radMin = 100;
+  
   for ( int l=0; l<=270; l+=90 ) {
       
     if ( lonMinLoc < 0. ) {
@@ -66,8 +66,10 @@ void Exodus_file::merge ( Model_file &mod )
     
     if ( (lonMinLoc >= l) && (lonMaxLoc <= l+90) ) {
       
-      string dum1 = to_string (l);
-      string dum2 = to_string (l+90);            
+      cout << "PURPOSELY BROKEN FOR TEST\n";
+      
+      string dum1 = to_string (l-90);
+      string dum2 = to_string (l);            
       string full = "lon";
       
       full.append (dum1);
@@ -79,13 +81,13 @@ void Exodus_file::merge ( Model_file &mod )
     }      
   }
     
-  if ( mod.radMin-100 <= 5371 ) {
+  if ( mod.radMin <= 5371 ) {
     radReg.push_back ("rad0-5271");
   }
   
   if ( mod.radMin < 6271 ) {
     for ( int l=5371; l<6271; l+=5 ) {
-      if ( mod.radMin-10 <= l ) {
+      if ( mod.radMin <= l ) {
         
         string dum1 = to_string (l);
         string dum2 = to_string (l+5);
@@ -155,13 +157,15 @@ void Exodus_file::merge ( Model_file &mod )
     }
   }
     
-  string masterCall = "ejoin -output ./dat/input.ex2 ";
+  string masterCall = "ejoin -output ./dat/chunk0.ex2 ";
+  int nFile         = 0;
+  int numChunks     = 0;
   for ( vector <string>::iterator i=colReg.begin(); i!=colReg.end(); ++i ) {
     for ( vector <string>::iterator j=lonReg.begin(); j!=lonReg.end(); ++j ) {
       for ( vector <string>::iterator k=radReg.begin(); k!=radReg.end(); ++k ) {
         
         string call = mod.mesh_directory;
-        
+                        
         call.append (*i);
         call.append (".");
         call.append (*j);
@@ -169,15 +173,72 @@ void Exodus_file::merge ( Model_file &mod )
         call.append (*k);
         call.append (".ex2");
         
+        
         masterCall.append (call);
         masterCall.append (" ");
+        
+        nFile++;
+        
+        // if ( nFile == 20 ) {
+        //   numChunks++;
+        //   nFile = 0;
+        //   system ( masterCall.c_str() );  
+        //   masterCall = "ejoin -output ./dat/chunk";
+        //   masterCall.append ( to_string(numChunks) );
+        //   masterCall.append ( ".ex2 " );
+        // }
                 
       }
     }
   }
+  ofstream myfi ("test.txt");
+    
+  myfi << masterCall;
+  
  
   system ( masterCall.c_str() );  
+  
+  exit ( EXIT_SUCCESS );
              
+}
+
+void Exodus_file::splitBack ()
+{
+    
+  int block = 1;
+  for ( vector <string>::iterator i=colReg.begin(); i!=colReg.end(); ++i ) {
+    for ( vector <string>::iterator j=lonReg.begin(); j!=lonReg.end(); ++j ) {
+      for ( vector <string>::iterator k=radReg.begin(); k!=radReg.end(); ++k ) {
+        
+        
+        ofstream myfile ( "./split.txt", ios::out );
+        myfile << "delete block all\nundelete block " << block << "\nexit";
+        
+        string call = "cat split.txt | grepos ./dat/input.ex2 ./dat/";
+        
+        call.append (*i);
+        call.append (".");
+        call.append (*j);
+        call.append (".");
+        call.append (*k);
+        call.append (".ex2");        
+        
+        cout << "Running command: " << call << "\n" << std::flush;
+        myfile.close();
+        
+        FILE *fp = NULL; 
+        fp = popen ( call.c_str(), "r" );
+        
+        sleep (2);
+        
+        pclose (fp);
+        
+        
+        block++;
+                      
+      }
+    }
+  }
 }
 
 void Exodus_file::writeParams ( Mesh &msh )
@@ -252,4 +313,37 @@ void Exodus_file::writeParams ( Mesh &msh )
   ier = ex_put_nodal_var ( idexo, 1, 21, msh.num_nodes, msh.c66 );
   ier = ex_put_nodal_var ( idexo, 1, 22, msh.num_nodes, msh.rho );
     
+}
+
+
+void Exodus_file::writeSize ( Mesh &msh )
+{
+  
+  char *cstr = new char [MAX_LINE_LENGTH];
+  const char *varnames[1];
+
+  int ndim;
+  int nump;
+  int numel;
+  int numelblk;
+  int numnps;
+  int numess;
+  
+  varnames [0] = "siz";
+  
+  ier = ex_get_init ( idexo, cstr, &ndim, &nump, &numel, &numelblk, &numnps, 
+    &numess );
+
+  ier = ex_put_init ( idexo, "Title", ndim, nump, numel, numelblk, 
+    numnps, numess);
+          
+  ier = ex_put_var_param ( idexo, "n", 1 );
+  
+  // TODO Figure out why ier gives (-1) on ex_put_init.  
+  
+  ier = ex_put_var_names ( idexo, "n", 1, 
+    const_cast <char**> ( varnames ));
+    
+  ier = ex_put_nodal_var ( idexo, 1, 1,  msh.num_nodes, msh.siz );
+  
 }

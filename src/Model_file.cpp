@@ -199,6 +199,10 @@ void Model_file::populateRadiansSES3D ()
     }
         
   }
+  
+  if ( lonMax > 180. ) {
+    lonMax = 360. - lonMax;
+  }
 
   for ( int r=0; r<col_deg.size(); r++ ) {
     
@@ -292,7 +296,7 @@ void Model_file::openUp ( )
           c55[l]    = L;
           c66[l]    = L;            
           rhoMsh[l] = rho[r][i];
-                
+                          
         }
       
         l++;
