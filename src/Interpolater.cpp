@@ -89,7 +89,7 @@ void Interpolator::interpolate ( Mesh &msh, Model_file &mod )
       msh.c33[i] = tap * mod.c33[point]    + msh.c33[i];
       msh.c44[i] = tap * mod.c44[point]    + msh.c44[i];
       msh.c55[i] = tap * mod.c55[point]    + msh.c55[i];
-      msh.c66[i] = tap * mod.c66[point]    + msh.c66[i];
+      msh.c66[i] = tap * mod.c66[point] * 1000    + msh.c66[i];
       
       // if ( mod.c66[point] > 0. ) {
       //   cout << "Tap, mod, msh: " << tap << " " << mod.c66[point] << " " <<
@@ -153,7 +153,7 @@ void Interpolator::exterpolator ( Mesh &msh, Exodus_file &exo, Model_file &mod )
               mod.vpp[r][l] = sqrt (c22 / rho);
               mod.rho[r][l] = rho;
               l++;              
-                            
+                                          
             }
           }
         }
@@ -177,7 +177,7 @@ double Interpolator::taper ( double &col, double &lon, double &rad,
   Utilities util;
   
   double tap;
-  double dTaper = 500.;
+  double dTaper = 1;//500.;
   
   col = col * con.PI / con.o80;
   lon = lon * con.PI / con.o80;
@@ -222,6 +222,7 @@ double Interpolator::taper ( double &col, double &lon, double &rad,
   double tapLat = 1.;
   double tapLon = 1.;  
   double tapRad = 1.;
+  
   if ( distLat <= dTaper ) {
     tapLat = distLat / dTaper;
   } else if ( distLat >= distLatMax ) {
@@ -276,7 +277,7 @@ int Interpolator::recover ( double &testX, double &testY, double &testZ,
     // Extract point from KDTree.
     kdres *set  = kd_nearest3 ( tree, testX, testY, testZ );
     void *ind_p = kd_res_item_data ( set );
-    // int point   = * ( int * ) ind_p;
+    int point   = * ( int * ) ind_p;
         
     // Find the originally requested col, lon, and rad.
     if ( first == true ) {      

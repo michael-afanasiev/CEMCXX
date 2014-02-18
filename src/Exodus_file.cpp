@@ -53,8 +53,6 @@ void Exodus_file::merge ( Model_file &mod )
   double lonMinLoc = mod.lonMin;
   double lonMaxLoc = mod.lonMax;
   
-  mod.radMin = 100;
-  
   for ( int l=0; l<=270; l+=90 ) {
       
     if ( lonMinLoc < 0. ) {
@@ -66,10 +64,8 @@ void Exodus_file::merge ( Model_file &mod )
     
     if ( (lonMinLoc >= l) && (lonMaxLoc <= l+90) ) {
       
-      cout << "PURPOSELY BROKEN FOR TEST\n";
-      
-      string dum1 = to_string (l-90);
-      string dum2 = to_string (l);            
+      string dum1 = to_string (l);
+      string dum2 = to_string (l+90);            
       string full = "lon";
       
       full.append (dum1);
@@ -81,85 +77,35 @@ void Exodus_file::merge ( Model_file &mod )
     }      
   }
     
+  if ( mod.radMin <= 1221 ) {
+    radReg.push_back ( "rad0-1221" );
+  }
+    
+  if ( mod.radMin <= 3480 ) {
+    radReg.push_back ( "rad1221-3480" );
+  }
+    
   if ( mod.radMin <= 5371 ) {
-    radReg.push_back ("rad0-5271");
+    radReg.push_back ( "rad3480-5371" );
   }
   
-  if ( mod.radMin < 6271 ) {
-    for ( int l=5371; l<6271; l+=5 ) {
-      if ( mod.radMin <= l ) {
-        
-        string dum1 = to_string (l);
-        string dum2 = to_string (l+5);
-        string full = "rad";
-        
-        full.append (dum1);
-        full.append ("-");
-        full.append (dum2);
-        
-        radReg.push_back (full);
-        
-      }
-    }
+  if ( mod.radMin <= 6271 ) {        
+    radReg.push_back ( "rad5371-6271" );        
   }
    
-  if ( mod.radMin < 6319 ) {
-    for ( int l=6271; l<6319; l+=3 ) {
-      if ( mod.radMin-6 <= l ) {        
-        
-        string dum1 = to_string (l);
-        string dum2 = to_string (l+3);
-        string full = "rad";
-        
-        full.append (dum1);
-        full.append ("-");
-        full.append (dum2);    
-        
-        radReg.push_back (full);        
-                    
-      }
-    }
+  if ( mod.radMin <= 6319 ) {
+    radReg.push_back ( "rad6271-6319" );        
   }
     
-  if ( mod.radMin < 6351 ) {
-    for ( int l=6319; l<6351; l+=2 ) {
-      if ( mod.radMin-4 <= l ) {    
-            
-        string dum1 = to_string (l);
-        string dum2 = to_string (l+2);
-        string full = "rad";
-        
-        full.append (dum1);
-        full.append ("-");        
-        full.append (dum2);    
-        
-        radReg.push_back (full);                    
-        
-      }
-    }
+  if ( mod.radMin <= 6351 ) {
+    radReg.push_back ( "rad6319-6351" );
   }
    
-  if ( mod.radMin < 6371 ) {    
-    for ( int l=6351; l<6371; l+=1 ) {
-      if ( mod.radMin-2 <= l ) {      
-          
-        string dum1 = to_string (l);
-        string dum2 = to_string (l+1);
-        string full = "rad";
-        
-        full.append (dum1);
-        full.append ("-");
-        full.append (dum2);    
-        
-        radReg.push_back (full);
-                    
-      }      
-    }
+  if ( mod.radMin <= 6371 ) {    
+    radReg.push_back ( "rad6351-6371" );
   }
     
-  string masterCall = "ejoin -output ./dat/chunk0.ex2 ";
-  int nFile         = 0;
-  int numChunks     = 0;
+  string masterCall = "ejoin -output ./dat/input.ex2 ";
   for ( vector <string>::iterator i=colReg.begin(); i!=colReg.end(); ++i ) {
     for ( vector <string>::iterator j=lonReg.begin(); j!=lonReg.end(); ++j ) {
       for ( vector <string>::iterator k=radReg.begin(); k!=radReg.end(); ++k ) {
@@ -176,29 +122,12 @@ void Exodus_file::merge ( Model_file &mod )
         
         masterCall.append (call);
         masterCall.append (" ");
-        
-        nFile++;
-        
-        // if ( nFile == 20 ) {
-        //   numChunks++;
-        //   nFile = 0;
-        //   system ( masterCall.c_str() );  
-        //   masterCall = "ejoin -output ./dat/chunk";
-        //   masterCall.append ( to_string(numChunks) );
-        //   masterCall.append ( ".ex2 " );
-        // }
                 
       }
     }
-  }
-  ofstream myfi ("test.txt");
-    
-  myfi << masterCall;
-  
+  }  
  
   system ( masterCall.c_str() );  
-  
-  exit ( EXIT_SUCCESS );
              
 }
 
