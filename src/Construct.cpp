@@ -53,50 +53,57 @@ int main ()
   mod.read ();  
   mod.readDiscontinuities ();
   
-  // if ( mod.rotAng != 0 ) {
-  //   mod.rotRad = mod.rotAng * con.PI / con.o80;   
-  //   util.rotate ( mod );
-  // }    
+  if ( mod.rotAng != 0 ) {
+    util.rotate ( mod );
+  }  
   
   // ********************************************************************* //
   //                           CONSTRUCT THE MESH                          //
   // ********************************************************************* //
   
-  // exo.merge    ( mod );
-  exo.openFile ( "./dat/input.ex2" );
         
   // ********************************************************************* //
   //                            INTERPOLATE                                //
   // ********************************************************************* //
       
   if ( mod.intentions == "INTERPOLATE" )  {                             
-    msh.getInfo        ( exo.idexo, 'p' );
-                       
-    mod.openUp         ();  // Dome rock.. dome rock.. dome rock
+    
+    // exo.merge           ( mod );
+    exo.openFile        ( "./dat/input.ex2" );
+                        
+    msh.getInfo         ( exo.idexo, 'p' );
+                        
+    mod.openUp          ();  // Dome rock.. dome rock.. dome rock
   
     Interpolator inter;
-    inter.interpolate  ( msh, mod );
+    inter.interpolate   ( msh, mod );
   
-    exo.writeParams    ( msh );
-    exo.closeFile      ();        
+    exo.writeParams     ( msh );
+    exo.closeFile       ();        
     
-    exo.splitBack ();
+    exo.splitBack       ();
+    
   }
   // ********************************************************************* //
   //                               EXTRACT                                 //
   // ********************************************************************* //
   
   if ( mod.intentions == "EXTRACT" ) {        
-    msh.getInfo        ( exo.idexo, 'p' );
+    
+    exo.merge           ( mod );    
+    exo.openFile        ( "./dat/input.ex2" );
+    
+    msh.getInfo         ( exo.idexo, 'p' );
     
     mod.openUp          ();
     
     Interpolator inter;
-    inter.exterpolator ( msh, exo, mod );
+    inter.exterpolator  ( msh, exo, mod );
     
-    mod.writeSES3D     ();
+    mod.writeSES3D      ();
   
-    exo.closeFile      ();                
+    exo.closeFile       ();          
+          
   } 
   return 0;
   

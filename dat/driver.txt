@@ -1,7 +1,7 @@
 ## This is a par file for model building.
 
 INPUT_MESH_DIRECTORY  = ../../Exodus/scaleUp/
-INPUT_MODEL_DIRECTORY = ../../SouthAtlantic/
+INPUT_MODEL_DIRECTORY = ../../Japan/
 INPUT_MODEL_FILE_TYPE = SES3D
 INPUT_MODEL_PHYSICS   = TTI
 ABSOLUTE_OR_PERTURB   = PERTURB

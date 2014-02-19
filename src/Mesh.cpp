@@ -55,8 +55,15 @@ void Mesh::populateParams ( )
   ier = ex_get_nodal_var ( exoid, 1, 19, num_nodes, c55 );
   ier = ex_get_nodal_var ( exoid, 1, 20, num_nodes, c56 );
   ier = ex_get_nodal_var ( exoid, 1, 21, num_nodes, c66 );
+  ier = ex_get_nodal_var ( exoid, 1, 22, num_nodes, rho );
+  ier = ex_get_nodal_var ( exoid, 1, 23, num_nodes, Q__ );
+  ier = ex_get_nodal_var ( exoid, 1, 24, num_nodes, elv );
+  ier = ex_get_nodal_var ( exoid, 1, 25, num_nodes, du1 );
+  ier = ex_get_nodal_var ( exoid, 1, 26, num_nodes, du2 );
   ier = ex_get_nodal_var ( exoid, 1, 27, num_nodes, rho );
-  
+  cout << rho[0] << "HI";
+  // cin.get();
+    
   /* FIXME There is a bug in the getting of the rho variable. It looks like all
   variables need to be filled when writing an exodus file, otherwise the last 
   variable will be written at the end. So, elv, dum1, dum2, and dum3 need to be
@@ -72,7 +79,7 @@ void Mesh::populateParams ( )
 void Mesh::populateCoord ( ) 
 { 
        
-  ier = ex_get_coord ( exoid, xmsh, ymsh, zmsh );
+  ier = ex_get_coord ( exoid, xmsh, ymsh, zmsh );    
   
   if (ier != 0) {
     std::cout << "***Fatal error reading in coordinates. Exiting.\n";
@@ -109,6 +116,11 @@ void Mesh::allocateMesh ( )
   c56 = new double [num_nodes]();
   c66 = new double [num_nodes](); 
   rho = new double [num_nodes]();
+  Q__ = new double [num_nodes]();
+  elv = new double [num_nodes]();
+  du1 = new double [num_nodes]();
+  du2 = new double [num_nodes]();
+  du3 = new double [num_nodes]();
      
 }
 

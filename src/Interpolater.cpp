@@ -27,21 +27,22 @@ void Interpolator::interpolate ( Mesh &msh, Model_file &mod )
   }      
   
   
-  // kdtree *crustTree = kd_create (3);
-  // int l             = 0;
-  // int *cDat         = new int [mod.crust_col_rad[0].size()*
-  //   mod.crust_lon_rad[0].size()];
-  // for ( int r=0; r!= mod.crust_col_rad.size(); r++ ) {
-  //   for ( int i=0; i!=mod.crust_col_rad[r].size(); i++ ) {
-  //     for ( int j=0; j!=mod.crust_lon_rad[r].size(); j++ ) {
-  //     
-  //       kd_insert3 ( crustTree, mod.crust_col_rad[r][i], 
-  //                    mod.crust_lon_rad[r][i], 1., &cDat[l] );
-  //       l++;
-  //     
-  //     }
-  //   }               
-  // }
+  kdtree *crustTree = kd_create (3);
+  int l             = 0;
+  int *cDat         = new int [mod.crust_col_rad[0].size()*
+    mod.crust_lon_rad[0].size()];
+  for ( int r=0; r!= mod.crust_col_rad.size(); r++ ) {
+    for ( int i=0; i!=mod.crust_col_rad[r].size(); i++ ) {
+      for ( int j=0; j!=mod.crust_lon_rad[r].size(); j++ ) {
+      
+        cDat[l] = l;
+        kd_insert3 ( crustTree, mod.crust_col_deg[r][i], 
+                     mod.crust_lon_deg[r][j], con.R_EARTH, &cDat[l] );
+        l++;
+      
+      }
+    }               
+  }
   
   cout << "Interpolating.\n";
   
@@ -54,51 +55,72 @@ void Interpolator::interpolate ( Mesh &msh, Model_file &mod )
     util.xyz2ColLonRadDeg ( msh.xmsh[i], msh.ymsh[i], msh.zmsh[i], 
       mshCol, mshLon, mshRad );
       
-    // Look for crust.
-    // if ( mshRad > (con.R_EARTH - 100) ) {
-    //   kdres *cSet = kd_nearest3 ( crustTree, mshCol, mshLon, 
-    //     msh.zmsh[i] ); 
-    //   void *ind_c = kd_res_item_data ( cSet );
-    //   int cPoint  = * ( int * ) ind_c;
-    //   
-    //   // TODO This [0] in cpoint should be changed to a region to make it more
-    //   // general.
-    //   
-    //   if ( mshRad >= (con.R_EARTH - mod.crust_dp[0][cPoint]) ) {
-    //     crust = true;
-    //   }
-    // }
-        
-    // Add kernel.
     if ( (mshCol >= mod.colMin && mshCol <= mod.colMax) &&
          (mshLon >= mod.lonMin && mshLon <= mod.lonMax) &&
-         (mshRad >= mod.radMin) ) {
-                        
-      kdres *set   = kd_nearest3 ( tree, msh.xmsh[i], msh.ymsh[i], 
-        msh.zmsh[i] );    
+         (mshRad >= mod.radMin) ) {   
+           
+      kdres *set   = kd_nearest3 ( tree, msh.xmsh[i], msh.ymsh[i], msh.zmsh[i] );    
       void  *ind_p = kd_res_item_data ( set );    
       int point    = * ( int * ) ind_p;
-      
+                               
       double tap = taper ( mshCol, mshLon, mshRad, mod );
-    
-      msh.c11[i] = tap * mod.c11[point]    + msh.c11[i];
-      msh.c12[i] = tap * mod.c12[point]    + msh.c12[i];
-      msh.c13[i] = tap * mod.c13[point]    + msh.c13[i];
-      msh.c22[i] = tap * mod.c22[point]    + msh.c22[i];
-      msh.c23[i] = tap * mod.c23[point]    + msh.c23[i];
-      msh.c33[i] = tap * mod.c33[point]    + msh.c33[i];
-      msh.c44[i] = tap * mod.c44[point]    + msh.c44[i];
-      msh.c55[i] = tap * mod.c55[point]    + msh.c55[i];
-      msh.c66[i] = tap * mod.c66[point] * 1000    + msh.c66[i];
-      
-      // if ( mod.c66[point] > 0. ) {
-      //   cout << "Tap, mod, msh: " << tap << " " << mod.c66[point] << " " <<
-      //      msh.c66[point] << "\n";
-      //   cin.get ();
-      // }
+
+      msh.c11[i] = msh.c11[i] + tap * mod.c11[point];
+      msh.c12[i] = msh.c12[i] + tap * mod.c12[point];
+      msh.c13[i] = msh.c13[i] + tap * mod.c13[point];
+      msh.c22[i] = msh.c22[i] + tap * mod.c22[point];
+      msh.c23[i] = msh.c23[i] + tap * mod.c23[point];
+      msh.c33[i] = msh.c33[i] + tap * mod.c33[point];
+      msh.c44[i] = msh.c44[i] + tap * mod.c44[point];
+      msh.c55[i] = msh.c55[i] + tap * mod.c55[point];
+      msh.c66[i] = msh.c66[i] + tap * mod.c66[point];
+
       msh.rho[i] = tap * mod.rhoMsh[point] + msh.rho[i];
       
     }    
+      
+    // Look for crust.
+    if ( mshRad > (con.R_EARTH - 100) ) {
+            
+      kdres *set   = kd_nearest3 ( tree, msh.xmsh[i], msh.ymsh[i], msh.zmsh[i] );    
+      void  *ind_p = kd_res_item_data ( set );    
+      int point    = * ( int * ) ind_p;
+      
+      kdres *cSet = kd_nearest3 ( crustTree, mshCol, mshLon, con.R_EARTH );         
+      void *ind_c = kd_res_item_data ( cSet );
+      int cPoint  = * ( int * ) ind_c;
+
+      
+      // TODO This [0] in cpoint should be changed to a region to make it more
+      // general.      
+      if ( mshRad >= (con.R_EARTH - mod.crust_dp[0][cPoint]) ) {
+        
+        double crust_vsv = mod.crust_vs[0][cPoint] - con.aniCorrection;
+        double crust_vsh = mod.crust_vs[0][cPoint];
+        
+        double N = msh.rho[i] * crust_vsh * crust_vsh;
+        double L = msh.rho[i] * crust_vsv * crust_vsv;
+        
+        double A = msh.c22[i];
+        double S = A - 2 * N;
+        double F = A - 2 * L;
+        double C = A;
+        
+        crust      = true;
+        msh.c11[i] = C;     
+        msh.c12[i] = F;
+        msh.c13[i] = F;
+        msh.c22[i] = A;
+        msh.c23[i] = S;
+        msh.c33[i] = A;
+        msh.c44[i] = N;
+        msh.c55[i] = L;
+        msh.c66[i] = L;                
+        
+      }
+    }
+        
+    // Add kernel.
   }
           
 }
@@ -148,9 +170,15 @@ void Interpolator::exterpolator ( Mesh &msh, Exodus_file &exo, Model_file &mod )
               rho, 'p' );
                       
             if ( mod.input_model_physics == "TTI" ) {
-              mod.vsh[r][l] = sqrt (c44 / rho);
-              mod.vsv[r][l] = sqrt (c55 / rho);
-              mod.vpp[r][l] = sqrt (c22 / rho);
+              // mod.vsh[r][l] = sqrt (c44 / rho);
+              // mod.vsv[r][l] = sqrt (c55 / rho);
+              // mod.vpp[r][l] = sqrt (c22 / rho);
+              // mod.vpp[r][l] = c22;
+              mod.vpp[r][l] = c11;
+              mod.vsv[r][l] = c12;//sqrt (c55 / rho);
+              mod.vsh[r][l] = c13;//sqrt (c44 / rho);
+              mod.rho[r][l] = c22;
+              
               mod.rho[r][l] = rho;
               l++;              
                                           
@@ -177,7 +205,8 @@ double Interpolator::taper ( double &col, double &lon, double &rad,
   Utilities util;
   
   double tap;
-  double dTaper = 1;//500.;
+  double dTaper    = 500.;
+  double dTaperRad = 50.;
   
   col = col * con.PI / con.o80;
   lon = lon * con.PI / con.o80;
@@ -235,8 +264,8 @@ double Interpolator::taper ( double &col, double &lon, double &rad,
     tapLon = (distLonMax + dTaper - distLon) / dTaper;
   }
   
-  if ( dRad <= dTaper ) {
-    tapRad = dRad / dTaper;
+  if ( dRad <= dTaperRad ) {
+    tapRad = dRad / dTaperRad;
   }
       
   return tapLat * tapLon * tapRad;
@@ -291,7 +320,6 @@ int Interpolator::recover ( double &testX, double &testY, double &testZ,
 
     // Extract iterator for current point.
     ext = msh.elemOrder.equal_range (point);
-
     
     // Loop over connecting elements (node indices contained in iterator).
     int nFound = 0;    

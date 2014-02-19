@@ -100,12 +100,39 @@ void Utilities::rotate ( Model_file &mod )
   double rot23 = x * sin(a) + y * z * (1 - cos(a));
   double rot12 = x * y * (1 - cos(a)) - z * sin(a);
   
+  mod.colMin = 180.;
+  mod.colMax = 0.;
+  mod.lonMin = 180.;
+  mod.lonMax = -180.;
+  mod.radMin = 6371.;
+  mod.radMax = 0.;
+  
+  
   for ( int i=0; i<mod.x.size (); i++ ) {  
     mod.x[i] = rot11 * mod.x[i] + rot12 * mod.y[i] + rot13 * mod.z[i];
     mod.y[i] = rot21 * mod.x[i] + rot22 * mod.y[i] + rot23 * mod.z[i];
-    mod.z[i] = rot31 * mod.x[i] + rot32 * mod.y[i] + rot33 * mod.z[i];    
-  }
-  
+    mod.z[i] = rot31 * mod.x[i] + rot32 * mod.y[i] + rot33 * mod.z[i]; 
+    
+    double col, lon, rad;  
+    
+    xyz2ColLonRadDeg ( mod.x[i], mod.y[i], mod.z[i], col, lon, rad );
+    if ( col < mod.colMin ) {
+      mod.colMin = col;
+    } else if ( col > mod.colMax ) {
+      mod.colMax = col;      
+    }
+    if ( lon < mod.lonMin ) {
+      mod.lonMin = lon;      
+    } else if ( lon > mod.lonMax ) {
+      mod.lonMax = lon;
+    }
+    if ( rad < mod.radMin ) {
+      mod.radMin = rad;
+    } else if ( rad < mod.radMax ) {
+      mod.radMax = rad;
+    }                         
+    
+  }  
 }
 
 void Utilities::convertBary ( double &xp, double &yp, double &zp, 

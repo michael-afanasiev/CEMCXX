@@ -16,11 +16,12 @@ class Constants
   
 public:
   
-  double PI      = 3.141592653589793;
-  double PIo2    = 1.570796326794896;
-  double R_EARTH = 6371.0;
-  double o80     = 180.0;
-  double ninty   = 90.0;
+  double PI            = 3.141592653589793;
+  double PIo2          = 1.570796326794896;
+  double R_EARTH       = 6371.0;
+  double o80           = 180.0;
+  double ninty         = 90.0;
+  double aniCorrection = 0.188078;
   
 };
 
@@ -192,6 +193,8 @@ public:
   std::vector < std::string > lonReg;
   std::vector < std::string > radReg;    
   
+  std::vector < int > totalBlocks;
+  
   // Internal functions.
   
   void openFile    ( std::string fname );
@@ -242,9 +245,15 @@ public:
   double *c56;
   double *c66;
   double *rho;
+  double *Q__;
+  double *elv;
+  double *du1;
+  double *du2;
+  double *du3;
+  
   double *xmsh;
   double *ymsh;
-  double *zmsh;
+  double *zmsh;  
   double *siz;
   
   std::multimap <int, std::vector <int> > elemOrder;  

@@ -105,6 +105,9 @@ void Exodus_file::merge ( Model_file &mod )
     radReg.push_back ( "rad6351-6371" );
   }
     
+  int   num;
+  float dum1;
+  char  dum2;
   string masterCall = "ejoin -output ./dat/input.ex2 ";
   for ( vector <string>::iterator i=colReg.begin(); i!=colReg.end(); ++i ) {
     for ( vector <string>::iterator j=lonReg.begin(); j!=lonReg.end(); ++j ) {
@@ -118,10 +121,17 @@ void Exodus_file::merge ( Model_file &mod )
         call.append (".");
         call.append (*k);
         call.append (".ex2");
-        
-        
+                
         masterCall.append (call);
         masterCall.append (" ");
+        
+        // Get number of blocks for later destruction.
+        idexo = ex_open    ( call.c_str(), EX_READ, &comp_ws, &io_ws, &vers );
+        ier   = ex_inquire ( idexo, EX_INQ_ELEM_BLK, &num, &dum1, 
+          &dum2 );        
+        ier   = ex_close   ( idexo );
+        
+        totalBlocks.push_back ( num );
                 
       }
     }
@@ -133,15 +143,17 @@ void Exodus_file::merge ( Model_file &mod )
 
 void Exodus_file::splitBack ()
 {
-    
-  int block = 1;
+
+  int fBlock = 0;
+  int iBlock = 0;
   for ( vector <string>::iterator i=colReg.begin(); i!=colReg.end(); ++i ) {
     for ( vector <string>::iterator j=lonReg.begin(); j!=lonReg.end(); ++j ) {
       for ( vector <string>::iterator k=radReg.begin(); k!=radReg.end(); ++k ) {
         
         
         ofstream myfile ( "./split.txt", ios::out );
-        myfile << "delete block all\nundelete block " << block << "\nexit";
+        myfile << "delete block all\nundelete block " << 
+          fBlock + 1 << " to " << totalBlocks[iBlock] + fBlock << "\nexit";
         
         string call = "cat split.txt | grepos ./dat/input.ex2 ./dat/";
         
@@ -152,19 +164,18 @@ void Exodus_file::splitBack ()
         call.append (*k);
         call.append (".ex2");        
         
-        cout << "Running command: " << call << "\n" << std::flush;
+        cout << "Running grepos. Splitting region: " << iBlock << "\n" << 
+          std::flush;
         myfile.close();
         
         FILE *fp = NULL; 
         fp = popen ( call.c_str(), "r" );
-        
-        sleep (2);
-        
+        sleep ( 20 );        
         pclose (fp);
         
-        
-        block++;
-                      
+        fBlock += totalBlocks[iBlock];
+        iBlock++;
+                              
       }
     }
   }
@@ -174,7 +185,7 @@ void Exodus_file::writeParams ( Mesh &msh )
 {
 
   char *cstr = new char [MAX_LINE_LENGTH];
-  const char *varnames[22];
+  const char *varnames[27];
 
   int ndim;
   int nump;
@@ -205,18 +216,23 @@ void Exodus_file::writeParams ( Mesh &msh )
   varnames [19] = "c56";
   varnames [20] = "c66";
   varnames [21] = "rho";
-      
+  varnames [22] = "Q__";
+  varnames [23] = "elv";
+  varnames [24] = "du1";
+  varnames [25] = "du2";
+  varnames [26] = "du3";
+  
   ier = ex_get_init ( idexo, cstr, &ndim, &nump, &numel, &numelblk, &numnps, 
     &numess );
 
   ier = ex_put_init ( idexo, "Title", ndim, nump, numel, numelblk, 
     numnps, numess);
           
-  ier = ex_put_var_param ( idexo, "n", 21 );
+  ier = ex_put_var_param ( idexo, "n", 27 );
   
   // TODO Figure out why ier gives (-1) on ex_put_init.  
   
-  ier = ex_put_var_names ( idexo, "n", 21, 
+  ier = ex_put_var_names ( idexo, "n", 27, 
     const_cast <char**> ( varnames ));
     
   ier = ex_put_nodal_var ( idexo, 1, 1,  msh.num_nodes, msh.c11 );
@@ -241,6 +257,11 @@ void Exodus_file::writeParams ( Mesh &msh )
   ier = ex_put_nodal_var ( idexo, 1, 20, msh.num_nodes, msh.c56 );
   ier = ex_put_nodal_var ( idexo, 1, 21, msh.num_nodes, msh.c66 );
   ier = ex_put_nodal_var ( idexo, 1, 22, msh.num_nodes, msh.rho );
+  ier = ex_put_nodal_var ( idexo, 1, 23, msh.num_nodes, msh.Q__ );
+  ier = ex_put_nodal_var ( idexo, 1, 24, msh.num_nodes, msh.elv );
+  ier = ex_put_nodal_var ( idexo, 1, 25, msh.num_nodes, msh.du1 );
+  ier = ex_put_nodal_var ( idexo, 1, 26, msh.num_nodes, msh.du2 );
+  ier = ex_put_nodal_var ( idexo, 1, 27, msh.num_nodes, msh.du3 );
     
 }
 

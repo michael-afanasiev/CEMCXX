@@ -112,6 +112,8 @@ void Model_file::populateSES3D ( string name, int &num_regions,
 
 void Model_file::populateParams ( Driver &drv, Exodus_file &exo ) 
 {
+  
+  Constants con;
  
   mesh_directory        = drv.params[0]; 
   input_model_directory = drv.params[1];
@@ -133,10 +135,14 @@ void Model_file::populateParams ( Driver &drv, Exodus_file &exo )
     input_model_physics   << "\n* ABSOLUTE_OR_PERTURB: "    <<
     absolute_or_perturb   << "\n";
   
+  rotRad = rotAng * con.PI / con.o80;
+  
 }
 
 void Model_file::colLonRad2xyzSES3D ()
 {
+  
+  Utilities util;
       
   /* IMPORTANT NOTE :: the range of k goes to rad.size-1, and col_rad and
   lon_rad don't, because col_rad and lon_rad have already been fixed up for
@@ -150,14 +156,14 @@ void Model_file::colLonRad2xyzSES3D ()
         
           x[l] = rad[r][k] * cos ( lon_rad[r][j] ) * sin ( col_rad[r][i] );
           y[l] = rad[r][k] * sin ( lon_rad[r][j] ) * sin ( col_rad[r][i] );
-          z[l] = rad[r][k] * cos ( col_rad[r][i] );
+          z[l] = rad[r][k] * cos ( col_rad[r][i] );                    
           l++;
         
         }
       }    
     }
   }
-  
+    
 }
 
 void Model_file::populateRadiansSES3D ()
@@ -285,12 +291,13 @@ void Model_file::openUp ( )
     
           double C = A;
           double F = A - 2 * L;
+          double S = A - 2 * N;
       
           c11[l]    = C;
           c12[l]    = F;
           c13[l]    = F;
           c22[l]    = A;
-          c23[l]    = A - 2 * N;
+          c23[l]    = S;
           c33[l]    = A;
           c44[l]    = N;
           c55[l]    = L;
@@ -320,11 +327,11 @@ void Model_file::readSES3D ()
   
   // Options for specific physics systems.  
   if ( intentions == "INTERPOLATE" ) {
-    if ( input_model_physics == "TTI" ) {
-    populateSES3D ( imd + "dRHO", num_regions, num_p, rho, 'p' );
-    populateSES3D ( imd + "dVSV", num_regions, num_p, vsv, 'p' );
-    populateSES3D ( imd + "dVSH", num_regions, num_p, vsh, 'p' );
-    populateSES3D ( imd + "dVPP", num_regions, num_p, vpp, 'p' );
+    if ( input_model_physics == "TTI" ) {      
+      populateSES3D ( imd + "dRHO", num_regions, num_p, rho, 'p' );
+      populateSES3D ( imd + "dVSV", num_regions, num_p, vsv, 'p' );
+      populateSES3D ( imd + "dVSH", num_regions, num_p, vsh, 'p' );
+      populateSES3D ( imd + "dVPP", num_regions, num_p, vpp, 'p' );
     }
   } else if ( intentions == "EXTRACT" ) {
     num_p = (num_x - 1) * (num_y - 1) * (num_z - 1);     
@@ -368,10 +375,10 @@ void Model_file::readDiscontinuities ()
   int dum1, dum2;
   
   // Read moho depth and crustal parameters.
-  populateSES3D ( cmd + "/crust_x",   dum1, dum2, crust_col_deg, 'c' );
-  populateSES3D ( cmd + "/crust_y",   dum1, dum2, crust_lon_deg, 'c' );
-  populateSES3D ( cmd + "/crust_vs",  dum1, dum2, crust_vs, 'p' );
-  populateSES3D ( cmd + "/crust_dep", dum1, dum2, crust_dp, 'p' );    
+  populateSES3D ( cmd + "/crust_x_smooth",   dum1, dum2, crust_col_deg, 'c' );
+  populateSES3D ( cmd + "/crust_y_smooth",   dum1, dum2, crust_lon_deg, 'c' );
+  populateSES3D ( cmd + "/crust_vs_smooth",  dum1, dum2, crust_vs, 'p' );
+  populateSES3D ( cmd + "/crust_dep_smooth", dum1, dum2, crust_dp, 'p' );  
   
   populateRadians ( crust_col_deg, crust_col_rad );
   populateRadians ( crust_lon_deg, crust_lon_rad );
