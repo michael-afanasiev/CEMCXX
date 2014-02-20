@@ -55,9 +55,47 @@ void Interpolator::interpolate ( Mesh &msh, Model_file &mod )
     util.xyz2ColLonRadDeg ( msh.xmsh[i], msh.ymsh[i], msh.zmsh[i], 
       mshCol, mshLon, mshRad );
       
+    // Look for crust.
+    if ( mshRad > (con.R_EARTH - 100) ) {
+          
+      kdres *set   = kd_nearest3 ( tree, msh.xmsh[i], msh.ymsh[i], msh.zmsh[i] );    
+      void  *ind_p = kd_res_item_data ( set );    
+      int point    = * ( int * ) ind_p;
+    
+      kdres *cSet = kd_nearest3 ( crustTree, mshCol, mshLon, con.R_EARTH );         
+      void *ind_c = kd_res_item_data ( cSet );
+      int cPoint  = * ( int * ) ind_c;
+
+      if ( mshRad >= (con.R_EARTH - mod.crust_dp[0][cPoint]) ) {
+      
+        double crust_vsv = mod.crust_vs[0][cPoint] - con.aniCorrection;
+        double crust_vsh = mod.crust_vs[0][cPoint];
+      
+        double N = msh.rho[i] * crust_vsh * crust_vsh;
+        double L = msh.rho[i] * crust_vsv * crust_vsv;
+      
+        double A = msh.c22[i];
+        double S = A - 2 * N;
+        double F = A - 2 * L;
+        double C = A;
+      
+        crust      = true;
+        msh.c11[i] = C;     
+        msh.c12[i] = F;
+        msh.c13[i] = F;
+        msh.c22[i] = A;
+        msh.c23[i] = S;
+        msh.c33[i] = A;
+        msh.c44[i] = N;
+        msh.c55[i] = L;
+        msh.c66[i] = L;                
+      
+      }
+    }        
+            
     if ( (mshCol >= mod.colMin && mshCol <= mod.colMax) &&
          (mshLon >= mod.lonMin && mshLon <= mod.lonMax) &&
-         (mshRad >= mod.radMin) ) {   
+         (mshRad >= mod.radMin) && (crust = false) ) {   
            
       kdres *set   = kd_nearest3 ( tree, msh.xmsh[i], msh.ymsh[i], msh.zmsh[i] );    
       void  *ind_p = kd_res_item_data ( set );    
@@ -77,52 +115,8 @@ void Interpolator::interpolate ( Mesh &msh, Model_file &mod )
 
       msh.rho[i] = tap * mod.rhoMsh[point] + msh.rho[i];
       
-    }    
-      
-    // Look for crust.
-    if ( mshRad > (con.R_EARTH - 100) ) {
-            
-      kdres *set   = kd_nearest3 ( tree, msh.xmsh[i], msh.ymsh[i], msh.zmsh[i] );    
-      void  *ind_p = kd_res_item_data ( set );    
-      int point    = * ( int * ) ind_p;
-      
-      kdres *cSet = kd_nearest3 ( crustTree, mshCol, mshLon, con.R_EARTH );         
-      void *ind_c = kd_res_item_data ( cSet );
-      int cPoint  = * ( int * ) ind_c;
-
-      
-      // TODO This [0] in cpoint should be changed to a region to make it more
-      // general.      
-      if ( mshRad >= (con.R_EARTH - mod.crust_dp[0][cPoint]) ) {
-        
-        double crust_vsv = mod.crust_vs[0][cPoint] - con.aniCorrection;
-        double crust_vsh = mod.crust_vs[0][cPoint];
-        
-        double N = msh.rho[i] * crust_vsh * crust_vsh;
-        double L = msh.rho[i] * crust_vsv * crust_vsv;
-        
-        double A = msh.c22[i];
-        double S = A - 2 * N;
-        double F = A - 2 * L;
-        double C = A;
-        
-        crust      = true;
-        msh.c11[i] = C;     
-        msh.c12[i] = F;
-        msh.c13[i] = F;
-        msh.c22[i] = A;
-        msh.c23[i] = S;
-        msh.c33[i] = A;
-        msh.c44[i] = N;
-        msh.c55[i] = L;
-        msh.c66[i] = L;                
-        
-      }
-    }
-        
-    // Add kernel.
-  }
-          
+    }          
+  }          
 }
 
 void Interpolator::exterpolator ( Mesh &msh, Exodus_file &exo, Model_file &mod )

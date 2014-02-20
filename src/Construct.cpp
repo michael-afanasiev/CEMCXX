@@ -68,7 +68,7 @@ int main ()
       
   if ( mod.intentions == "INTERPOLATE" )  {                             
     
-    // exo.merge           ( mod );
+    exo.merge           ( mod );
     exo.openFile        ( "./dat/input.ex2" );
                         
     msh.getInfo         ( exo.idexo, 'p' );
