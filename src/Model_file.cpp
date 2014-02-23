@@ -110,6 +110,19 @@ void Model_file::populateSES3D ( string name, int &num_regions,
   
 }
 
+void Model_file::createKDTreeUnpacked ( )
+{
+  
+  cout << "Creating KDTree ( model ).\n";
+  tree         = kd_create (3);
+  int *dat     = new int [num_p];
+  for ( int i=0; i<num_p; i++ ) {
+    dat[i] = i;
+    kd_insert3 ( tree, x[i], y[i], z[i], &dat[i] );
+  }
+  
+}
+
 void Model_file::populateParams ( Driver &drv, Exodus_file &exo ) 
 {
   
@@ -311,7 +324,6 @@ void Model_file::openUp ( )
     
     }
   }
-  cout << "Physics has been changed.\n";  
   
 }
 
@@ -366,23 +378,6 @@ void Model_file::readSES3D ()
   populateRadiansSES3D ();
   colLonRad2xyzSES3D   ();  
         
-}
-
-void Model_file::readDiscontinuities ()
-{
-  
-  string cmd = "./dat/discontinuities";
-  int dum1, dum2;
-  
-  // Read moho depth and crustal parameters.
-  populateSES3D ( cmd + "/crust_x_smooth",   dum1, dum2, crust_col_deg, 'c' );
-  populateSES3D ( cmd + "/crust_y_smooth",   dum1, dum2, crust_lon_deg, 'c' );
-  populateSES3D ( cmd + "/crust_vs_smooth",  dum1, dum2, crust_vs, 'p' );
-  populateSES3D ( cmd + "/crust_dep_smooth", dum1, dum2, crust_dp, 'p' );  
-  
-  populateRadians ( crust_col_deg, crust_col_rad );
-  populateRadians ( crust_lon_deg, crust_lon_rad );
-    
 }
 
 void Model_file::writeSES3D ()

@@ -34,7 +34,7 @@ void Exodus_file::closeFile ()
   
 }
 
-void Exodus_file::merge ( Model_file &mod ) 
+void Exodus_file::merge ( Region &reg, Model_file &mod ) 
 {
   
   cout << "Merging model.\n";
@@ -73,7 +73,7 @@ void Exodus_file::merge ( Model_file &mod )
       full.append (dum2);
       
       lonReg.push_back (full);      
-      
+            
     }      
   }
     
@@ -108,6 +108,8 @@ void Exodus_file::merge ( Model_file &mod )
   int   num;
   float dum1;
   char  dum2;
+  int l = 0;
+  Exodus_file exii;
   string masterCall = "ejoin -output ./dat/input.ex2 ";
   for ( vector <string>::iterator i=colReg.begin(); i!=colReg.end(); ++i ) {
     for ( vector <string>::iterator j=lonReg.begin(); j!=lonReg.end(); ++j ) {
@@ -125,6 +127,9 @@ void Exodus_file::merge ( Model_file &mod )
         masterCall.append (call);
         masterCall.append (" ");
         
+        reg.regionsExo.push_back ( exii );
+        reg.regionsExo[l].fname = call;
+        
         // Get number of blocks for later destruction.
         idexo = ex_open    ( call.c_str(), EX_READ, &comp_ws, &io_ws, &vers );
         ier   = ex_inquire ( idexo, EX_INQ_ELEM_BLK, &num, &dum1, 
@@ -133,11 +138,14 @@ void Exodus_file::merge ( Model_file &mod )
         
         totalBlocks.push_back ( num );
                 
+        l++;
+                
       }
     }
   }  
+
  
-  system ( masterCall.c_str() );  
+  // system ( masterCall.c_str() );  
              
 }
 

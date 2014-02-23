@@ -25,10 +25,69 @@ void Mesh::getInfo ( int in_exoid, char mode )
   
   allocateMesh   ();  
   populateCoord  ();
+  getMinMaxRad   ();
   
   if ( mode == 'p' ) {
     populateParams ();
   }
+}
+
+void Mesh::createKDTreeUnpacked ( )
+{
+ 
+  cout << "Creating KDTree.\n";
+  tree     = kd_create (3);
+  int *dat = new int [num_nodes];
+  for ( int i=0; i<num_nodes; i++ ) {
+    dat[i] = i;
+    kd_insert3 ( tree, xmsh[i], ymsh[i], zmsh[i], &dat[i] );
+  }
+  delete [] dat;
+  
+}
+
+void Mesh::getMinMaxRad ( )
+{
+  
+  Utilities util;
+  Constants con;
+  
+  double col, lon, rad;
+  
+  cout << "Determining col/lon/rad box.\n";
+  for ( int i=0; i<num_nodes; i++ ) {
+    
+    util.xyz2ColLonRadDeg ( xmsh[i], ymsh[i], zmsh[i], col, lon, rad );    
+
+    if ( (xmsh[i] != 0) || (ymsh[i] != 0) ) {
+
+      if ( col < colMin )
+        colMin = col;
+      if ( col > colMax )
+        colMax = col;
+      if ( lon < lonMin )
+        lonMin = lon;
+      if ( lon > lonMax )
+        lonMax = lon;
+      if ( rad < radMin )
+        radMin = rad;
+      if ( rad > radMax )
+        radMax = rad;
+    
+    }
+
+    if ( (xmsh[i] == 0) && (ymsh[i] == 0) && (zmsh[i] > 0) )
+      colMin = 0;
+    if ( (xmsh[i] == 0) && (ymsh[i] == 0) && (zmsh[i] < 0) )
+      colMax = 180;
+    
+  }
+        
+  colMin = colMin * con.PI / con.o80;
+  colMax = colMax * con.PI / con.o80;
+  lonMin = lonMin * con.PI / con.o80;
+  lonMax = lonMax * con.PI / con.o80;
+  
 }
 
 void Mesh::populateParams ( ) 
@@ -132,11 +191,6 @@ void Mesh::populateParams ( )
   ier = ex_get_nodal_var ( exoid, 1, du1i, num_nodes, du1 );
   ier = ex_get_nodal_var ( exoid, 1, du2i, num_nodes, du2 );
   ier = ex_get_nodal_var ( exoid, 1, du3i, num_nodes, du3 );
-    
-  /* FIXME There is a bug in the getting of the rho variable. It looks like all
-  variables need to be filled when writing an exodus file, otherwise the last 
-  variable will be written at the end. So, elv, dum1, dum2, and dum3 need to be
-  written to make this work properly. */  
   
   if ( ier != 0 ) {
     cout << "Error reading in mesh variables.\n";
@@ -231,7 +285,7 @@ void Mesh::getConnectivity ( int exoid )
             
       node.clear ();
     }    
-  }   
+  }     
 }
 
 void Mesh::deallocateMesh ()
@@ -261,9 +315,17 @@ void Mesh::deallocateMesh ()
   delete [] c46;
   delete [] c55;
   delete [] c56;
-  delete [] c66;
-  
+  delete [] c66;  
   delete [] rho;
+  delete [] Q__;
+  delete [] elv;
+  delete [] du1;
+  delete [] du2;
+  delete [] du3;
+  
+  kd_free ( tree );
+  
+  // TODO Add data destructor.
     
 }
 
