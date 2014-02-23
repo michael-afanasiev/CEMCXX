@@ -25,6 +25,9 @@ void Driver::openDriver ( ifstream &myfile )
   myfile.clear ();
   myfile.seekg (0, ios::beg);
   
+  readDriver  ( myfile );
+  closeDriver ( myfile );
+  
   return;
   
 }

@@ -29,13 +29,7 @@ int main ()
   // ********************************************************************* //
     
   // Determine how many lines to read from parameter file.
-  drv.openDriver ( myfile );
-  
-  // Read those lines from parameter file and put them into 'params'.
-  drv.readDriver ( myfile );
-  
-  // Close driver.
-  drv.closeDriver ( myfile );
+  drv.openDriver ( myfile );  
   
   // ********************************************************************* //
   //                            READ IN PARAMS                             //
