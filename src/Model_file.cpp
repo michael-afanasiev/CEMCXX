@@ -110,8 +110,23 @@ void Model_file::populateSES3D ( string name, int &num_regions,
   
 }
 
+void Model_file::createKDTreeUnpacked ( )
+{
+  
+  cout << "Creating KDTree ( model ).\n";
+  tree         = kd_create (3);
+  int *dat     = new int [num_p];
+  for ( int i=0; i<num_p; i++ ) {
+    dat[i] = i;
+    kd_insert3 ( tree, x[i], y[i], z[i], &dat[i] );
+  }
+  
+}
+
 void Model_file::populateParams ( Driver &drv, Exodus_file &exo ) 
 {
+  
+  Constants con;
  
   mesh_directory        = drv.params[0]; 
   input_model_directory = drv.params[1];
@@ -133,61 +148,14 @@ void Model_file::populateParams ( Driver &drv, Exodus_file &exo )
     input_model_physics   << "\n* ABSOLUTE_OR_PERTURB: "    <<
     absolute_or_perturb   << "\n";
   
-}
-
-void Model_file::findMinMax ()
-{
-  
-  double colMin = 180.0;
-  double colMax = 0.0;
-  
-  for ( int r=0; r<col_deg.size(); r++ ) {
-    for ( int i=0; i<col_deg[r].size(); i++ ) {
-      if ( col_deg[r][i] < colMin ) {
-        colMin = col_deg[r][i];
-      }
-      if ( col_deg[r][i] > colMax ) {
-        colMax = col_deg[r][i];
-      }
-    }
-  }
-  
-  double lonMin = 180.0;
-  double lonMax = -180.0;
-  
-  for ( int r=0; r<lon_deg.size(); r++ ) {
-    for ( int i=0; i<lon_deg[r].size(); i++ ) {
-      if ( lon_deg[r][i] < lonMin ) {
-        lonMin = lon_deg[r][i];
-      }
-      if ( lon_deg[r][i] > lonMax ) {
-        lonMax = lon_deg[r][i];
-      }
-    }
-  }
-  
-  double radMax = 0.0;
-  double radMin = 6371.0;
-  
-  for ( int r=0; r<rad.size(); r++ ) {
-    for ( int i=0; i<rad[r].size(); i++ ) {
-      if ( rad[r][i] < radMin ) {
-        radMin = rad[r][i];
-      }
-      if ( rad[r][i] > radMax ) {
-        radMax = rad[r][i];
-      }
-    }
-  }
-  
-  // cout << "Col: " << colMin << " " << colMax << "\n";
-  // cout << "Lon: " << lonMin << " " << lonMax << "\n";
-  // cout << "Rad: " << radMin << " " << radMax << "\n";
+  rotRad = rotAng * con.PI / con.o80;
   
 }
 
 void Model_file::colLonRad2xyzSES3D ()
 {
+  
+  Utilities util;
       
   /* IMPORTANT NOTE :: the range of k goes to rad.size-1, and col_rad and
   lon_rad don't, because col_rad and lon_rad have already been fixed up for
@@ -201,14 +169,14 @@ void Model_file::colLonRad2xyzSES3D ()
         
           x[l] = rad[r][k] * cos ( lon_rad[r][j] ) * sin ( col_rad[r][i] );
           y[l] = rad[r][k] * sin ( lon_rad[r][j] ) * sin ( col_rad[r][i] );
-          z[l] = rad[r][k] * cos ( col_rad[r][i] );
+          z[l] = rad[r][k] * cos ( col_rad[r][i] );                    
           l++;
         
         }
       }    
     }
   }
-  
+    
 }
 
 void Model_file::populateRadiansSES3D ()
@@ -250,6 +218,10 @@ void Model_file::populateRadiansSES3D ()
     }
         
   }
+  
+  if ( lonMax > 180. ) {
+    lonMax = 360. - lonMax;
+  }
 
   for ( int r=0; r<col_deg.size(); r++ ) {
     
@@ -273,6 +245,26 @@ void Model_file::populateRadiansSES3D ()
     
   }
   
+}
+
+void Model_file::populateRadians ( vector < vector <double> > &deg, 
+                                   vector < vector <double> > &rad )
+{
+  
+  Constants con;
+  
+  vector <double> sub;
+  
+  for ( int r=0; r<deg.size(); r++ ) {
+    
+    for ( int i=0; i<deg[r].size()-1; i++ ) {
+      sub.push_back ( deg[r][i] * con.PI / con.o80 );
+    }
+    
+    rad.push_back ( sub );
+    sub.clear ();
+      
+  }  
 }
 
 void Model_file::openUp ( )
@@ -312,18 +304,19 @@ void Model_file::openUp ( )
     
           double C = A;
           double F = A - 2 * L;
+          double S = A - 2 * N;
       
           c11[l]    = C;
           c12[l]    = F;
           c13[l]    = F;
           c22[l]    = A;
-          c23[l]    = A - 2 * N;
+          c23[l]    = S;
           c33[l]    = A;
           c44[l]    = N;
           c55[l]    = L;
           c66[l]    = L;            
           rhoMsh[l] = rho[r][i];
-                
+                          
         }
       
         l++;
@@ -331,7 +324,6 @@ void Model_file::openUp ( )
     
     }
   }
-  cout << "Physics has been changed.\n";  
   
 }
 
@@ -347,11 +339,11 @@ void Model_file::readSES3D ()
   
   // Options for specific physics systems.  
   if ( intentions == "INTERPOLATE" ) {
-    if ( input_model_physics == "TTI" ) {
-    populateSES3D ( imd + "dRHO", num_regions, num_p, rho, 'p' );
-    populateSES3D ( imd + "dVSV", num_regions, num_p, vsv, 'p' );
-    populateSES3D ( imd + "dVSH", num_regions, num_p, vsh, 'p' );
-    populateSES3D ( imd + "dVPP", num_regions, num_p, vpp, 'p' );
+    if ( input_model_physics == "TTI" ) {      
+      populateSES3D ( imd + "dRHO", num_regions, num_p, rho, 'p' );
+      populateSES3D ( imd + "dVSV", num_regions, num_p, vsv, 'p' );
+      populateSES3D ( imd + "dVSH", num_regions, num_p, vsh, 'p' );
+      populateSES3D ( imd + "dVPP", num_regions, num_p, vpp, 'p' );
     }
   } else if ( intentions == "EXTRACT" ) {
     num_p = (num_x - 1) * (num_y - 1) * (num_z - 1);     
@@ -385,8 +377,7 @@ void Model_file::readSES3D ()
     
   populateRadiansSES3D ();
   colLonRad2xyzSES3D   ();  
-      
-      
+        
 }
 
 void Model_file::writeSES3D ()

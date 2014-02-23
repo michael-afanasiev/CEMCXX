@@ -11,7 +11,7 @@
 
 using namespace std;
 
-void Mesh::getInfo ( int in_exoid ) 
+void Mesh::getInfo ( int in_exoid, char mode ) 
 {
     
   exoid = in_exoid;  
@@ -24,41 +24,173 @@ void Mesh::getInfo ( int in_exoid )
   ier = ex_inquire ( exoid, EX_INQ_ELEM_BLK, &num_elem_blk, &dum1, &dum2 );
   
   allocateMesh   ();  
-  populateParams ();
   populateCoord  ();
+  getMinMaxRad   ();
+  
+  if ( mode == 'p' ) {
+    populateParams ();
+  }
+}
+
+void Mesh::createKDTreeUnpacked ( )
+{
+ 
+  cout << "Creating KDTree.\n";
+  tree     = kd_create (3);
+  int *dat = new int [num_nodes];
+  for ( int i=0; i<num_nodes; i++ ) {
+    dat[i] = i;
+    kd_insert3 ( tree, xmsh[i], ymsh[i], zmsh[i], &dat[i] );
+  }
+  delete [] dat;
+  
+}
+
+void Mesh::getMinMaxRad ( )
+{
+  
+  Utilities util;
+  Constants con;
+  
+  double col, lon, rad;
+  
+  cout << "Determining col/lon/rad box.\n";
+  for ( int i=0; i<num_nodes; i++ ) {
+    
+    util.xyz2ColLonRadDeg ( xmsh[i], ymsh[i], zmsh[i], col, lon, rad );    
+
+    if ( (xmsh[i] != 0) || (ymsh[i] != 0) ) {
+
+      if ( col < colMin )
+        colMin = col;
+      if ( col > colMax )
+        colMax = col;
+      if ( lon < lonMin )
+        lonMin = lon;
+      if ( lon > lonMax )
+        lonMax = lon;
+      if ( rad < radMin )
+        radMin = rad;
+      if ( rad > radMax )
+        radMax = rad;
+    
+    }
+
+    if ( (xmsh[i] == 0) && (ymsh[i] == 0) && (zmsh[i] > 0) )
+      colMin = 0;
+    if ( (xmsh[i] == 0) && (ymsh[i] == 0) && (zmsh[i] < 0) )
+      colMax = 180;
+    
+  }
+        
+  colMin = colMin * con.PI / con.o80;
+  colMax = colMax * con.PI / con.o80;
+  lonMin = lonMin * con.PI / con.o80;
+  lonMax = lonMax * con.PI / con.o80;
   
 }
 
 void Mesh::populateParams ( ) 
 {
-
-  ier = ex_get_nodal_var ( exoid, 1, 1,  num_nodes, c11 );
-  ier = ex_get_nodal_var ( exoid, 1, 2,  num_nodes, c12 );
-  ier = ex_get_nodal_var ( exoid, 1, 3,  num_nodes, c13 );
-  ier = ex_get_nodal_var ( exoid, 1, 4,  num_nodes, c14 );
-  ier = ex_get_nodal_var ( exoid, 1, 5,  num_nodes, c15 );
-  ier = ex_get_nodal_var ( exoid, 1, 6,  num_nodes, c16 );
-  ier = ex_get_nodal_var ( exoid, 1, 7,  num_nodes, c22 );
-  ier = ex_get_nodal_var ( exoid, 1, 8,  num_nodes, c23 );
-  ier = ex_get_nodal_var ( exoid, 1, 9,  num_nodes, c24 );
-  ier = ex_get_nodal_var ( exoid, 1, 10, num_nodes, c25 );
-  ier = ex_get_nodal_var ( exoid, 1, 11, num_nodes, c26 );
-  ier = ex_get_nodal_var ( exoid, 1, 12, num_nodes, c33 );
-  ier = ex_get_nodal_var ( exoid, 1, 13, num_nodes, c34 );
-  ier = ex_get_nodal_var ( exoid, 1, 14, num_nodes, c35 );
-  ier = ex_get_nodal_var ( exoid, 1, 15, num_nodes, c36 );
-  ier = ex_get_nodal_var ( exoid, 1, 16, num_nodes, c44 );
-  ier = ex_get_nodal_var ( exoid, 1, 17, num_nodes, c45 );
-  ier = ex_get_nodal_var ( exoid, 1, 18, num_nodes, c46 );
-  ier = ex_get_nodal_var ( exoid, 1, 19, num_nodes, c55 );
-  ier = ex_get_nodal_var ( exoid, 1, 20, num_nodes, c56 );
-  ier = ex_get_nodal_var ( exoid, 1, 21, num_nodes, c66 );
-  ier = ex_get_nodal_var ( exoid, 1, 27, num_nodes, rho );
   
-  /* FIXME There is a bug in the getting of the rho variable. It looks like all
-  variables need to be filled when writing an exodus file, otherwise the last 
-  variable will be written at the end. So, elv, dum1, dum2, and dum3 need to be
-  written to make this work properly. */  
+  int numMshVar = 27;
+  
+  char *var_names[numMshVar];
+  for ( int i=0; i<numMshVar; i++ )
+    var_names[i] = (char *) calloc ( (MAX_STR_LENGTH+1), sizeof(char) );
+  
+  ier = ex_get_var_names ( exoid, "n", 27, var_names );
+    
+  int c11i, c12i, c13i, c14i, c15i, c16i, c22i, c23i, c24i, c25i, c26i, c33i;
+  int c34i, c35i, c36i, c44i, c45i, c46i, c55i, c56i, c66i, rhoi, Q__i, elvi;
+  int du1i, du2i, du3i;
+  
+  for ( int i=0; i<numMshVar; i++ ) {
+    
+    if (( strcmp ( var_names[i], "c11" ) ) == 0 )
+      c11i = i + 1;
+    if (( strcmp ( var_names[i], "c12" ) ) == 0 )
+      c12i = i + 1;
+    if (( strcmp ( var_names[i], "c13" ) ) == 0 )
+      c13i = i + 1;
+    if (( strcmp ( var_names[i], "c14" ) ) == 0 )
+      c14i = i + 1;
+    if (( strcmp ( var_names[i], "c15" ) ) == 0 )
+      c15i = i + 1;
+    if (( strcmp ( var_names[i], "c16" ) ) == 0 )
+      c16i = i + 1;
+    if (( strcmp ( var_names[i], "c22" ) ) == 0 )
+      c22i = i + 1;
+    if (( strcmp ( var_names[i], "c23" ) ) == 0 )
+      c23i = i + 1;
+    if (( strcmp ( var_names[i], "c24" ) ) == 0 )
+      c24i = i + 1;
+    if (( strcmp ( var_names[i], "c25" ) ) == 0 )
+      c25i = i + 1;
+    if (( strcmp ( var_names[i], "c26" ) ) == 0 )
+      c26i = i + 1;
+    if (( strcmp ( var_names[i], "c33" ) ) == 0 )
+      c33i = i + 1;
+    if (( strcmp ( var_names[i], "c34" ) ) == 0 )
+      c34i = i + 1;
+    if (( strcmp ( var_names[i], "c35" ) ) == 0 )
+      c35i = i + 1;
+    if (( strcmp ( var_names[i], "c36" ) ) == 0 )
+      c36i = i + 1;
+    if (( strcmp ( var_names[i], "c44" ) ) == 0 )
+      c44i = i + 1;    
+    if (( strcmp ( var_names[i], "c45" ) ) == 0 )
+      c45i = i + 1;
+    if (( strcmp ( var_names[i], "c46" ) ) == 0 )
+      c46i = i + 1;
+    if (( strcmp ( var_names[i], "c55" ) ) == 0 )
+      c55i = i + 1;
+    if (( strcmp ( var_names[i], "c56" ) ) == 0 )
+      c56i = i + 1;
+    if (( strcmp ( var_names[i], "c66" ) ) == 0 )
+      c66i = i + 1;
+    if (( strcmp ( var_names[i], "rho" ) ) == 0 )
+      rhoi = i + 1;
+    if (( strcmp ( var_names[i], "Q__" ) ) == 0 )
+      Q__i = i + 1;
+    if (( strcmp ( var_names[i], "elv" ) ) == 0 )
+      elvi = i + 1;
+    if (( strcmp ( var_names[i], "du1" ) ) == 0 )
+      du1i = i + 1;
+    if (( strcmp ( var_names[i], "du2" ) ) == 0 )
+      du2i = i + 1;    
+    if (( strcmp ( var_names[i], "du3" ) ) == 0 )
+      du3i = i + 1;
+    
+  }  
+  
+  ier = ex_get_nodal_var ( exoid, 1, c11i, num_nodes, c11 );
+  ier = ex_get_nodal_var ( exoid, 1, c12i, num_nodes, c12 );
+  ier = ex_get_nodal_var ( exoid, 1, c13i, num_nodes, c13 );
+  ier = ex_get_nodal_var ( exoid, 1, c14i, num_nodes, c14 );
+  ier = ex_get_nodal_var ( exoid, 1, c15i, num_nodes, c15 );
+  ier = ex_get_nodal_var ( exoid, 1, c16i, num_nodes, c16 );
+  ier = ex_get_nodal_var ( exoid, 1, c22i, num_nodes, c22 );
+  ier = ex_get_nodal_var ( exoid, 1, c23i, num_nodes, c23 );
+  ier = ex_get_nodal_var ( exoid, 1, c24i, num_nodes, c24 );
+  ier = ex_get_nodal_var ( exoid, 1, c25i, num_nodes, c25 );
+  ier = ex_get_nodal_var ( exoid, 1, c26i, num_nodes, c26 );
+  ier = ex_get_nodal_var ( exoid, 1, c33i, num_nodes, c33 );
+  ier = ex_get_nodal_var ( exoid, 1, c34i, num_nodes, c34 );
+  ier = ex_get_nodal_var ( exoid, 1, c35i, num_nodes, c35 );
+  ier = ex_get_nodal_var ( exoid, 1, c36i, num_nodes, c36 );
+  ier = ex_get_nodal_var ( exoid, 1, c44i, num_nodes, c44 );
+  ier = ex_get_nodal_var ( exoid, 1, c45i, num_nodes, c45 );
+  ier = ex_get_nodal_var ( exoid, 1, c46i, num_nodes, c46 );
+  ier = ex_get_nodal_var ( exoid, 1, c55i, num_nodes, c55 );
+  ier = ex_get_nodal_var ( exoid, 1, c56i, num_nodes, c56 );
+  ier = ex_get_nodal_var ( exoid, 1, c66i, num_nodes, c66 );
+  ier = ex_get_nodal_var ( exoid, 1, rhoi, num_nodes, rho );
+  ier = ex_get_nodal_var ( exoid, 1, Q__i, num_nodes, Q__ );
+  ier = ex_get_nodal_var ( exoid, 1, elvi, num_nodes, elv );
+  ier = ex_get_nodal_var ( exoid, 1, du1i, num_nodes, du1 );
+  ier = ex_get_nodal_var ( exoid, 1, du2i, num_nodes, du2 );
+  ier = ex_get_nodal_var ( exoid, 1, du3i, num_nodes, du3 );
   
   if ( ier != 0 ) {
     cout << "Error reading in mesh variables.\n";
@@ -70,7 +202,7 @@ void Mesh::populateParams ( )
 void Mesh::populateCoord ( ) 
 { 
        
-  ier = ex_get_coord ( exoid, xmsh, ymsh, zmsh );
+  ier = ex_get_coord ( exoid, xmsh, ymsh, zmsh );    
   
   if (ier != 0) {
     std::cout << "***Fatal error reading in coordinates. Exiting.\n";
@@ -107,6 +239,11 @@ void Mesh::allocateMesh ( )
   c56 = new double [num_nodes]();
   c66 = new double [num_nodes](); 
   rho = new double [num_nodes]();
+  Q__ = new double [num_nodes]();
+  elv = new double [num_nodes]();
+  du1 = new double [num_nodes]();
+  du2 = new double [num_nodes]();
+  du3 = new double [num_nodes]();
      
 }
 
@@ -148,7 +285,7 @@ void Mesh::getConnectivity ( int exoid )
             
       node.clear ();
     }    
-  }   
+  }     
 }
 
 void Mesh::deallocateMesh ()
@@ -178,9 +315,17 @@ void Mesh::deallocateMesh ()
   delete [] c46;
   delete [] c55;
   delete [] c56;
-  delete [] c66;
-  
+  delete [] c66;  
   delete [] rho;
+  delete [] Q__;
+  delete [] elv;
+  delete [] du1;
+  delete [] du2;
+  delete [] du3;
+  
+  kd_free ( tree );
+  
+  // TODO Add data destructor.
     
 }
 

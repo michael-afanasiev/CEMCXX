@@ -11,32 +11,40 @@ class Driver;
 class Exodus_file;
 class Interpolator;
 
+class Region
+{
+
+public:
+  std::vector < Mesh >        regionsMsh;
+  std::vector < Exodus_file > regionsExo;
+
+};
+
 class Constants
 {
   
 public:
   
-  double PI      = 3.141592653589793;
-  double PIo2    = 1.570796326794896;
-  double R_EARTH = 6371.0;
-  double o80     = 180.0;
-  double ninty   = 90.0;
+  double PI            = 3.141592653589793;
+  double PIo2          = 1.570796326794896;
+  double R_EARTH       = 6371.0;
+  double o80           = 180.0;
+  double ninty         = 90.0;
+  double aniCorrection = 0.188078;
   
 };
 
 class Model_file
 {
   
-private:
+public:
   
   void readSES3D     ();
   void readSPECFEM3D ();
   
   void populateSES3D ( std::string name, int &num_regions, int &num_params, 
     std::vector<std::vector<double>> &vec , char ftype );
-  
-public:
-  
+      
   int * region;
   int num_regions;
   int num_x;
@@ -83,6 +91,8 @@ public:
   double *c56;
   double *c66;
   double *rhoMsh;
+  
+  kdtree *tree;
 
   std::vector <std::vector <double> > col_rad;
   std::vector <std::vector <double> > lon_rad;
@@ -92,7 +102,7 @@ public:
   std::vector <std::vector <double> > vsh;
   std::vector <std::vector <double> > vsv;
   std::vector <std::vector <double> > rho;
-  std::vector <std::vector <double> > vpp;
+  std::vector <std::vector <double> > vpp;  
   
   std::string input_model_directory;
   std::string input_model_file_type;
@@ -110,11 +120,36 @@ public:
   void colLonRad2xyzSES3D   ();
   void populateRadiansSES3D ();
   void openUp               ();
-  void findMinMax           ();
   void populateParams       ( Driver &drv, Exodus_file &exo );
-  void dePopulateSES3D      ( std::string, std::vector<std::vector<double>>);
+  void dePopulateSES3D      ( std::string, std::vector<std::vector<double>> );
   void writeSES3D           ();
+  void populateRadians      ( std::vector < std::vector <double> > &deg, 
+                              std::vector < std::vector <double> > &rad );
+  void createKDTreeUnpacked ();
   
+};
+
+class Discontinuity
+{
+  
+public:
+  
+  bool inCrust;
+  
+  std::vector <std::vector <double> > crust_col_deg;
+  std::vector <std::vector <double> > crust_lon_deg;
+  std::vector <std::vector <double> > crust_col_rad;
+  std::vector <std::vector <double> > crust_lon_rad;
+  std::vector <std::vector <double> > crust_vs;
+  std::vector <std::vector <double> > crust_dp;
+  
+  kdtree *tree;
+  
+  void read               ();
+  void createKDTreePacked ();
+  void lookCrust          ( Mesh &msh, double &mshCol, double &mshLon, 
+                            double &mshRad, int &mshInd );
+
 };
 
 class Utilities
@@ -122,9 +157,8 @@ class Utilities
   
 public:
   
-  double col2Lat   ( double &in, char flag );
-  void rotate      ( Model_file &mod );   
-  
+  double col2Lat        ( double &in, char flag );
+  void rotate           ( Model_file &mod );   
   void xyz2ColLonRadDeg ( double &x,   double &y,   double &z, 
                           double &col, double &lon, double &rad );
   void xyz2ColLonRadRad ( double &x,   double &y,   double &z, 
@@ -132,13 +166,12 @@ public:
   void colLonRadDeg2xyz ( double  col, double  lon, double  rad,
                           double &x,   double &y,   double &z ); 
   void colLonRadRad2xyz ( double col,  double lon,  double rad,
-                          double &x,   double &y,   double &z );
-                          
-  void convertBary ( double &xp, double &yp, double &zp, 
-                     double &x1, double &x2, double &x3, double &x4,
-                     double &y1, double &y2, double &y3, double &y4,
-                     double &z1, double &z2, double &z3, double &z4,
-                     double &l1, double &l2, double &l3, double &l4 ); 
+                          double &x,   double &y,   double &z );                          
+  void convertBary      ( double &xp, double &yp, double &zp, 
+                          double &x1, double &x2, double &x3, double &x4,
+                          double &y1, double &y2, double &y3, double &y4,
+                          double &z1, double &z2, double &z3, double &z4,
+                          double &l1, double &l2, double &l3, double &l4 ); 
   
 };
 
@@ -179,20 +212,27 @@ public:
   
   std::string fname;
   
+  std::vector < std::string > colReg;
+  std::vector < std::string > lonReg;
+  std::vector < std::string > radReg;    
+  
+  std::vector < int > totalBlocks;
   
   // Internal functions.
   
   void openFile    ( std::string fname );
   void closeFile   ();
   void writeParams ( Mesh &msh );
-  void merge       ( Model_file &mod );
+  void merge       ( Region &reg, Model_file &mod );
+  void splitBack   ();
+  void writeSize   ( Mesh &msh );
   
 };
 
 class Mesh
 {
 public:
-  
+    
   int num_nodes;
   int num_elem;
   int ier;
@@ -228,9 +268,25 @@ public:
   double *c56;
   double *c66;
   double *rho;
+  double *Q__;
+  double *elv;
+  double *du1;
+  double *du2;
+  double *du3;
+  
   double *xmsh;
   double *ymsh;
-  double *zmsh;
+  double *zmsh;  
+  double *siz;
+  
+  double colMin = 180.;
+  double colMax = 0.;
+  double lonMin = 180.;
+  double lonMax = -180.;
+  double radMin = 6371.;
+  double radMax = 0.;
+  
+  kdtree *tree;
   
   std::multimap <int, std::vector <int> > elemOrder;  
   
@@ -239,14 +295,16 @@ public:
   char elem_type [MAX_LINE_LENGTH+1];
   
   // Internal functions.
-  
-  void getInfo          ( int exoid );
-  void populateCoord    ( );
-  void populateParams   ( );
-  void allocateMesh     ( );
-  void reNormalize      ( Model_file &mod );
-  void getConnectivity  ( int exoid );
-  void deallocateMesh   ();
+    
+  void getInfo              ( int exoid, char mode );
+  void populateCoord        ( );
+  void populateParams       ( );
+  void allocateMesh         ( );
+  void reNormalize          ( Model_file &mod );
+  void getConnectivity      ( int exoid );
+  void deallocateMesh       ( );
+  void createKDTreeUnpacked ( );
+  void getMinMaxRad         ( );
            
 };
 
@@ -271,16 +329,16 @@ class Interpolator
   
 public: 
     
-  void interpolate  ( Mesh &msh, Model_file &mod );  
+  void interpolate  ( Mesh &msh, Model_file &mod, Discontinuity &dis );  
   double taper      ( double &x, double &y, double &z, Model_file &mod );
   void exterpolator ( Mesh &msh, Exodus_file &exo, Model_file &mod );
-  void recover      ( double &testX, double &testY, double &testZ, kdtree *tree,
+  int  recover      ( double &testX, double &testY, double &testZ, kdtree *tree,
                       Mesh &msh,
                       double &c11, double &c12, double &c13, double &c14, 
                       double &c15, double &c16, double &c22, double &c23, 
                       double &c24, double &c25, double &c26, double &c33, 
                       double &c34, double &c35, double &c36, double &c44, 
                       double &c45, double &c46, double &c55, double &c56, 
-                      double &c66, double &rho ); 
+                      double &c66, double &rho, char mode ); 
 
 };
