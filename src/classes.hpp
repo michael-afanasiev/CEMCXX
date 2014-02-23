@@ -15,7 +15,6 @@ class Region
 {
 
 public:
-  std::vector < Mesh >        regionsMsh;
   std::vector < Exodus_file > regionsExo;
 
 };
@@ -126,6 +125,7 @@ public:
   void populateRadians      ( std::vector < std::vector <double> > &deg, 
                               std::vector < std::vector <double> > &rad );
   void createKDTreeUnpacked ();
+  void projectSubspace      ();
   
 };
 

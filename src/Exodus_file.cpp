@@ -105,12 +105,8 @@ void Exodus_file::merge ( Region &reg, Model_file &mod )
     radReg.push_back ( "rad6351-6371" );
   }
     
-  int   num;
-  float dum1;
-  char  dum2;
   int l = 0;
-  Exodus_file exii;
-  string masterCall = "ejoin -output ./dat/input.ex2 ";
+  Exodus_file currentExo;
   for ( vector <string>::iterator i=colReg.begin(); i!=colReg.end(); ++i ) {
     for ( vector <string>::iterator j=lonReg.begin(); j!=lonReg.end(); ++j ) {
       for ( vector <string>::iterator k=radReg.begin(); k!=radReg.end(); ++k ) {
@@ -123,29 +119,15 @@ void Exodus_file::merge ( Region &reg, Model_file &mod )
         call.append (".");
         call.append (*k);
         call.append (".ex2");
-                
-        masterCall.append (call);
-        masterCall.append (" ");
-        
-        reg.regionsExo.push_back ( exii );
+                        
+        reg.regionsExo.push_back ( currentExo );
         reg.regionsExo[l].fname = call;
         
-        // Get number of blocks for later destruction.
-        idexo = ex_open    ( call.c_str(), EX_READ, &comp_ws, &io_ws, &vers );
-        ier   = ex_inquire ( idexo, EX_INQ_ELEM_BLK, &num, &dum1, 
-          &dum2 );        
-        ier   = ex_close   ( idexo );
-        
-        totalBlocks.push_back ( num );
-                
         l++;
-                
+                        
       }
     }
   }  
-
- 
-  // system ( masterCall.c_str() );  
              
 }
 

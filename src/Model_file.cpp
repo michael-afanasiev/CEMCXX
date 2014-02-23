@@ -327,6 +327,33 @@ void Model_file::openUp ( )
   
 }
 
+void Model_file::projectSubspace ( )
+{
+  
+  int ll = 0;
+  for ( int r=0; r<col_deg.size(); r++ ) {
+    
+    int l  = 0;    
+    for ( int i=0; i<col_rad[r].size(); i++ ) {
+      for ( int j=0; j<lon_rad[r].size(); j++ ) {
+        for ( int k=0; k<(rad[r].size()-1); k++ ) {
+          
+          if ( input_model_physics == "TTI" ) {
+            vsh[r][l] = sqrt (c44[ll] / rhoMsh[ll]);
+            vsv[r][l] = sqrt (c55[ll] / rhoMsh[ll]);
+            vpp[r][l] = sqrt (c22[ll] / rhoMsh[ll]);
+            rho[r][l] = rhoMsh[ll];
+            l++;   
+            ll++;     
+          }
+          
+        }
+      }
+    }
+  }            
+  
+}
+
 void Model_file::readSES3D ()
 {
   

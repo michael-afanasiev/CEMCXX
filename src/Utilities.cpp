@@ -82,6 +82,9 @@ void Utilities::rotate ( Model_file &mod )
   z_out
   */
   
+  Constants con;
+  
+  if ( mod.rotAng != 0 )
   cout << "Rotating model by " << mod.rotAng << " degrees about (" <<
     mod.rotVecX << ", " << mod.rotVecY << ", " << mod.rotVecZ << ")\n";
   
@@ -116,23 +119,31 @@ void Utilities::rotate ( Model_file &mod )
     double col, lon, rad;  
     
     xyz2ColLonRadDeg ( mod.x[i], mod.y[i], mod.z[i], col, lon, rad );
-    if ( col < mod.colMin ) {
-      mod.colMin = col;
-    } else if ( col > mod.colMax ) {
-      mod.colMax = col;      
-    }
-    if ( lon < mod.lonMin ) {
-      mod.lonMin = lon;      
-    } else if ( lon > mod.lonMax ) {
-      mod.lonMax = lon;
-    }
-    if ( rad < mod.radMin ) {
-      mod.radMin = rad;
-    } else if ( rad < mod.radMax ) {
-      mod.radMax = rad;
-    }                         
     
-  }  
+    if ( (mod.x[i] != 0) || (mod.y[i] != 0) ) {
+
+      if ( col < mod.colMin )
+        mod.colMin = col;
+      if ( col > mod.colMax )
+        mod.colMax = col;
+      if ( lon < mod.lonMin )
+        mod.lonMin = lon;
+      if ( lon > mod.lonMax )
+        mod.lonMax = lon;
+      if ( rad < mod.radMin )
+        mod.radMin = rad;
+      if ( rad > mod.radMax )
+        mod.radMax = rad;
+    
+    }
+
+    if ( (mod.x[i] == 0) && (mod.y[i] == 0) && (mod.z[i] > 0) )
+      mod.colMin = 0;
+    if ( (mod.x[i] == 0) && (mod.y[i] == 0) && (mod.z[i] < 0) )
+      mod.colMax = 180;
+    
+  }
+      
 }
 
 void Utilities::convertBary ( double &xp, double &yp, double &zp, 
