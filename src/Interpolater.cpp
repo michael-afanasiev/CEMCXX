@@ -12,33 +12,45 @@ using namespace std;
 void Interpolator::interpolate ( Mesh &msh, Model_file &mod, Discontinuity &dis ) 
 {
 
-  Utilities util;
+  Utilities utl;
   Constants con;
     
   cout << "Interpolating.\n";
-  
-  for ( int i=0; i<msh.num_nodes; i++ ) {
     
-    double mshCol, mshLon, mshRad;
+  for ( int i=0; i<msh.num_nodes; i++ ) {
+        
+    double mshColRot, mshLonRot, mshRadRot;
+    double mshColOld, mshLonOld, mshRadOld;
+    double xRot,   yRot,   zRot;
     
     dis.inCrust = false;
     
-    util.xyz2ColLonRadDeg ( msh.xmsh[i], msh.ymsh[i], msh.zmsh[i], 
-      mshCol, mshLon, mshRad );
+    utl.rotate ( msh.xmsh[i], msh.ymsh[i], msh.zmsh[i], xRot, yRot, zRot, mod );
+    
+    utl.xyz2ColLonRadDeg ( msh.xmsh[i], msh.ymsh[i], msh.zmsh[i], 
+      mshColOld, mshLonOld, mshRadOld );
+    utl.xyz2ColLonRadDeg ( xRot, yRot, zRot, mshColRot, mshLonRot, mshRadRot );
+    
+    if ( mod.wrapAround == true && mshLonOld < 0. ) {
+      mshLonOld += 360;    
+    }
+    
+    if ( mod.wrapAround == true && mshLonRot < 0. ) {
+      mshLonRot += 360;    
+    }
       
-    dis.lookCrust ( msh, mshCol, mshLon, mshRad, i );
-                       
-    if ( (mshCol >= mod.colMin && mshCol <= mod.colMax) &&
-         (mshLon >= mod.lonMin && mshLon <= mod.lonMax) &&
-         (mshRad >= mod.radMin) ) {   
-           
-      kdres *set   = kd_nearest3 ( mod.tree, msh.xmsh[i], msh.ymsh[i], 
-        msh.zmsh[i] );    
+    dis.lookCrust ( msh, mshColOld, mshLonOld, mshRadOld, i );
+                           
+    if ( (mshColRot >= mod.colMin && mshColRot <= mod.colMax) &&
+         (mshLonRot >= mod.lonMin && mshLonRot <= mod.lonMax) &&
+         (mshRadRot >= mod.radMin) ) {   
+                          
+      kdres *set   = kd_nearest3 ( mod.tree, xRot, yRot, zRot );    
       void  *ind_p = kd_res_item_data ( set );    
       int point    = * ( int * ) ind_p;
                                
-      double tap = taper ( mshCol, mshLon, mshRad, mod );
-      
+      double tap = taper ( mshColRot, mshLonRot, mshRadRot, mod );
+            
       msh.c11[i] = msh.c11[i] + tap * mod.c11[point];
       msh.c22[i] = msh.c22[i] + tap * mod.c22[point];
       msh.c33[i] = msh.c33[i] + tap * mod.c33[point];

@@ -35,7 +35,7 @@ void Mesh::getInfo ( int in_exoid, char mode )
 void Mesh::createKDTreeUnpacked ( )
 {
  
-  cout << "Creating KDTree.\n";
+  cout << "Creating KDTree ( mesh ).\n";
   tree     = kd_create (3);
   int *dat = new int [num_nodes];
   for ( int i=0; i<num_nodes; i++ ) {

@@ -59,14 +59,21 @@ public:
   
   double colMin = 180.;
   double colMax = 0.;
-  double lonMin = 180.;
-  double lonMax = -180.;
+  double lonMin = 360.;
+  double lonMax = -360.;
   double radMin = 6371.;
   double radMax = 0.;
   
   std::vector <double> x;
   std::vector <double> y;
   std::vector <double> z;
+  
+  double xMin;
+  double xMax;
+  double yMin;
+  double yMax;
+  double zMin;
+  double zMax;
 
   double *c11;
   double *c12;
@@ -90,6 +97,25 @@ public:
   double *c56;
   double *c66;
   double *rhoMsh;
+  
+  double rot11;
+  double rot21;
+  double rot31;
+  double rot12;
+  double rot22;
+  double rot32;
+  double rot13;
+  double rot23;
+  double rot33;
+  
+  bool colReg1    = false;
+  bool colReg2    = false;
+  bool lonReg1    = false;
+  bool lonReg2    = false;
+  bool lonReg3    = false;
+  bool lonReg4    = false;
+  bool wrapAround = false;
+  bool doRotate   = false;
   
   kdtree *tree;
 
@@ -156,15 +182,17 @@ class Utilities
 {
   
 public:
-  
+    
   double col2Lat        ( double &in, char flag );
-  void rotate           ( Model_file &mod );   
+  void rotate           ( double &x, double &y, double &z, double &xRot, 
+                          double &yRot, double &zRot, Model_file &mod );   
   void xyz2ColLonRadDeg ( double &x,   double &y,   double &z, 
                           double &col, double &lon, double &rad );
   void xyz2ColLonRadRad ( double &x,   double &y,   double &z, 
                           double &col, double &lon, double &rad );
   void colLonRadDeg2xyz ( double  col, double  lon, double  rad,
-                          double &x,   double &y,   double &z ); 
+                          double &x,   double &y,   double &z );  
+  void inquireRotate    ( Model_file &mod );
   void colLonRadRad2xyz ( double col,  double lon,  double rad,
                           double &x,   double &y,   double &z );                          
   void convertBary      ( double &xp, double &yp, double &zp, 

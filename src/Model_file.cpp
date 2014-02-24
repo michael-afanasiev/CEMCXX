@@ -169,13 +169,20 @@ void Model_file::colLonRad2xyzSES3D ()
         
           x[l] = rad[r][k] * cos ( lon_rad[r][j] ) * sin ( col_rad[r][i] );
           y[l] = rad[r][k] * sin ( lon_rad[r][j] ) * sin ( col_rad[r][i] );
-          z[l] = rad[r][k] * cos ( col_rad[r][i] );                    
+          z[l] = rad[r][k] * cos ( col_rad[r][i] );            
           l++;
         
         }
       }    
     }
   }
+  
+  xMin = *min_element ( x.begin(), x.end() );
+  xMax = *max_element ( x.begin(), x.end() );
+  yMin = *min_element ( y.begin(), y.end() );
+  yMax = *max_element ( y.begin(), y.end() );
+  zMin = *min_element ( z.begin(), z.end() );
+  zMax = *max_element ( z.begin(), z.end() );
     
 }
 
@@ -199,12 +206,32 @@ void Model_file::populateRadiansSES3D ()
     }
     
     for ( int i=0; i<lon_deg[r].size()-1; i++ ) {
+      
       lon_deg[r][i] = (lon_deg[r][i] + lon_deg[r][i+1]) / 2.;
       if ( lon_deg[r][i] < lonMin ) {
-        lonMin = lon_deg[r][i];
+        lonMin = lon_deg[r][i];     
       } else if ( lon_deg[r][i] > lonMax ) {
         lonMax = lon_deg[r][i];
       }
+      
+      if ( (lon_deg[r][i] >    0.) && (lon_deg[r][i] <  90.) )
+        lonReg1 = true;      
+      if ( (lon_deg[r][i] >   90.) && (lon_deg[r][i] < 180.) )
+        lonReg2 = true;      
+      if ( (lon_deg[r][i] >  180.) && (lon_deg[r][i] < 270.) )
+        lonReg3 = true;      
+      if ( (lon_deg[r][i] >  270.) && (lon_deg[r][i] < 360.) )
+        lonReg4 = true;      
+      if ( (lon_deg[r][i] >  360.) && (lon_deg[r][i] < 450.) )
+        lonReg3 = true;
+      if ( (lon_deg[r][i] > -180.) && (lon_deg[r][i] < -90.) )
+        lonReg3 = true;
+      if ( (lon_deg[r][i] >  -90.) && (lon_deg[r][i] <   0.) )
+        lonReg4 = true;
+      
+      if ( lonReg2 == true && lonReg3 == true )
+        wrapAround = true;
+                        
     }
     
     for ( int i=0; i<rad[r].size()-1; i++ ) {
@@ -218,10 +245,7 @@ void Model_file::populateRadiansSES3D ()
     }
         
   }
-  
-  if ( lonMax > 180. ) {
-    lonMax = 360. - lonMax;
-  }
+    
 
   for ( int r=0; r<col_deg.size(); r++ ) {
     
@@ -362,7 +386,7 @@ void Model_file::readSES3D ()
   // Generic -- we of course always need 3D coordinates.
   populateSES3D ( imd + "block_m_x", num_regions, num_x, col_deg, 'c' );
   populateSES3D ( imd + "block_m_y", num_regions, num_y, lon_deg, 'c' );
-  populateSES3D ( imd + "block_m_z", num_regions, num_z, rad, 'c' );
+  populateSES3D ( imd + "block_m_z", num_regions, num_z, rad,     'c' );
   
   // Options for specific physics systems.  
   if ( intentions == "INTERPOLATE" ) {

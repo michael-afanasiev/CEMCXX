@@ -39,67 +39,44 @@ void Exodus_file::merge ( Region &reg, Model_file &mod )
   
   cout << "Merging model.\n";
       
-  if ( mod.colMax <= 90. ) {
-    colReg.push_back ("col0-90");    
-  }
-  if ( (mod.colMax >= 90.) && (mod.colMin >= 90.) ) {
-    colReg.push_back ("col90-180");
-  }
-  if ( (mod.colMax >= 90.) && (mod.colMin <= 90.) ) {
+
+  if ( mod.colReg1 == true )
     colReg.push_back ("col0-90");
+  if ( mod.colReg2 == true )
     colReg.push_back ("col90-180");
-  } 
-  
-  double lonMinLoc = mod.lonMin;
-  double lonMaxLoc = mod.lonMax;
-  
-  for ( int l=0; l<=270; l+=90 ) {
-      
-    if ( lonMinLoc < 0. ) {
-      lonMinLoc = 180. - lonMinLoc;                
-    }
-    if ( lonMaxLoc < 0. ) {
-      lonMaxLoc = 180. - lonMaxLoc;        
-    }
     
-    if ( (lonMinLoc >= l) && (lonMaxLoc <= l+90) ) {
-      
-      string dum1 = to_string (l);
-      string dum2 = to_string (l+90);            
-      string full = "lon";
-      
-      full.append (dum1);
-      full.append ("-");
-      full.append (dum2);
-      
-      lonReg.push_back (full);      
-            
-    }      
-  }
+  if ( mod.lonReg1 == true )
+    lonReg.push_back ("lon0-90");
+  if ( mod.lonReg2 == true )
+    lonReg.push_back ("lon90-180");
+  if ( mod.lonReg3 == true )
+    lonReg.push_back ("lon180-270");
+  if ( mod.lonReg4 == true )
+    lonReg.push_back ("lon270-360");
+                    
+  // if ( mod.radMin <= 1221 ) {
+  //   radReg.push_back ( "rad0-1221" );
+  // }
+  //   
+  // if ( mod.radMin <= 3480 ) {
+  //   radReg.push_back ( "rad1221-3480" );
+  // }
+  //   
+  // if ( mod.radMin <= 5371 ) {
+  //   radReg.push_back ( "rad3480-5371" );
+  // }
+  // 
+  // if ( mod.radMin <= 6271 ) {        
+  //   radReg.push_back ( "rad5371-6271" );        
+  // }
+  //  
+  // if ( mod.radMin <= 6319 ) {
+  //   radReg.push_back ( "rad6271-6319" );        
+  // }
     
-  if ( mod.radMin <= 1221 ) {
-    radReg.push_back ( "rad0-1221" );
-  }
-    
-  if ( mod.radMin <= 3480 ) {
-    radReg.push_back ( "rad1221-3480" );
-  }
-    
-  if ( mod.radMin <= 5371 ) {
-    radReg.push_back ( "rad3480-5371" );
-  }
-  
-  if ( mod.radMin <= 6271 ) {        
-    radReg.push_back ( "rad5371-6271" );        
-  }
-   
-  if ( mod.radMin <= 6319 ) {
-    radReg.push_back ( "rad6271-6319" );        
-  }
-    
-  if ( mod.radMin <= 6351 ) {
-    radReg.push_back ( "rad6319-6351" );
-  }
+  // if ( mod.radMin <= 6351 ) {
+  //   radReg.push_back ( "rad6319-6351" );
+  // }
    
   if ( mod.radMin <= 6371 ) {    
     radReg.push_back ( "rad6351-6371" );
@@ -122,7 +99,7 @@ void Exodus_file::merge ( Region &reg, Model_file &mod )
                         
         reg.regionsExo.push_back ( currentExo );
         reg.regionsExo[l].fname = call;
-        
+
         l++;
                         
       }

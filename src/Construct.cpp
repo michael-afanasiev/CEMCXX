@@ -33,7 +33,7 @@ int main ()
   dis.read           ( );
   
   // Rotate model coordinates if necessary.
-  utl.rotate         ( mod );
+  utl.inquireRotate  ( mod );
       
   // Project to elastic tensor.
   mod.openUp         ( );
@@ -45,6 +45,7 @@ int main ()
   {
     
     cout << "\n----- Interpolating -----\n";
+    cout << "\n";
     
     mod.createKDTreeUnpacked ( );
     dis.createKDTreePacked   ( );
@@ -96,7 +97,7 @@ int main ()
       {
         
         utl.xyz2ColLonRadRad ( mod.x[i], mod.y[i], mod.z[i], col, lon, rad );
-                      
+                              
         if ( (rad <= msh.radMax) && 
              (rad >= msh.radMin) &&
              (lon <= msh.lonMax) &&

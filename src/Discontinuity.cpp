@@ -11,14 +11,20 @@ void Discontinuity::read ()
 
   // Read moho depth and crustal parameters.
   mod.populateSES3D ( cmd + "/crust_x_smooth",   dum1, dum2, crust_col_deg, 
-    'c' );
+  'c' );
   mod.populateSES3D ( cmd + "/crust_y_smooth",   dum1, dum2, crust_lon_deg, 
-    'c' );
+  'c' );
   mod.populateSES3D ( cmd + "/crust_vs_smooth",  dum1, dum2, crust_vs, 'p' );
   mod.populateSES3D ( cmd + "/crust_dep_smooth", dum1, dum2, crust_dp, 'p' );  
 
+  for ( int i=0; i<crust_lon_deg[0].size(); i++ ) {
+    if ( crust_lon_deg[0][i] > 180. )
+      crust_lon_deg[0][i] = crust_lon_deg[0][i] - 360.;      
+  }
+
   mod.populateRadians ( crust_col_deg, crust_col_rad );
   mod.populateRadians ( crust_lon_deg, crust_lon_rad );
+  
 
 }
 
@@ -57,10 +63,10 @@ void Discontinuity::lookCrust ( Mesh &msh, double &mshCol, double &mshLon,
   
   if ( mshRad > (con.R_EARTH - 100) ) {          
 
-    kdres *set = kd_nearest3 ( tree, mshCol, mshLon, con.R_EARTH );         
+    kdres *set = kd_nearest3      ( tree, mshCol, mshLon, con.R_EARTH );         
     void *ind  = kd_res_item_data ( set );
     int  point = * ( int * ) ind;
-
+    
     if ( mshRad >= (con.R_EARTH - crust_dp[0][point]) ) {
   
       double crust_vsv = crust_vs[0][point] - con.aniCorrection;

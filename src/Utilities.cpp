@@ -73,76 +73,118 @@ void Utilities::colLonRadRad2xyz ( double col,  double lon,  double rad,
   y = rad * sin (lon) * sin (col);
   z = rad * cos (col);  
   
-}                                
+}      
 
-void Utilities::rotate ( Model_file &mod )
+void Utilities::inquireRotate ( Model_file &mod )
 {
-  /**
-  Just a classic rotation matrix. Give me x, y, z and I'll give x_out, y_out
-  z_out
-  */
+  
+  if ( mod.rotAng != 0 ) 
+  {
+    
+    mod.doRotate = true;
+    
+    double a = mod.rotRad;
+    double x = mod.rotVecX;
+    double y = mod.rotVecY;
+    double z = mod.rotVecZ;
+
+    std::cout << "Rotation found. Rotating model " << mod.rotAng << 
+      " degrees about ( " << x << ", " << y << ", " << z << " )." << std::endl;
+  
+    double colMin = 180.;
+    double colMax = 0.;
+    double lonMin = 360.;
+    double lonMax = -360.;
+    double radMin = 6371.;
+    double radMax = 0.;
+  
+    double col, lon, rad;
+  
+    mod.rot11 = cos(a) + (x * x) * (1 - cos(a));
+    mod.rot21 = z * sin(a) + x * y * (1 - cos(a));
+    mod.rot31 = y * sin(a) + x * z * (1 - cos(a));
+    mod.rot12 = x * y * (1 - cos(a)) - z * sin(a);
+    mod.rot22 = cos(a) + (y * y) * (1 - cos(a));
+    mod.rot32 = x * sin(a) + y * z * (1 - cos(a));
+    mod.rot13 = y * sin(a) + x * z * (1 - cos(a));
+    mod.rot23 = x * sin(a) + y * z * (1 - cos(a));
+    mod.rot33 = cos(a) + (z * x) * (1 - cos(a));
+  
+    mod.rot23 = (-1) * mod.rot23;
+    mod.rot31 = (-1) * mod.rot31; 
+  
+    for ( int i=0; i<mod.x.size(); i++ ) 
+    {
+    
+      double xNew = mod.rot11 * mod.x[i] + mod.rot21 * mod.y[i] + 
+        mod.rot31 * mod.z[i];
+      double yNew = mod.rot12 * mod.x[i] + mod.rot22 * mod.y[i] + 
+        mod.rot32 * mod.z[i];
+      double zNew = mod.rot13 * mod.x[i] + mod.rot23 * mod.y[i] + 
+        mod.rot33 * mod.z[i]; 
+    
+      xyz2ColLonRadDeg ( xNew, yNew, zNew, col, lon, rad );
+      
+      if ( (col >  0.) && (col <  90.) )
+        mod.colReg1 = true;
+      if ( (col > 90.) && (col < 180.) )
+        mod.colReg2 = true;
+      
+      if ( (lon >    0.) && (lon <  90.) )
+        mod.lonReg1 = true;      
+      if ( (lon >   90.) && (lon < 180.) )
+        mod.lonReg2 = true;      
+      if ( (lon >  180.) && (lon < 270.) )
+        mod.lonReg3 = true;      
+      if ( (lon >  270.) && (lon < 360.) )
+        mod.lonReg4 = true;      
+      if ( (lon >  360.) && (lon < 450.) )
+        mod.lonReg3 = true;
+      if ( (lon > -180.) && (lon < -90.) )
+        mod.lonReg3 = true;
+      if ( (lon >  -90.) && (lon <   0.) )
+        mod.lonReg4 = true;
+      
+    }
+        
+    a         = ( -1 ) * mod.rotRad;
+    mod.rot11 = cos(a) + (x * x) * (1 - cos(a));
+    mod.rot21 = z * sin(a) + x * y * (1 - cos(a));
+    mod.rot31 = y * sin(a) + x * z * (1 - cos(a));
+    mod.rot12 = x * y * (1 - cos(a)) - z * sin(a);
+    mod.rot22 = cos(a) + (y * y) * (1 - cos(a));
+    mod.rot32 = x * sin(a) + y * z * (1 - cos(a));
+    mod.rot13 = y * sin(a) + x * z * (1 - cos(a));
+    mod.rot23 = x * sin(a) + y * z * (1 - cos(a));
+    mod.rot33 = cos(a) + (z * x) * (1 - cos(a));
+
+    mod.rot23 = (-1) * mod.rot23;
+    mod.rot31 = (-1) * mod.rot31;   
+    
+  }
+    
+}                          
+
+void Utilities::rotate ( double &xOld, double &yOld, double &zOld, 
+                         double &xNew, double &yNew, double &zNew,
+                         Model_file &mod )
+{
   
   Constants con;
   
-  if ( mod.rotAng != 0 )
-  cout << "Rotating model by " << mod.rotAng << " degrees about (" <<
-    mod.rotVecX << ", " << mod.rotVecY << ", " << mod.rotVecZ << ")\n";
-  
-  double a = mod.rotRad;
-  double x = mod.rotVecX;
-  double y = mod.rotVecY;
-  double z = mod.rotVecZ;
+  if ( mod.doRotate == true ) {
     
-  double rot11 = cos(a) + (x * x) * (1 - cos(a));
-  double rot22 = cos(a) + (y * y) * (1 - cos(a));
-  double rot33 = cos(a) + (z * z) * (1 - cos(a));  
-  double rot21 = z * sin(a) + x * y * (1 - cos(a));
-  double rot31 = y * sin(a) + x * z * (1 - cos(a));
-  double rot32 = x * sin(a) + y * z * (1 - cos(a));
-  double rot13 = y * sin(a) + x * z * (1 - cos(a));
-  double rot23 = x * sin(a) + y * z * (1 - cos(a));
-  double rot12 = x * y * (1 - cos(a)) - z * sin(a);
-  
-  mod.colMin = 180.;
-  mod.colMax = 0.;
-  mod.lonMin = 180.;
-  mod.lonMax = -180.;
-  mod.radMin = 6371.;
-  mod.radMax = 0.;
-  
-  
-  for ( int i=0; i<mod.x.size (); i++ ) {  
-    mod.x[i] = rot11 * mod.x[i] + rot12 * mod.y[i] + rot13 * mod.z[i];
-    mod.y[i] = rot21 * mod.x[i] + rot22 * mod.y[i] + rot23 * mod.z[i];
-    mod.z[i] = rot31 * mod.x[i] + rot32 * mod.y[i] + rot33 * mod.z[i]; 
+    xNew = mod.rot11 * xOld + mod.rot21 * yOld + mod.rot31 * zOld;
+    yNew = mod.rot12 * xOld + mod.rot22 * yOld + mod.rot32 * zOld;
+    zNew = mod.rot13 * xOld + mod.rot23 * yOld + mod.rot33 * zOld; 
+      
+  } else {
     
-    double col, lon, rad;  
+    xNew = xOld;
+    yNew = yOld;
+    zNew = zOld;
     
-    xyz2ColLonRadDeg ( mod.x[i], mod.y[i], mod.z[i], col, lon, rad );
-    
-    if ( (mod.x[i] != 0) || (mod.y[i] != 0) ) {
-
-      if ( col < mod.colMin )
-        mod.colMin = col;
-      if ( col > mod.colMax )
-        mod.colMax = col;
-      if ( lon < mod.lonMin )
-        mod.lonMin = lon;
-      if ( lon > mod.lonMax )
-        mod.lonMax = lon;
-      if ( rad < mod.radMin )
-        mod.radMin = rad;
-      if ( rad > mod.radMax )
-        mod.radMax = rad;
-    
-    }
-
-    if ( (mod.x[i] == 0) && (mod.y[i] == 0) && (mod.z[i] > 0) )
-      mod.colMin = 0;
-    if ( (mod.x[i] == 0) && (mod.y[i] == 0) && (mod.z[i] < 0) )
-      mod.colMax = 180;
-    
-  }
+  }  
       
 }
 
