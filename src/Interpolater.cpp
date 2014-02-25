@@ -226,8 +226,9 @@ int Interpolator::recover ( double &testX, double &testY, double &testZ,
   
   /* Here we keep track of whether we've found the variable, and if this is our
   first try. Assume we haven't found it at first.*/
-  bool found=false;  
-  bool first=true;
+  bool found = false;  
+  bool first = true;
+  int  count = 0;
   int  point;
   
   while ( found == false ) {
@@ -236,11 +237,6 @@ int Interpolator::recover ( double &testX, double &testY, double &testZ,
     kdres *set  = kd_nearest3 ( tree, testX, testY, testZ );
     void *ind_p = kd_res_item_data ( set );
     int point   = * ( int * ) ind_p;
-    
-    // cout << "Query: " << testX << " " << testY << " " << testZ << "\n";
-    // cout << "Res:   " << msh.xmsh[point] << " " << msh.ymsh[point] << " " <<
-    //   msh.zmsh[point] << "\n";
-    // cin.get ();
         
     // Find the originally requested col, lon, and rad.
     if ( first == true ) {      
@@ -405,6 +401,7 @@ int Interpolator::recover ( double &testX, double &testY, double &testZ,
     stuff */
     if ( found == false ) {                
       
+      count++;
       /* For col and lon, randomly choose which direction to look. This might
       be able to be switched to a more direction search (i.e. we look in the
       direction which is towards the requested point), but this is certainly
@@ -436,6 +433,12 @@ int Interpolator::recover ( double &testX, double &testY, double &testZ,
       
       /* Create a new testX, Y, and Z, point for the recursive search. */
       util.colLonRadRad2xyz ( colTest, lonTest, radTest, testX, testY, testZ );
+      
+      if ( count > 1000000 ) {
+        cout << "We're looping baby. Looping forever. And ever. " << 
+          "Boring! I'm outta here.\n";
+        exit ( EXIT_FAILURE );
+      }
       
     }    
   }  

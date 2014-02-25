@@ -298,7 +298,7 @@ void Mesh::getConnectivity ( int exoid )
   }     
 }
 
-void Mesh::deallocateMesh ( Model_file mod )
+void Mesh::deallocateMesh ( Model_file &mod )
 {
   
   delete [] xmsh;
