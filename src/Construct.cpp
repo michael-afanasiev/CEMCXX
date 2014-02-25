@@ -63,7 +63,7 @@ int main ()
       msh.getInfo            ( exoFile -> idexo, 'p' );    
       ipl.interpolate        ( msh, mod, dis );
       exoFile -> writeParams ( msh );
-      msh.deallocateMesh     ( );
+      msh.deallocateMesh     ( mod );
       exoFile -> closeFile   ( );      
     
     }
@@ -93,10 +93,15 @@ int main ()
       msh.createKDTreeUnpacked ( );            
       
       cout << "Extracting." << endl;
-      for ( int i=0; i<mod.x.size(); i++ ) 
+      for ( int i=0; i<mod.x.size(); i++ )         
       {
         
-        utl.xyz2ColLonRadRad ( mod.x[i], mod.y[i], mod.z[i], col, lon, rad );
+        
+        utl.rotateForward    ( mod.x[i], mod.y[i], mod.z[i], testX, 
+                               testY, testZ, mod );
+        
+        utl.xyz2ColLonRadRad ( testX, testY, testZ, col, lon, rad ); 
+                                      
                               
         if ( (rad <= msh.radMax) && 
              (rad >= msh.radMin) &&
@@ -106,9 +111,10 @@ int main ()
              (col >= msh.colMin ) ) 
         {
                                                
-        int pass = ipl.recover ( mod.x[i], mod.y[i], mod.z[i], msh.tree, 
-        msh, c11, c12, c13, c14, c15, c16, c22, c23, c24, c25, c26,
-        c33, c34, c35, c36, c44, c45, c46, c55, c56, c66, rho, 'p' ); 
+                                               
+        int pass = ipl.recover ( testX, testY, testZ, msh.tree, 
+          msh, c11, c12, c13, c14, c15, c16, c22, c23, c24, c25, c26,
+          c33, c34, c35, c36, c44, c45, c46, c55, c56, c66, rho, 'p' ); 
         
         mod.c11[i]    = c11;
         mod.c12[i]    = c12;
@@ -124,7 +130,7 @@ int main ()
         }                          
       }        
 
-      msh.deallocateMesh   ( );
+      msh.deallocateMesh   ( mod );
       exoFile -> closeFile ( );                 
     }
     

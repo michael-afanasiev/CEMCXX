@@ -55,10 +55,11 @@ void Mesh::getMinMaxRad ( )
   double col, lon, rad;
   
   cout << "Determining col/lon/rad box.\n";
+  
   for ( int i=0; i<num_nodes; i++ ) {
     
     util.xyz2ColLonRadDeg ( xmsh[i], ymsh[i], zmsh[i], col, lon, rad );    
-
+            
     if ( (xmsh[i] != 0) || (ymsh[i] != 0) ) {
 
       if ( col < colMin )
@@ -73,7 +74,7 @@ void Mesh::getMinMaxRad ( )
         radMin = rad;
       if ( rad > radMax )
         radMax = rad;
-    
+          
     }
 
     if ( (xmsh[i] == 0) && (ymsh[i] == 0) && (zmsh[i] > 0) )
@@ -82,6 +83,15 @@ void Mesh::getMinMaxRad ( )
       colMax = 180;
     
   }
+      
+  if ( (lonMax == 180.) && (lonMin < 0.) ) 
+  {    
+    lonMin = -90;
+    lonMax = -180;
+  }
+  
+  if ( lonMax < lonMin )
+    swap ( lonMax, lonMin );
         
   colMin = colMin * con.PI / con.o80;
   colMax = colMax * con.PI / con.o80;
@@ -288,7 +298,7 @@ void Mesh::getConnectivity ( int exoid )
   }     
 }
 
-void Mesh::deallocateMesh ()
+void Mesh::deallocateMesh ( Model_file mod )
 {
   
   delete [] xmsh;
@@ -323,7 +333,8 @@ void Mesh::deallocateMesh ()
   delete [] du2;
   delete [] du3;
   
-  kd_free ( tree );
+  if ( mod.intentions == "EXTRACT" )
+    kd_free ( tree );
   
   // TODO Add data destructor.
     

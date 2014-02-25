@@ -98,15 +98,25 @@ public:
   double *c66;
   double *rhoMsh;
   
-  double rot11;
-  double rot21;
-  double rot31;
-  double rot12;
-  double rot22;
-  double rot32;
-  double rot13;
-  double rot23;
-  double rot33;
+  double forRot11;
+  double forRot21;
+  double forRot31;
+  double forRot12;
+  double forRot22;
+  double forRot32;
+  double forRot13;
+  double forRot23;
+  double forRot33;
+
+  double backRot11;
+  double backRot21;
+  double backRot31;
+  double backRot12;
+  double backRot22;
+  double backRot32;
+  double backRot13;
+  double backRot23;
+  double backRot33;
   
   bool colReg1    = false;
   bool colReg2    = false;
@@ -184,7 +194,9 @@ class Utilities
 public:
     
   double col2Lat        ( double &in, char flag );
-  void rotate           ( double &x, double &y, double &z, double &xRot, 
+  void rotateForward    ( double &x, double &y, double &z, double &xRot, 
+                          double &yRot, double &zRot, Model_file &mod );   
+  void rotateBackward   ( double &x, double &y, double &z, double &xRot, 
                           double &yRot, double &zRot, Model_file &mod );   
   void xyz2ColLonRadDeg ( double &x,   double &y,   double &z, 
                           double &col, double &lon, double &rad );
@@ -330,7 +342,7 @@ public:
   void allocateMesh         ( );
   void reNormalize          ( Model_file &mod );
   void getConnectivity      ( int exoid );
-  void deallocateMesh       ( );
+  void deallocateMesh       ( Model_file &mod );
   void createKDTreeUnpacked ( );
   void getMinMaxRad         ( );
            

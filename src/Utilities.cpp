@@ -81,7 +81,14 @@ void Utilities::inquireRotate ( Model_file &mod )
   if ( mod.rotAng != 0 ) 
   {
     
-    mod.doRotate = true;
+    mod.doRotate   = true;
+    mod.colReg1    = false;
+    mod.colReg2    = false;
+    mod.lonReg1    = false;
+    mod.lonReg2    = false;
+    mod.lonReg3    = false;
+    mod.lonReg4    = false;
+    mod.wrapAround = false;      
     
     double a = mod.rotRad;
     double x = mod.rotVecX;
@@ -100,28 +107,28 @@ void Utilities::inquireRotate ( Model_file &mod )
   
     double col, lon, rad;
   
-    mod.rot11 = cos(a) + (x * x) * (1 - cos(a));
-    mod.rot21 = z * sin(a) + x * y * (1 - cos(a));
-    mod.rot31 = y * sin(a) + x * z * (1 - cos(a));
-    mod.rot12 = x * y * (1 - cos(a)) - z * sin(a);
-    mod.rot22 = cos(a) + (y * y) * (1 - cos(a));
-    mod.rot32 = x * sin(a) + y * z * (1 - cos(a));
-    mod.rot13 = y * sin(a) + x * z * (1 - cos(a));
-    mod.rot23 = x * sin(a) + y * z * (1 - cos(a));
-    mod.rot33 = cos(a) + (z * x) * (1 - cos(a));
+    mod.forRot11 = cos(a) + (x * x) * (1 - cos(a));
+    mod.forRot21 = z * sin(a) + x * y * (1 - cos(a));
+    mod.forRot31 = y * sin(a) + x * z * (1 - cos(a));
+    mod.forRot12 = x * y * (1 - cos(a)) - z * sin(a);
+    mod.forRot22 = cos(a) + (y * y) * (1 - cos(a));
+    mod.forRot32 = x * sin(a) + y * z * (1 - cos(a));
+    mod.forRot13 = y * sin(a) + x * z * (1 - cos(a));
+    mod.forRot23 = x * sin(a) + y * z * (1 - cos(a));
+    mod.forRot33 = cos(a) + (z * x) * (1 - cos(a));
   
-    mod.rot23 = (-1) * mod.rot23;
-    mod.rot31 = (-1) * mod.rot31; 
+    mod.forRot23 = (-1) * mod.forRot23;
+    mod.forRot31 = (-1) * mod.forRot31; 
   
     for ( int i=0; i<mod.x.size(); i++ ) 
     {
     
-      double xNew = mod.rot11 * mod.x[i] + mod.rot21 * mod.y[i] + 
-        mod.rot31 * mod.z[i];
-      double yNew = mod.rot12 * mod.x[i] + mod.rot22 * mod.y[i] + 
-        mod.rot32 * mod.z[i];
-      double zNew = mod.rot13 * mod.x[i] + mod.rot23 * mod.y[i] + 
-        mod.rot33 * mod.z[i]; 
+      double xNew = mod.forRot11 * mod.x[i] + mod.forRot21 * mod.y[i] + 
+        mod.forRot31 * mod.z[i];
+      double yNew = mod.forRot12 * mod.x[i] + mod.forRot22 * mod.y[i] + 
+        mod.forRot32 * mod.z[i];
+      double zNew = mod.forRot13 * mod.x[i] + mod.forRot23 * mod.y[i] + 
+        mod.forRot33 * mod.z[i]; 
     
       xyz2ColLonRadDeg ( xNew, yNew, zNew, col, lon, rad );
       
@@ -147,36 +154,59 @@ void Utilities::inquireRotate ( Model_file &mod )
       
     }
         
-    a         = ( -1 ) * mod.rotRad;
-    mod.rot11 = cos(a) + (x * x) * (1 - cos(a));
-    mod.rot21 = z * sin(a) + x * y * (1 - cos(a));
-    mod.rot31 = y * sin(a) + x * z * (1 - cos(a));
-    mod.rot12 = x * y * (1 - cos(a)) - z * sin(a);
-    mod.rot22 = cos(a) + (y * y) * (1 - cos(a));
-    mod.rot32 = x * sin(a) + y * z * (1 - cos(a));
-    mod.rot13 = y * sin(a) + x * z * (1 - cos(a));
-    mod.rot23 = x * sin(a) + y * z * (1 - cos(a));
-    mod.rot33 = cos(a) + (z * x) * (1 - cos(a));
+    a             = ( -1 ) * mod.rotRad;
+    mod.backRot11 = cos(a) + (x * x) * (1 - cos(a));
+    mod.backRot21 = z * sin(a) + x * y * (1 - cos(a));
+    mod.backRot31 = y * sin(a) + x * z * (1 - cos(a));
+    mod.backRot12 = x * y * (1 - cos(a)) - z * sin(a);
+    mod.backRot22 = cos(a) + (y * y) * (1 - cos(a));
+    mod.backRot32 = x * sin(a) + y * z * (1 - cos(a));
+    mod.backRot13 = y * sin(a) + x * z * (1 - cos(a));
+    mod.backRot23 = x * sin(a) + y * z * (1 - cos(a));
+    mod.backRot33 = cos(a) + (z * x) * (1 - cos(a));
 
-    mod.rot23 = (-1) * mod.rot23;
-    mod.rot31 = (-1) * mod.rot31;   
+    mod.backRot23 = (-1) * mod.backRot23;
+    mod.backRot31 = (-1) * mod.backRot31;   
     
   }
     
 }                          
 
-void Utilities::rotate ( double &xOld, double &yOld, double &zOld, 
-                         double &xNew, double &yNew, double &zNew,
-                         Model_file &mod )
+void Utilities::rotateForward ( double &xOld, double &yOld, double &zOld, 
+                                double &xNew, double &yNew, double &zNew,
+                                Model_file &mod )
 {
   
   Constants con;
   
   if ( mod.doRotate == true ) {
     
-    xNew = mod.rot11 * xOld + mod.rot21 * yOld + mod.rot31 * zOld;
-    yNew = mod.rot12 * xOld + mod.rot22 * yOld + mod.rot32 * zOld;
-    zNew = mod.rot13 * xOld + mod.rot23 * yOld + mod.rot33 * zOld; 
+    xNew = mod.forRot11 * xOld + mod.forRot21 * yOld + mod.forRot31 * zOld;
+    yNew = mod.forRot12 * xOld + mod.forRot22 * yOld + mod.forRot32 * zOld;
+    zNew = mod.forRot13 * xOld + mod.forRot23 * yOld + mod.forRot33 * zOld; 
+      
+  } else {
+    
+    xNew = xOld;
+    yNew = yOld;
+    zNew = zOld;
+    
+  }  
+      
+}
+
+void Utilities::rotateBackward ( double &xOld, double &yOld, double &zOld, 
+                                 double &xNew, double &yNew, double &zNew,
+                                 Model_file &mod )
+{
+  
+  Constants con;
+  
+  if ( mod.doRotate == true ) {
+    
+    xNew = mod.backRot11 * xOld + mod.backRot21 * yOld + mod.backRot31 * zOld;
+    yNew = mod.backRot12 * xOld + mod.backRot22 * yOld + mod.backRot32 * zOld;
+    zNew = mod.backRot13 * xOld + mod.backRot23 * yOld + mod.backRot33 * zOld; 
       
   } else {
     

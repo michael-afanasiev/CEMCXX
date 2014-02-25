@@ -25,7 +25,8 @@ void Interpolator::interpolate ( Mesh &msh, Model_file &mod, Discontinuity &dis 
     
     dis.inCrust = false;
     
-    utl.rotate ( msh.xmsh[i], msh.ymsh[i], msh.zmsh[i], xRot, yRot, zRot, mod );
+    utl.rotateBackward ( msh.xmsh[i], msh.ymsh[i], msh.zmsh[i], xRot, 
+      yRot, zRot, mod );
     
     utl.xyz2ColLonRadDeg ( msh.xmsh[i], msh.ymsh[i], msh.zmsh[i], 
       mshColOld, mshLonOld, mshRadOld );
@@ -101,7 +102,7 @@ void Interpolator::exterpolator ( Mesh &msh, Exodus_file &exo, Model_file &mod )
             util.colLonRadRad2xyz ( mod.col_rad[r][i], mod.lon_rad[r][j], 
               mod.rad[r][k], testX, testY, testZ );
                           
-           int pass = recover ( testX, testY, testZ, msh.tree, msh,
+            int pass = recover ( testX, testY, testZ, msh.tree, msh,
               c11, c12, c13, c14, c15, c16, c22, c23, c24, c25, c26,
               c33, c34, c35, c36, c44, c45, c46, c55, c56, c66,
               rho, 'p' );
