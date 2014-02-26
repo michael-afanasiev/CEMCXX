@@ -300,19 +300,25 @@ void Model_file::openUp ( )
   NOTE :: eta is set to 1 in this case. This may need to
   be changed in the future.
   */
-  cout << "Changing physics.\n";
   
-  if ( input_model_physics == "TTI" ) {
-    c11    = new double [num_p]();
-    c12    = new double [num_p]();
-    c13    = new double [num_p]();
-    c22    = new double [num_p]();
-    c23    = new double [num_p]();
-    c33    = new double [num_p]();
-    c44    = new double [num_p]();
-    c55    = new double [num_p]();
-    c66    = new double [num_p]();  
-    rhoMsh = new double [num_p]();
+  if ( input_model_physics == "TTI" && intentions == "INTERPOLATE" ) {
+    rhoUnwrap = new double [num_p]();
+    vppUnwrap = new double [num_p]();
+    vshUnwrap = new double [num_p]();
+    vsvUnwrap = new double [num_p]();
+  }
+  
+  if ( output_model_physics == "TTI" && intentions == "EXTRACT" ) {
+    c11       = new double [num_p]();
+    c12       = new double [num_p]();
+    c13       = new double [num_p]();
+    c22       = new double [num_p]();
+    c23       = new double [num_p]();
+    c33       = new double [num_p]();
+    c44       = new double [num_p]();
+    c55       = new double [num_p]();
+    c66       = new double [num_p]();
+    rhoUnwrap = new double [num_p]();
   }
     
   if ( intentions == "INTERPOLATE" ) {
@@ -322,24 +328,10 @@ void Model_file::openUp ( )
       
         if ( input_model_physics == "TTI" ) {
                 
-          double N = rho[r][i] * vsh[r][i] * vsh[r][i];
-          double L = rho[r][i] * vsv[r][i] * vsv[r][i];
-          double A = rho[r][i] * vpp[r][i] * vpp[r][i];
-    
-          double C = A;
-          double F = A - 2 * L;
-          double S = A - 2 * N;
-      
-          c11[l]    = C;
-          c12[l]    = F;
-          c13[l]    = F;
-          c22[l]    = A;
-          c23[l]    = S;
-          c33[l]    = A;
-          c44[l]    = N;
-          c55[l]    = L;
-          c66[l]    = L;            
-          rhoMsh[l] = rho[r][i];
+          vsvUnwrap[l] = vsv[r][i];
+          vshUnwrap[l] = vsh[r][i];
+          vppUnwrap[l] = vpp[r][i];  
+          rhoUnwrap[l] = rho[r][i];
                           
         }
       
@@ -363,10 +355,10 @@ void Model_file::projectSubspace ( )
         for ( int k=0; k<(rad[r].size()-1); k++ ) {
           
           if ( input_model_physics == "TTI" ) {
-            vsh[r][l] = sqrt (c44[ll] / rhoMsh[ll]);
-            vsv[r][l] = sqrt (c55[ll] / rhoMsh[ll]);
-            vpp[r][l] = sqrt (c22[ll] / rhoMsh[ll]);
-            rho[r][l] = rhoMsh[ll];
+            vsh[r][l] = sqrt (c44[ll] / rhoUnwrap[ll]);
+            vsv[r][l] = sqrt (c55[ll] / rhoUnwrap[ll]);
+            vpp[r][l] = sqrt (c22[ll] / rhoUnwrap[ll]);
+            rho[r][l] = rhoUnwrap[ll];
             l++;   
             ll++;     
           }

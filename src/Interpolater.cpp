@@ -9,7 +9,8 @@
 
 using namespace std;
 
-void Interpolator::interpolate ( Mesh &msh, Model_file &mod, Discontinuity &dis ) 
+void Interpolator::interpolate ( Mesh &msh, Model_file &mod, Discontinuity 
+  &dis ) 
 {
 
   Utilities utl;
@@ -17,113 +18,92 @@ void Interpolator::interpolate ( Mesh &msh, Model_file &mod, Discontinuity &dis 
     
   cout << "Interpolating.\n";
     
+  // Loop over every node point in the exodus file.
   for ( int i=0; i<msh.num_nodes; i++ ) {
         
-    double mshColRot, mshLonRot, mshRadRot;
-    double mshColOld, mshLonOld, mshRadOld;
-    double xRot,   yRot,   zRot;
+    // Define local variables.
+    double mshColRot, mshLonRot, mshRadRot; // Sph. Coord. in rotated domain.
+    double mshColPys, mshLonPys, mshRadPys; // Sph. Coord. in phsyical domain.
+    double xRot,      yRot,      zRot;      // Cart. Coord in rotated domain.
     
+    // At each node point, assume we are not in the crust.
     dis.inCrust = false;
     
+    /* Rotate from physical domain ( in exodus file ) to simulation domain
+    ( in SES3D file ). Grab points in simulation domain */
     utl.rotateBackward ( msh.xmsh[i], msh.ymsh[i], msh.zmsh[i], xRot, 
       yRot, zRot, mod );
     
+    /* Get sph. coord. for both physical domain ( for discontinutiy search )
+      and rotated domain ( to ensure we are only interpolating points onto the 
+      mesh which are coincident to the interpolated file ). */
     utl.xyz2ColLonRadDeg ( msh.xmsh[i], msh.ymsh[i], msh.zmsh[i], 
-      mshColOld, mshLonOld, mshRadOld );
+      mshColPys, mshLonPys, mshRadPys );
     utl.xyz2ColLonRadDeg ( xRot, yRot, zRot, mshColRot, mshLonRot, mshRadRot );
     
-    if ( mod.wrapAround == true && mshLonOld < 0. ) {
-      mshLonOld += 360;    
-    }
-    
-    if ( mod.wrapAround == true && mshLonRot < 0. ) {
+    // Handle special cases of longitude axis wrapping.
+    if ( mod.wrapAround == true && mshLonPys < 0. )
+      mshLonPys += 360;        
+    if ( mod.wrapAround == true && mshLonRot < 0. )
       mshLonRot += 360;    
-    }
       
-    dis.lookCrust ( msh, mshColOld, mshLonOld, mshRadOld, i );
-                           
+    // Check for discontinuity conditinos.
+    dis.lookCrust ( msh, mshColPys, mshLonPys, mshRadPys, i );
+
+    /* If the rotated coordinates are within the simulation domain, go ahead and
+    interpolate. */
     if ( (mshColRot >= mod.colMin && mshColRot <= mod.colMax) &&
          (mshLonRot >= mod.lonMin && mshLonRot <= mod.lonMax) &&
          (mshRadRot >= mod.radMin) ) {   
-                          
+          
+      /* Find the xyz values which are closest to the rotated point. Index of 
+      the xyz values are stored in 'point'. */       
       kdres *set   = kd_nearest3 ( mod.tree, xRot, yRot, zRot );    
       void  *ind_p = kd_res_item_data ( set );    
       int point    = * ( int * ) ind_p;
                                
+      // Check taper condition based on distance from edge of rotated model.
       double tap = taper ( mshColRot, mshLonRot, mshRadRot, mod );
+      
+      // TTI.
+      double vshExo = sqrt ( msh.c44[i] / msh.rho[i] );
+      double vsvExo = sqrt ( msh.c55[i] / msh.rho[i] );
+      double vppExo = sqrt ( msh.c22[i] / msh.rho[i] );
+      double rhoExo = msh.rho[i];
+      
+      double vshMod = mod.vshUnwrap[point];
+      double vsvMod = mod.vsvUnwrap[point];
+      double vppMod = mod.vppUnwrap[point];
+      double rhoMod = mod.rhoUnwrap[point];
+      
+      double vshUse = vshExo + tap * vshMod;
+      double vsvUse = vsvExo + tap * vsvMod;
+      double vppUse = vppExo + tap * vppMod;
+      double rhoUse = rhoExo + tap * rhoMod;
+      
+      double N = rhoUse * vshUse * vshUse;
+      double L = rhoUse * vsvUse * vsvUse;
+      double A = rhoUse * vppUse * vppUse;
+      
+      double C = A;
+      double F = A - 2 * L;
+      double S = A - 2 * N;
             
-      msh.c11[i] = msh.c11[i] + tap * mod.c11[point];
-      msh.c22[i] = msh.c22[i] + tap * mod.c22[point];
-      msh.c33[i] = msh.c33[i] + tap * mod.c33[point];
-      msh.rho[i] = msh.rho[i] + tap * mod.rhoMsh[point];      
+      msh.c11[i] = C;
+      msh.c22[i] = A;
+      msh.c33[i] = A;
+      msh.rho[i] = rhoUse;      
       
       if ( dis.inCrust == false ) {
-        msh.c12[i] = msh.c12[i] + tap * mod.c12[point];
-        msh.c13[i] = msh.c13[i] + tap * mod.c13[point];
-        msh.c23[i] = msh.c23[i] + tap * mod.c23[point];
-        msh.c44[i] = msh.c44[i] + tap * mod.c44[point];
-        msh.c55[i] = msh.c55[i] + tap * mod.c55[point];
-        msh.c66[i] = msh.c66[i] + tap * mod.c66[point];
-      }      
-            
+        msh.c12[i] = F;
+        msh.c13[i] = F;
+        msh.c23[i] = S;
+        msh.c44[i] = N;
+        msh.c55[i] = L;
+        msh.c66[i] = L;
+      }                  
     }          
   }          
-}
-
-void Interpolator::exterpolator ( Mesh &msh, Exodus_file &exo, Model_file &mod )
-{
-  
-  double c11, c12, c13, c14, c15, c16,c22, c23, c24, c25, c26, c33, c34, c35;
-  double c36, c44, c45, c46, c55, c56, c66, rho;
-  
-  double testX;
-  double testY;
-  double testZ;
-  
-  Utilities util;
-    
-  // Create element connectivity map.  
-  msh.getConnectivity ( exo.idexo );
-  
-  cout << "Extracting model.\n";  
-
-  if ( mod.input_model_file_type == "SES3D" ) {
-    
-    msh.createKDTreeUnpacked ();
-    
-    cout << "Recovering values.\n";
-    int l = 0;
-    for ( int r=0; r<mod.col_deg.size(); r++ ) {
-      for ( int i=0; i<mod.col_rad[r].size(); i++ ) {
-        for ( int j=0; j<mod.lon_rad[r].size(); j++ ) {
-          for ( int k=0; k<(mod.rad[r].size()-1); k++ ) {
-                      
-            // Test point (DEBUG).
-            util.colLonRadRad2xyz ( mod.col_rad[r][i], mod.lon_rad[r][j], 
-              mod.rad[r][k], testX, testY, testZ );
-                          
-            int pass = recover ( testX, testY, testZ, msh.tree, msh,
-              c11, c12, c13, c14, c15, c16, c22, c23, c24, c25, c26,
-              c33, c34, c35, c36, c44, c45, c46, c55, c56, c66,
-              rho, 'p' );
-                      
-            if ( mod.input_model_physics == "TTI" ) {
-              mod.vsh[r][l] = sqrt (c44 / rho);
-              mod.vsv[r][l] = sqrt (c55 / rho);
-              mod.vpp[r][l] = sqrt (c22 / rho);
-              mod.rho[r][l] = rho;
-              l++;              
-                                          
-            }
-          }
-        }
-        
-        cout << "CoLat loops left in this region: " << 
-          ( mod.col_rad[r].size() - (i + 1) ) << "\xd" << std::flush;
-      }  
-    }
-  }
-   
 }
 
 double Interpolator::taper ( double &col, double &lon, double &rad, 
@@ -202,16 +182,16 @@ double Interpolator::taper ( double &col, double &lon, double &rad,
 }
 
 int Interpolator::recover ( double &testX, double &testY, double &testZ, 
-               kdtree *tree, Mesh &msh,
-               double &c11, double &c12, double &c13, double &c14, double &c15, 
-               double &c16, double &c22, double &c23, double &c24, double &c25, 
-               double &c26, double &c33, double &c34, double &c35, double &c36, 
-               double &c44, double &c45, double &c46, double &c55, double &c56, 
-               double &c66, double &rho,
-               char mode )
+               Mesh &msh, double &c11, double &c12, double &c13, double &c14, 
+               double &c15, double &c16, double &c22, double &c23, double &c24, 
+               double &c25, double &c26, double &c33, double &c34, double &c35, 
+               double &c36, double &c44, double &c45, double &c46, double &c55, 
+               double &c56, double &c66, double &rho, char mode )
 {
   
   Utilities util;
+  
+  kdtree *tree = msh.tree;
   
   /* orig* holds the originally requested points. The test* variables are used
   to recursively search in a random region around the selected point if we don't

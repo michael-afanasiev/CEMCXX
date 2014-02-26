@@ -112,9 +112,9 @@ int main ()
         {
                                                
                                                
-        int pass = ipl.recover ( testX, testY, testZ, msh.tree, 
-          msh, c11, c12, c13, c14, c15, c16, c22, c23, c24, c25, c26,
-          c33, c34, c35, c36, c44, c45, c46, c55, c56, c66, rho, 'p' ); 
+        int pass = ipl.recover ( testX, testY, testZ, msh,  c11, c12, c13, c14, 
+          c15, c16, c22, c23, c24, c25, c26, c33, c34, c35, c36, c44, c45, c46, 
+          c55, c56, c66, rho, 'p' ); 
         
         mod.c11[i]    = c11;
         mod.c12[i]    = c12;
@@ -125,7 +125,7 @@ int main ()
         mod.c44[i]    = c44;
         mod.c55[i]    = c55;
         mod.c66[i]    = c66;            
-        mod.rhoMsh[i] = rho;   
+        mod.rhoUnwrap[i] = rho;   
         
         }                          
       }        

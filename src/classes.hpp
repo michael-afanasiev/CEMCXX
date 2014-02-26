@@ -96,8 +96,11 @@ public:
   double *c55;
   double *c56;
   double *c66;
-  double *rhoMsh;
-  
+  double *rhoUnwrap;
+  double *vshUnwrap;
+  double *vsvUnwrap;
+  double *vppUnwrap;
+      
   double forRot11;
   double forRot21;
   double forRot31;
@@ -348,37 +351,21 @@ public:
            
 };
 
-class Block 
-{
-  
-  int n_elem_glob;
-  
-  double col_min;
-  double col_max;
-  double lon_min;
-  double lon_max;
-  double rad_min;
-  double rad_max;
-  
-  double * var;
-  
-};
-
 class Interpolator
 {
   
 public: 
     
   void interpolate  ( Mesh &msh, Model_file &mod, Discontinuity &dis );  
-  double taper      ( double &x, double &y, double &z, Model_file &mod );
-  void exterpolator ( Mesh &msh, Exodus_file &exo, Model_file &mod );
-  int  recover      ( double &testX, double &testY, double &testZ, kdtree *tree,
-                      Mesh &msh,
+  int  recover      ( double &testX, double &testY, double &testZ, Mesh &msh,
                       double &c11, double &c12, double &c13, double &c14, 
                       double &c15, double &c16, double &c22, double &c23, 
                       double &c24, double &c25, double &c26, double &c33, 
                       double &c34, double &c35, double &c36, double &c44, 
                       double &c45, double &c46, double &c55, double &c56, 
                       double &c66, double &rho, char mode ); 
-
+                      
+private:
+  double taper      ( double &x, double &y, double &z, Model_file &mod );
+  
 };
