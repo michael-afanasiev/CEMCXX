@@ -1,12 +1,7 @@
-#include <iostream>
 #include <algorithm>
-#include <vector>
-#include <list>
-#include <iomanip>
 #include <assert.h>
 #include <ctype.h>
 
-#include "kdtree.h"
 #include "classes.hpp"
 
 using namespace std;

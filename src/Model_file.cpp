@@ -266,23 +266,23 @@ void Model_file::openUp ( )
   */
   
   if ( input_model_physics == "TTI" && intentions == "INTERPOLATE" ) {
-    rhoUnwrap = new double [num_p]();
-    vppUnwrap = new double [num_p]();
-    vshUnwrap = new double [num_p]();
-    vsvUnwrap = new double [num_p]();
+    rhoUnwrap.resize ( num_p );
+    vppUnwrap.resize ( num_p );
+    vshUnwrap.resize ( num_p );
+    vsvUnwrap.resize ( num_p );
   }
   
   if ( output_model_physics == "TTI" && intentions == "EXTRACT" ) {
-    c11       = new double [num_p]();
-    c12       = new double [num_p]();
-    c13       = new double [num_p]();
-    c22       = new double [num_p]();
-    c23       = new double [num_p]();
-    c33       = new double [num_p]();
-    c44       = new double [num_p]();
-    c55       = new double [num_p]();
-    c66       = new double [num_p]();
-    rhoUnwrap = new double [num_p]();
+    c11.resize ( num_p );
+    c12.resize ( num_p );
+    c13.resize ( num_p );
+    c22.resize ( num_p );
+    c23.resize ( num_p );
+    c33.resize ( num_p );
+    c44.resize ( num_p );
+    c55.resize ( num_p );
+    c66.resize ( num_p );    
+    rhoUnwrap.resize ( num_p );
   }
     
   if ( intentions == "INTERPOLATE" ) {

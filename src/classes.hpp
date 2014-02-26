@@ -8,6 +8,7 @@
 
 class Mesh;
 class Driver;
+class Region;
 class Exodus_file;
 class Interpolator;
 
@@ -68,31 +69,31 @@ public:
   std::vector <double> y;
   std::vector <double> z;
 
-  double *c11;
-  double *c12;
-  double *c13;
-  double *c14;
-  double *c15;
-  double *c16;
-  double *c22;
-  double *c23;
-  double *c24;
-  double *c25;
-  double *c26;
-  double *c33;
-  double *c34;
-  double *c35;
-  double *c36;
-  double *c44;
-  double *c45;
-  double *c46;
-  double *c55;
-  double *c56;
-  double *c66;
-  double *rhoUnwrap;
-  double *vshUnwrap;
-  double *vsvUnwrap;
-  double *vppUnwrap;
+  std::vector <double> c11;
+  std::vector <double> c12;
+  std::vector <double> c13;
+  std::vector <double> c14;
+  std::vector <double> c15;
+  std::vector <double> c16;
+  std::vector <double> c22;
+  std::vector <double> c23;
+  std::vector <double> c24;
+  std::vector <double> c25;
+  std::vector <double> c26;
+  std::vector <double> c33;
+  std::vector <double> c34;
+  std::vector <double> c35;
+  std::vector <double> c36;
+  std::vector <double> c44;
+  std::vector <double> c45;
+  std::vector <double> c46;
+  std::vector <double> c55;
+  std::vector <double> c56;
+  std::vector <double> c66;
+  std::vector <double> rhoUnwrap;
+  std::vector <double> vshUnwrap;
+  std::vector <double> vsvUnwrap;
+  std::vector <double> vppUnwrap;
       
   double forRot11;
   double forRot21;
