@@ -5,10 +5,14 @@
 #include "classes.hpp"
 using namespace std;
 
-void Driver::openDriver ( ifstream &myfile )
+void Driver::initialize ( Model_file &mod, Discontinuity &dis, Utilities &utl, 
+  Exodus_file &exo, Region &reg )
 {
   
+  Constants con;
+  
   int i;
+  ifstream myfile;
   
   myfile.open ("./dat/driver.txt");
   
@@ -27,6 +31,34 @@ void Driver::openDriver ( ifstream &myfile )
   
   readDriver  ( myfile );
   closeDriver ( myfile );
+  
+  mod.mesh_directory        = params[0]; 
+  mod.input_model_directory = params[1];
+  mod.input_model_file_type = params[2];
+  mod.input_model_physics   = params[3];
+  mod.rotAng                = stod ( params[4] );
+  mod.rotVecX               = stod ( params[5] );
+  mod.rotVecY               = stod ( params[6] );
+  mod.rotVecZ               = stod ( params[7] );
+  mod.intentions            = params[8];
+  mod.output_model_physics  = params[9];
+  
+  mod.rotRad = mod.rotAng * con.PI / con.o80;  
+    
+  // Read model file.
+  mod.read           ( );  
+  
+  // Read discontinuities.
+  dis.read           ( );
+  
+  // Rotate model coordinates if necessary.
+  utl.inquireRotate  ( mod );
+      
+  // Project to elastic tensor.
+  mod.openUp         ( );
+  
+  // Determine which exodus files to read.  
+  exo.merge          ( reg, mod );
   
   return;
   

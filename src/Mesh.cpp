@@ -339,18 +339,3 @@ void Mesh::deallocateMesh ( Model_file &mod )
   // TODO Add data destructor.
     
 }
-
-void Mesh::reNormalize ( Model_file &mod ) 
-{
-  
-  Constants con;
-  
-  if ( mod.dimensions == "NORMALIZED" ) {
-    for ( int i=0; i<num_nodes; i++ ) {
-      xmsh[i] = xmsh[i] * con.R_EARTH;
-      ymsh[i] = ymsh[i] * con.R_EARTH;
-      zmsh[i] = zmsh[i] * con.R_EARTH;
-    }
-  }
-    
-}

@@ -94,46 +94,6 @@ void Exodus_file::merge ( Region &reg, Model_file &mod )
              
 }
 
-void Exodus_file::splitBack ()
-{
-
-  int fBlock = 0;
-  int iBlock = 0;
-  for ( vector <string>::iterator i=colReg.begin(); i!=colReg.end(); ++i ) {
-    for ( vector <string>::iterator j=lonReg.begin(); j!=lonReg.end(); ++j ) {
-      for ( vector <string>::iterator k=radReg.begin(); k!=radReg.end(); ++k ) {
-        
-        
-        ofstream myfile ( "./split.txt", ios::out );
-        myfile << "delete block all\nundelete block " << 
-          fBlock + 1 << " to " << totalBlocks[iBlock] + fBlock << "\nexit";
-        
-        string call = "cat split.txt | grepos ./dat/input.ex2 ./dat/";
-        
-        call.append (*i);
-        call.append (".");
-        call.append (*j);
-        call.append (".");
-        call.append (*k);
-        call.append (".ex2");        
-        
-        cout << "Running grepos. Splitting region: " << iBlock << "\n" << 
-          std::flush;
-        myfile.close();
-        
-        FILE *fp = NULL; 
-        fp = popen ( call.c_str(), "r" );
-        sleep ( 20 );        
-        pclose (fp);
-        
-        fBlock += totalBlocks[iBlock];
-        iBlock++;
-                              
-      }
-    }
-  }
-}
-
 void Exodus_file::writeParams ( Mesh &msh )
 {
 
@@ -216,36 +176,4 @@ void Exodus_file::writeParams ( Mesh &msh )
   ier = ex_put_nodal_var ( idexo, 1, 26, msh.num_nodes, msh.du2 );
   ier = ex_put_nodal_var ( idexo, 1, 27, msh.num_nodes, msh.du3 );
     
-}
-
-void Exodus_file::writeSize ( Mesh &msh )
-{
-  
-  char *cstr = new char [MAX_LINE_LENGTH];
-  const char *varnames[1];
-
-  int ndim;
-  int nump;
-  int numel;
-  int numelblk;
-  int numnps;
-  int numess;
-  
-  varnames [0] = "siz";
-  
-  ier = ex_get_init ( idexo, cstr, &ndim, &nump, &numel, &numelblk, &numnps, 
-    &numess );
-
-  ier = ex_put_init ( idexo, "Title", ndim, nump, numel, numelblk, 
-    numnps, numess);
-          
-  ier = ex_put_var_param ( idexo, "n", 1 );
-  
-  // TODO Figure out why ier gives (-1) on ex_put_init.  
-  
-  ier = ex_put_var_names ( idexo, "n", 1, 
-    const_cast <char**> ( varnames ));
-    
-  ier = ex_put_nodal_var ( idexo, 1, 1,  msh.num_nodes, msh.siz );
-  
 }

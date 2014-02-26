@@ -123,35 +123,6 @@ void Model_file::createKDTreeUnpacked ( )
   
 }
 
-void Model_file::populateParams ( Driver &drv, Exodus_file &exo ) 
-{
-  
-  Constants con;
- 
-  mesh_directory        = drv.params[0]; 
-  input_model_directory = drv.params[1];
-  input_model_file_type = drv.params[2];
-  input_model_physics   = drv.params[3];
-  absolute_or_perturb   = drv.params[4]; 
-  rotAng                = stod (drv.params[5]);
-  rotVecX               = stod (drv.params[6]);
-  rotVecY               = stod (drv.params[7]);
-  rotVecZ               = stod (drv.params[8]);
-  intentions            = drv.params[9];
-  dimensions            = drv.params[10];
-  interpolation         = drv.params[11];
-  output_model_physics  = drv.params[12];
-       
-  cout << "\nModel information:\n* INPUT_MODEL_DIRECTORY: " <<
-    input_model_directory << "\n* INPUT_MODEL_FILE_TYPE: "  <<
-    input_model_file_type << "\n* INPUT_MODEL_PHYSICS: "    <<
-    input_model_physics   << "\n* ABSOLUTE_OR_PERTURB: "    <<
-    absolute_or_perturb   << "\n";
-  
-  rotRad = rotAng * con.PI / con.o80;
-  
-}
-
 void Model_file::colLonRad2xyzSES3D ()
 {
   
@@ -176,14 +147,7 @@ void Model_file::colLonRad2xyzSES3D ()
       }    
     }
   }
-  
-  xMin = *min_element ( x.begin(), x.end() );
-  xMax = *max_element ( x.begin(), x.end() );
-  yMin = *min_element ( y.begin(), y.end() );
-  yMax = *max_element ( y.begin(), y.end() );
-  zMin = *min_element ( z.begin(), z.end() );
-  zMax = *max_element ( z.begin(), z.end() );
-    
+      
 }
 
 void Model_file::populateRadiansSES3D ()

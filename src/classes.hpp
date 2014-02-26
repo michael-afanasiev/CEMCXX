@@ -44,7 +44,7 @@ public:
   void populateSES3D ( std::string name, int &num_regions, int &num_params, 
     std::vector<std::vector<double>> &vec , char ftype );
       
-  int * region;
+  int *region;
   int num_regions;
   int num_x;
   int num_y;
@@ -67,13 +67,6 @@ public:
   std::vector <double> x;
   std::vector <double> y;
   std::vector <double> z;
-  
-  double xMin;
-  double xMax;
-  double yMin;
-  double yMax;
-  double zMin;
-  double zMax;
 
   double *c11;
   double *c12;
@@ -145,26 +138,23 @@ public:
   std::string input_model_directory;
   std::string input_model_file_type;
   std::string input_model_physics;
-  std::string absolute_or_perturb;
   std::string intentions;
-  std::string dimensions;
-  std::string interpolation;
   std::string output_model_physics;
   std::string mesh_directory;
   
   // Internal functions.
   
-  void read                 ();
-  void colLonRad2xyzSES3D   ();
-  void populateRadiansSES3D ();
-  void openUp               ();
+  void read                 ( );
+  void colLonRad2xyzSES3D   ( );
+  void populateRadiansSES3D ( );
+  void openUp               ( );
+  void createKDTreeUnpacked ( );
+  void projectSubspace      ( );
+  void writeSES3D           ( );
   void populateParams       ( Driver &drv, Exodus_file &exo );
   void dePopulateSES3D      ( std::string, std::vector<std::vector<double>> );
-  void writeSES3D           ();
   void populateRadians      ( std::vector < std::vector <double> > &deg, 
                               std::vector < std::vector <double> > &rad );
-  void createKDTreeUnpacked ();
-  void projectSubspace      ();
   
 };
 
@@ -184,8 +174,8 @@ public:
   
   kdtree *tree;
   
-  void read               ();
-  void createKDTreePacked ();
+  void read               ( );
+  void createKDTreePacked ( );
   void lookCrust          ( Mesh &msh, double &mshCol, double &mshLon, 
                             double &mshRad, int &mshInd );
 
@@ -195,21 +185,21 @@ class Utilities
 {
   
 public:
-    
+
+  void inquireRotate    ( Model_file &mod );    
   double col2Lat        ( double &in, char flag );
-  void rotateForward    ( double &x, double &y, double &z, double &xRot, 
-                          double &yRot, double &zRot, Model_file &mod );   
-  void rotateBackward   ( double &x, double &y, double &z, double &xRot, 
-                          double &yRot, double &zRot, Model_file &mod );   
+  void colLonRadDeg2xyz ( double  col, double  lon, double  rad,
+                          double &x,   double &y,   double &z );  
+  void colLonRadRad2xyz ( double col,  double lon,  double rad,
+                          double &x,   double &y,   double &z );                          
   void xyz2ColLonRadDeg ( double &x,   double &y,   double &z, 
                           double &col, double &lon, double &rad );
   void xyz2ColLonRadRad ( double &x,   double &y,   double &z, 
                           double &col, double &lon, double &rad );
-  void colLonRadDeg2xyz ( double  col, double  lon, double  rad,
-                          double &x,   double &y,   double &z );  
-  void inquireRotate    ( Model_file &mod );
-  void colLonRadRad2xyz ( double col,  double lon,  double rad,
-                          double &x,   double &y,   double &z );                          
+  void rotateForward    ( double &x, double &y, double &z, double &xRot, 
+                          double &yRot, double &zRot, Model_file &mod );   
+  void rotateBackward   ( double &x, double &y, double &z, double &xRot, 
+                          double &yRot, double &zRot, Model_file &mod );   
   void convertBary      ( double &xp, double &yp, double &zp, 
                           double &x1, double &x2, double &x3, double &x4,
                           double &y1, double &y2, double &y3, double &y4,
@@ -222,19 +212,21 @@ public:
 class Driver
 {
   
+  friend class Model_file;
+    
 private:
   
-  void getToken ( std::string &test );
-  
-public:
- 
-  int N_HEADER = 1;  
-  
+  int N_HEADER = 1;    
   std::string *params;
   
+  void getToken    ( std::string &test );
   void closeDriver ( std::ifstream &myfile );
-  void openDriver  ( std::ifstream &myfile );
   void readDriver  ( std::ifstream &myfile );
+  
+public: 
+  
+  void initialize  ( Model_file &mod, Discontinuity &dis, Utilities &utl, 
+  Exodus_file &exo, Region &reg );
   
 };
 
@@ -263,12 +255,10 @@ public:
   
   // Internal functions.
   
-  void openFile    ( std::string fname );
-  void closeFile   ();
-  void writeParams ( Mesh &msh );
   void merge       ( Region &reg, Model_file &mod );
-  void splitBack   ();
-  void writeSize   ( Mesh &msh );
+  void openFile    ( std::string fname );
+  void writeParams ( Mesh &msh );
+  void closeFile   ( );
   
 };
 
@@ -343,7 +333,6 @@ public:
   void populateCoord        ( );
   void populateParams       ( );
   void allocateMesh         ( );
-  void reNormalize          ( Model_file &mod );
   void getConnectivity      ( int exoid );
   void deallocateMesh       ( Model_file &mod );
   void createKDTreeUnpacked ( );

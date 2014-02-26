@@ -1,14 +1,9 @@
 #include "classes.hpp"
-#include <time.h>
-#include <cmath>
-#include "kdtree.h"
 
-using namespace std;
+// using namespace std;
 
 int main () 
 {
-  
-  ifstream myfile;
   
   Region        reg;  
   Constants     con;
@@ -18,67 +13,31 @@ int main ()
   Utilities     utl;
   Discontinuity dis;
   
-  cout << "Begin model building.\n";  
-      
+  std::cout << "Begin model building.\n";
+  
   // Read parameter file.
-  drv.openDriver     ( myfile );  
+  drv.initialize ( mod, dis, utl, exo, reg );  
   
-  // Copy parameters to model file.  
-  mod.populateParams ( drv, exo );        
-  
-  // Read model file.
-  mod.read           ( );  
-  
-  // Read discontinuities.
-  dis.read           ( );
-  
-  // Rotate model coordinates if necessary.
-  utl.inquireRotate  ( mod );
-      
-  // Project to elastic tensor.
-  mod.openUp         ( );
-  
-  // Determine which exodus files to read.  
-  exo.merge          ( reg, mod );
-  
-  if ( mod.intentions == "INTERPOLATE" )   
+  if ( mod.intentions != "EXTRACT" ) 
   {
     
-    cout << "\n----- Interpolating -----\n";
-    cout << "\n";
-    
-    mod.createKDTreeUnpacked ( );
-    dis.createKDTreePacked   ( );
-    
-    for ( vector < Exodus_file > :: iterator exoFile=reg.regionsExo.begin();
-      exoFile!=reg.regionsExo.end(); ++exoFile )       
-    {  
-        
-      cout << "\n";
-
-      Mesh msh;
-      Interpolator ipl;    
-    
-      exoFile -> openFile    ( exoFile -> fname );        
-      msh.getInfo            ( exoFile -> idexo, 'p' );    
-      ipl.interpolate        ( msh, mod, dis );
-      exoFile -> writeParams ( msh );
-      msh.deallocateMesh     ( mod );
-      exoFile -> closeFile   ( );      
-    
-    }
+    std::cout << "\nHey bru I think you've got a mistake in your parameter " << 
+      "file. I'm stopping here for you to check it out ( wrong intention? )\n" 
+        << std::endl;
+    exit ( EXIT_FAILURE );
   }
   
   if ( mod.intentions == "EXTRACT" ) 
   {
     
-    cout << "\n----- Extracting -----\n";
+    std::cout << "\n----- Extracting -----\n";
         
-    for ( vector < Exodus_file > :: iterator exoFile=reg.regionsExo.begin();
+    for ( std::vector < Exodus_file > :: 
+      iterator exoFile=reg.regionsExo.begin();
       exoFile!=reg.regionsExo.end(); ++exoFile ) 
     {
         
-      cout << "\n";
+      std::cout << "\n";
         
       double c11, c12, c13, c14, c15, c16,c22, c23, c24, c25, c26, c33, c34;
       double c35, c36, c44, c45, c46, c55, c56, c66, rho, testX, testY, testZ;
@@ -92,7 +51,7 @@ int main ()
       msh.getConnectivity      ( exoFile -> idexo );
       msh.createKDTreeUnpacked ( );            
       
-      cout << "Extracting." << endl;
+      std::cout << "Extracting." << std::endl;
       for ( int i=0; i<mod.x.size(); i++ )         
       {
         
@@ -112,7 +71,7 @@ int main ()
         {
                                                
                                                
-        int pass = ipl.recover ( testX, testY, testZ, msh,  c11, c12, c13, c14, 
+        int pass = ipl.recover ( testX, testY, testZ, msh, c11, c12, c13, c14, 
           c15, c16, c22, c23, c24, c25, c26, c33, c34, c35, c36, c44, c45, c46, 
           c55, c56, c66, rho, 'p' ); 
         
@@ -137,6 +96,6 @@ int main ()
     mod.projectSubspace ( );
     mod.writeSES3D      ( );           
   }
-                  
-  return 0;    
+  
+  return 0;
 }
