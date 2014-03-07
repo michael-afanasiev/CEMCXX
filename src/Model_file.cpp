@@ -24,7 +24,7 @@ void Model_file::read ()
 }
 
 void Model_file::populateSES3D ( string name, int &num_regions, 
-  int &num_params, vector<vector<double>> &vec , char ftype ) {
+  vector <vector <double> > &vec , char ftype ) {
     
   /** 
     
@@ -65,19 +65,14 @@ void Model_file::populateSES3D ( string name, int &num_regions,
       
     }
     
-    // Read total number of parameters in file.
-    if ( lineno == 1 ) {
-      num_params = stoi (line);
-    }
-    
     // Read number of parameters in 1st region.
-    if ( lineno == 2 ) {
+    if ( lineno == 1 ) {
       region[regno] = stoi (line);    
       regno++;
     }
     
     // Read rest of file.
-    if ( lineno > 2 ) {
+    if ( lineno > 1 ) {
       inter++;
       
       // Stop just before the next region is encountered. If we are working
@@ -90,7 +85,7 @@ void Model_file::populateSES3D ( string name, int &num_regions,
       // Suck up the number of parameters in the next region to continue.
       if ( inter == region[regno-1] + 1 ) {
         region[regno] = stoi (line);
-                
+                        
         inter = 0;        
         regno++;
         
@@ -197,7 +192,7 @@ void Model_file::populateRadiansSES3D ()
         wrapAround = true;
                         
     }
-    
+     
     for ( int i=0; i<rad[r].size()-1; i++ ) {
       rad[r][i] = (rad[r][i] + rad[r][i+1]) / 2.;
       if ( rad[r][i] < radMin ) {
@@ -340,20 +335,19 @@ void Model_file::readSES3D ()
   string imd = input_model_directory;
       
   // Generic -- we of course always need 3D coordinates.
-  populateSES3D ( imd + "block_m_x", num_regions, num_x, col_deg, 'c' );
-  populateSES3D ( imd + "block_m_y", num_regions, num_y, lon_deg, 'c' );
-  populateSES3D ( imd + "block_m_z", num_regions, num_z, rad,     'c' );
+  populateSES3D ( imd + "block_m_x", num_regions, col_deg, 'c' );
+  populateSES3D ( imd + "block_m_y", num_regions, lon_deg, 'c' );
+  populateSES3D ( imd + "block_m_z", num_regions, rad,     'c' );
   
   // Options for specific physics systems.  
   if ( intentions == "INTERPOLATE" ) {
     if ( input_model_physics == "TTI" ) {      
-      populateSES3D ( imd + "dRHO", num_regions, num_p, rho, 'p' );
-      populateSES3D ( imd + "dVSV", num_regions, num_p, vsv, 'p' );
-      populateSES3D ( imd + "dVSH", num_regions, num_p, vsh, 'p' );
-      populateSES3D ( imd + "dVPP", num_regions, num_p, vpp, 'p' );
+      populateSES3D ( imd + "dRHO", num_regions, rho, 'p' );
+      populateSES3D ( imd + "dVSV", num_regions, vsv, 'p' );
+      populateSES3D ( imd + "dVSH", num_regions, vsh, 'p' );
+      populateSES3D ( imd + "dVPP", num_regions, vpp, 'p' );
     }
-  } else if ( intentions == "EXTRACT" ) {
-    num_p = (num_x - 1) * (num_y - 1) * (num_z - 1);     
+  } else if ( intentions == "EXTRACT" || intentions == "REFINE" ) {
     rho.resize ( num_regions );
     vsv.resize ( num_regions );
     vsh.resize ( num_regions );
@@ -363,8 +357,8 @@ void Model_file::readSES3D ()
   // Calculate the proper number of parameters as there might be multiple
   // zones.
   num_p = 0;
-  for ( int r=0; r!=num_regions; r++ ) {
-    
+  for ( int r=0; r!=num_regions; r++ ) 
+  {  
     rho[r].resize ( (col_deg[r].size() - 1) * (lon_deg[r].size() - 1) * 
       (rad[r].size() - 1) );
     vsv[r].resize ( (col_deg[r].size() - 1) * (lon_deg[r].size() - 1) * 
@@ -372,8 +366,8 @@ void Model_file::readSES3D ()
     vsh[r].resize ( (col_deg[r].size() - 1) * (lon_deg[r].size() - 1) * 
       (rad[r].size() - 1) );
     vpp[r].resize ( (col_deg[r].size() - 1) * (lon_deg[r].size() - 1) * 
-      (rad[r].size() - 1) );     
-    num_p = rho[r].size() + num_p;
+      (rad[r].size() - 1) );         
+    num_p += rho[r].size();
   }
   
   

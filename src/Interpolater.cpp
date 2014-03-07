@@ -9,6 +9,94 @@
 
 using namespace std;
 
+void Interpolator::interpolateCrust ( Mesh &msh, Discontinuity &dis )
+{
+  
+  Utilities utl;
+  
+  cout << "Adding crust.\n";
+  
+  if ( msh.radMin > 6271 )
+  {
+    for ( int i=0; i<msh.num_nodes; i++ )
+    {
+    
+      double col, lon, rad;
+    
+      dis.inCrust = false;
+    
+      utl.xyz2ColLonRadDeg ( msh.xmsh[i], msh.ymsh[i], msh.zmsh[i], 
+        col, lon, rad);
+      
+      dis.lookCrust ( msh, col, lon, rad, i );    
+    }
+  }
+}
+
+void Interpolator::findNodes ( Mesh &msh, Model_file &mod )
+{
+  
+  Utilities utl;
+  Constants con;
+  
+  cout << "Finding nodes to refine." << endl;
+
+  int count=0; 
+  int within=0; 
+  int countT=0;  
+  
+  vector <int> node;
+  node.reserve ( msh.num_node_per_elem );
+  
+  for ( vector <int> :: iterator i=msh.refineElemConn.begin(); 
+    i!=msh.refineElemConn.end(); ++i ) 
+  {
+    
+    count++;    
+    countT++;
+    
+    // Define local variables.
+    double mshColRot, mshLonRot, mshRadRot; // Sph. Coord. in rotated domain.
+    double mshColPys, mshLonPys, mshRadPys; // Sph. Coord. in phsyical domain.
+    double xRot,      yRot,      zRot;      // Cart. Coord in rotated domain.
+  
+    /* Rotate from physical domain ( in exodus file ) to simulation domain
+    ( in SES3D file ). Grab points in simulation domain */
+    utl.rotateBackward ( msh.xmsh[*i], msh.ymsh[*i], msh.zmsh[*i], 
+      xRot, yRot, zRot, mod );
+    
+    utl.xyz2ColLonRadDeg ( xRot, yRot, zRot, mshColRot, mshLonRot, mshRadRot );
+    
+    // Handle special cases of longitude axis wrapping.
+    if ( mod.wrapAround == true && mshLonPys < 0. )
+      mshLonPys += 360;        
+    if ( mod.wrapAround == true && mshLonRot < 0. )
+      mshLonRot += 360;   
+  
+    if ( (mshColRot >= mod.colMin && mshColRot <= mod.colMax) &&
+         (mshLonRot >= mod.lonMin && mshLonRot <= mod.lonMax) &&
+         (mshRadRot >= mod.radMin) ) 
+    { 
+      node.push_back ( *i );
+      within++;                        
+    }
+    
+    if ( within == msh.num_node_per_elem & count == msh.num_node_per_elem )
+    {
+      refineArr.push_back ( msh.elem_num_map[countT/4] );
+    }
+    
+    if ( count == msh.num_node_per_elem )
+    {
+      count  = 0;
+      within = 0;
+      node.clear();
+    }
+    
+  }
+  
+}
+
 void Interpolator::interpolate ( Mesh &msh, Model_file &mod, Discontinuity 
   &dis ) 
 {
@@ -54,8 +142,9 @@ void Interpolator::interpolate ( Mesh &msh, Model_file &mod, Discontinuity
     interpolate. */
     if ( (mshColRot >= mod.colMin && mshColRot <= mod.colMax) &&
          (mshLonRot >= mod.lonMin && mshLonRot <= mod.lonMax) &&
-         (mshRadRot >= mod.radMin) ) {   
-          
+         (mshRadRot >= mod.radMin) ) 
+    {                                             
+      
       /* Find the xyz values which are closest to the rotated point. Index of 
       the xyz values are stored in 'point'. */       
       kdres *set   = kd_nearest3 ( mod.tree, xRot, yRot, zRot );    
@@ -209,6 +298,7 @@ int Interpolator::recover ( double &testX, double &testY, double &testZ,
   bool found = false;  
   bool first = true;
   int  count = 0;
+  int  nodeNum;
   int  point;
   
   while ( found == false ) {
@@ -216,7 +306,7 @@ int Interpolator::recover ( double &testX, double &testY, double &testZ,
     // Extract point from KDTree.
     kdres *set  = kd_nearest3 ( tree, testX, testY, testZ );
     void *ind_p = kd_res_item_data ( set );
-    int point   = * ( int * ) ind_p;
+    point       = * ( int * ) ind_p;
         
     // Find the originally requested col, lon, and rad.
     if ( first == true ) {      
@@ -230,6 +320,9 @@ int Interpolator::recover ( double &testX, double &testY, double &testZ,
 
     // Extract iterator for current point.
     ext = msh.elemOrder.equal_range (point);
+    
+    // Extract node number.
+    nodeNum = msh.node_num_map[point];
     
     // Loop over connecting elements (node indices contained in iterator).
     int nFound = 0;    
@@ -424,7 +517,7 @@ int Interpolator::recover ( double &testX, double &testY, double &testZ,
   }  
   
   if ( mode == 'e' ) {
-    return point;
+    return nodeNum;
   } else { 
     return 0;
   }

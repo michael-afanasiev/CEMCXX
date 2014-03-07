@@ -1,88 +1,75 @@
 #include "classes.hpp"
-#include "kdtree.h"
 
-int main () {
+// using namespace std;
 
-  std::cout << "Begin refinement procedure.\n";
-
-  std::ifstream myfile;
-
-  Constants    con;
-  Exodus_file  exo;
-  Driver       drv;
-  Mesh         msh;
-  Model_file   mod;
-  Utilities    util;
-  Interpolator inter;
+int main () 
+{
   
-  double c11, c12, c13, c14, c15, c16,c22, c23, c24, c25, c26, c33, c34, c35;
-  double c36, c44, c45, c46, c55, c56, c66, rho, testX, testY, testZ;
-
-  std::cout << "Begin model building.\n";  
-
-  // ********************************************************************* //
-  //                       READING THE PARAMETER FILE                      //
-  // ********************************************************************* //
+  std::ofstream myfile;
   
-  // Determine how many lines to read from parameter file.
-  drv.openDriver ( myfile );
-
-  // Read those lines from parameter file and put them into 'params'.
-  drv.readDriver ( myfile );
-
-  // Close driver.
-  drv.closeDriver ( myfile );
-
-  // ********************************************************************* //
-  //                            READ IN PARAMS                             //
-  // ********************************************************************* //
-
-  mod.populateParams ( drv, exo );      
-
-  // ********************************************************************* //
-  //                            READ IN MODEL                              //
-  // ********************************************************************* //
-
-
-  mod.read ();  
+  Region        reg;  
+  Constants     con;
+  Exodus_file   exo;
+  Driver        drv;
+  Model_file    mod;
+  Utilities     utl;
+  Discontinuity dis;
   
-  exo.openFile ( "./dat/test.ex2" );
+  std::cout << "Begin model building.\n";
   
-  msh.getInfo ( exo.idexo, 'c' );    
-  msh.getConnectivity ( exo.idexo );
+  // Read parameter file.
+  drv.initialize ( mod, dis, utl, exo, reg );  
   
-  std::cout << "Creating KDTree.\n";
-  kdtree *tree = kd_create (3);
-  int *dat     = new int [msh.num_nodes];
-  for ( int i=0; i<msh.num_nodes; i++ ) {
-    dat[i] = i;
-    kd_insert3 ( tree, msh.xmsh[i], msh.ymsh[i], msh.zmsh[i], &dat[i] );
-  }    
+  if ( mod.intentions != "REFINE" ) 
+  {
+    
+    std::cout << "\nHey bru I think you've got a mistake in your parameter " << 
+      "file. I'm stopping here for you to check it out ( wrong intention? )\n" 
+        << std::endl;
+    exit ( EXIT_FAILURE );
+  }
   
-  std::cout << "Done.\n";
-  
-  
-  std::ofstream outfile ("elements.txt");
-  for ( int r=0; r<mod.col_rad.size(); r++ ) {
-    for ( int i=0; i<mod.col_rad[r].size(); i++ ) {
-      std::cout << "Col number: " << i << "\n";    
+  int i = 0;
+  if ( mod.intentions == "REFINE" ) 
+  {
+    
+    std::cout << "\n----- Outputting refinment. -----\n";
+        
+    for ( std::vector < Exodus_file > :: 
+      iterator exoFile=reg.regionsExo.begin();
+      exoFile!=reg.regionsExo.end(); ++exoFile ) 
+    {
+        
+      std::string fname ( "./dat/refine/refine" );
+      fname += std::to_string (i);
+      fname += ".txt";
       
-      for ( int j=0; j<mod.lon_rad[r].size(); j++ ) {
-        for ( int k=0; k<mod.rad[r].size()-1;     k++ ) {
-                    
-          util.colLonRadRad2xyz ( mod.col_rad[r][i], mod.lon_rad[r][j], 
-            mod.rad[r][k], testX, testY, testZ );
-                        
-          int element = inter.recover ( testX, testY, testZ, tree, msh,
-              c11, c12, c13, c14, c15, c16, c22, c23, c24, c25, c26,
-              c33, c34, c35, c36, c44, c45, c46, c55, c56, c66,
-              rho, 'e' );
-              
-          outfile << element << "\n";
-        }
+      myfile.open ( fname, std::ios::out );        
+      std::cout << "\n";        
+    
+      Mesh         msh;
+      Interpolator ipl;
+    
+      exoFile -> openFile        ( exoFile -> fname );        
+      msh.getInfo                ( exoFile -> idexo, 'p' );    
+      msh.getNodeNumMap          ( exoFile -> idexo );
+      msh.getElemNumMap          ( exoFile -> idexo );
+      msh.getElementConnectivity ( exoFile -> idexo );
+      ipl.findNodes              ( msh, mod );
+      msh.deallocateMesh         ( mod );
+      exoFile -> closeFile       ( );  
+      
+      myfile << exoFile -> fname << std::endl;
+      for ( std::vector < int > :: iterator node=ipl.refineArr.begin();
+        node!=ipl.refineArr.end(); ++node )
+      {
+        myfile << *node << std::endl;
       }
       
-    }
+      myfile.close();
+      i++;
+    }    
   }
-   
+  
+  return 0;
 }

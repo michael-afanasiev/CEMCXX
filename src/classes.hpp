@@ -42,8 +42,8 @@ public:
   void readSES3D     ();
   void readSPECFEM3D ();
   
-  void populateSES3D ( std::string name, int &num_regions, int &num_params, 
-    std::vector<std::vector<double>> &vec , char ftype );
+  void populateSES3D ( std::string name, int &num_regions, 
+    std::vector <std::vector <double> > &vec , char ftype );
       
   int *region;
   int num_regions;
@@ -222,12 +222,13 @@ private:
   
   void getToken    ( std::string &test );
   void closeDriver ( std::ifstream &myfile );
-  void readDriver  ( std::ifstream &myfile );
   
 public: 
   
+  void readDriver  ( std::ifstream &myfile );
   void initialize  ( Model_file &mod, Discontinuity &dis, Utilities &utl, 
   Exodus_file &exo, Region &reg );
+  void populateParams ( Model_file &mod );
   
 };
 
@@ -245,6 +246,8 @@ public:
   int num_mesh_files;
   
   float vers;
+  
+  bool allFiles = false;
   
   std::string fname;
   
@@ -267,18 +270,21 @@ class Mesh
 {
 public:
     
-  int num_nodes;
-  int num_elem;
   int ier;
+  int exoid;
   int num_dim;
+  int num_elem;
+  int num_attr;
+  int num_nodes;
   int num_elem_blk;
-  int num_elem_in_blk;
   int num_node_sets;
   int num_side_sets;
-  int num_node_per_elem=4;
+  int num_elem_in_blk;
   int num_nodes_in_elem;
-  int num_attr;
-  int exoid;
+  int num_node_per_elem=4;
+
+  int *node_num_map;
+  int *elem_num_map;
   
   double *c11;
   double *c12;
@@ -323,6 +329,7 @@ public:
   kdtree *tree;
   
   std::multimap <int, std::vector <int> > elemOrder;  
+  std::vector <int> refineElemConn;
   
   char name;
   char title [MAX_LINE_LENGTH+1]; 
@@ -330,14 +337,17 @@ public:
   
   // Internal functions.
     
-  void getInfo              ( int exoid, char mode );
-  void populateCoord        ( );
-  void populateParams       ( );
-  void allocateMesh         ( );
-  void getConnectivity      ( int exoid );
-  void deallocateMesh       ( Model_file &mod );
-  void createKDTreeUnpacked ( );
-  void getMinMaxRad         ( );
+  void getInfo                ( int exoid, char mode );
+  void populateCoord          ( );
+  void populateParams         ( );
+  void allocateMesh           ( );
+  void getConnectivity        ( int exoid );
+  void deallocateMesh         ( Model_file &mod );
+  void createKDTreeUnpacked   ( );
+  void getMinMaxRad           ( );
+  void getNodeNumMap          ( int exoid );
+  void getElemNumMap          ( int exoid );
+  void getElementConnectivity ( int exoid );  
            
 };
 
@@ -345,8 +355,13 @@ class Interpolator
 {
   
 public: 
+  
+  std::vector <int> refineArr;
+  std::vector < std::vector <int> > elemWithin;
     
-  void interpolate  ( Mesh &msh, Model_file &mod, Discontinuity &dis );  
+  void findNodes        ( Mesh &msh, Model_file &mod );
+  void interpolateCrust ( Mesh &msh, Discontinuity &dis );
+  void interpolate      ( Mesh &msh, Model_file &mod, Discontinuity &dis );  
   int  recover      ( double &testX, double &testY, double &testZ, Mesh &msh,
                       double &c11, double &c12, double &c13, double &c14, 
                       double &c15, double &c16, double &c22, double &c23, 

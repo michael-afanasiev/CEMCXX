@@ -10,12 +10,12 @@ void Discontinuity::read ()
   int dum1, dum2;
 
   // Read moho depth and crustal parameters.
-  mod.populateSES3D ( cmd + "/crust_x_smooth",   dum1, dum2, crust_col_deg, 
+  mod.populateSES3D ( cmd + "/crust_x_smooth",   dum1, crust_col_deg, 
   'c' );
-  mod.populateSES3D ( cmd + "/crust_y_smooth",   dum1, dum2, crust_lon_deg, 
+  mod.populateSES3D ( cmd + "/crust_y_smooth",   dum1, crust_lon_deg, 
   'c' );
-  mod.populateSES3D ( cmd + "/crust_vs_smooth",  dum1, dum2, crust_vs, 'p' );
-  mod.populateSES3D ( cmd + "/crust_dep_smooth", dum1, dum2, crust_dp, 'p' );  
+  mod.populateSES3D ( cmd + "/crust_vs_smooth",  dum1, crust_vs, 'p' );
+  mod.populateSES3D ( cmd + "/crust_dep_smooth", dum1, crust_dp, 'p' );  
 
   for ( int i=0; i<crust_lon_deg[0].size(); i++ ) {
     if ( crust_lon_deg[0][i] > 180. )
@@ -69,23 +69,23 @@ void Discontinuity::lookCrust ( Mesh &msh, double &mshCol, double &mshLon,
     
     if ( mshRad >= (con.R_EARTH - crust_dp[0][point]) ) {
   
-      double crust_vsv = crust_vs[0][point] - con.aniCorrection;
-      double crust_vsh = crust_vs[0][point];
-  
-      double N = msh.rho[mshInd] * crust_vsh * crust_vsh;
-      double L = msh.rho[mshInd] * crust_vsv * crust_vsv;
-  
-      double A = msh.c22[mshInd];
-      double S = A - 2 * N;
-      double F = A - 2 * L;
+      // double crust_vsv = crust_vs[0][point] - con.aniCorrection;
+      // double crust_vsh = crust_vs[0][point];
+      //   
+      // double N = msh.rho[mshInd] * crust_vsh * crust_vsh;
+      // double L = msh.rho[mshInd] * crust_vsv * crust_vsv;
+      //   
+      // double A = msh.c22[mshInd];
+      // double S = A - 2 * N;
+      // double F = A - 2 * L;
   
       inCrust         = true;
-      msh.c12[mshInd] = F;
-      msh.c13[mshInd] = F;
-      msh.c23[mshInd] = S;
-      msh.c44[mshInd] = N;
-      msh.c55[mshInd] = L;
-      msh.c66[mshInd] = L;                
+      // msh.c12[mshInd] = F;
+      // msh.c13[mshInd] = F;
+      // msh.c23[mshInd] = S;
+      // msh.c44[mshInd] = N;
+      // msh.c55[mshInd] = L;
+      // msh.c66[mshInd] = L;                
   
     }
   }    

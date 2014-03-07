@@ -78,97 +78,95 @@ void Utilities::colLonRadRad2xyz ( double col,  double lon,  double rad,
 void Utilities::inquireRotate ( Model_file &mod )
 {
   
-  if ( mod.rotAng != 0 ) 
-  {
     
+  if ( mod.rotAng != 0 )
     mod.doRotate   = true;
-    mod.colReg1    = false;
-    mod.colReg2    = false;
-    mod.lonReg1    = false;
-    mod.lonReg2    = false;
-    mod.lonReg3    = false;
-    mod.lonReg4    = false;
-    mod.wrapAround = false;      
     
-    double a = mod.rotRad;
-    double x = mod.rotVecX;
-    double y = mod.rotVecY;
-    double z = mod.rotVecZ;
+  mod.colReg1    = false;
+  mod.colReg2    = false;
+  mod.lonReg1    = false;
+  mod.lonReg2    = false;
+  mod.lonReg3    = false;
+  mod.lonReg4    = false;
+  mod.wrapAround = false;      
 
-    std::cout << "Rotation found. Rotating model " << mod.rotAng << 
-      " degrees about ( " << x << ", " << y << ", " << z << " )." << std::endl;
-  
-    double colMin = 180.;
-    double colMax = 0.;
-    double lonMin = 360.;
-    double lonMax = -360.;
-    double radMin = 6371.;
-    double radMax = 0.;
-  
-    double col, lon, rad;
-  
-    mod.forRot11 = cos(a) + (x * x) * (1 - cos(a));
-    mod.forRot21 = z * sin(a) + x * y * (1 - cos(a));
-    mod.forRot31 = y * sin(a) + x * z * (1 - cos(a));
-    mod.forRot12 = x * y * (1 - cos(a)) - z * sin(a);
-    mod.forRot22 = cos(a) + (y * y) * (1 - cos(a));
-    mod.forRot32 = x * sin(a) + y * z * (1 - cos(a));
-    mod.forRot13 = y * sin(a) + x * z * (1 - cos(a));
-    mod.forRot23 = x * sin(a) + y * z * (1 - cos(a));
-    mod.forRot33 = cos(a) + (z * x) * (1 - cos(a));
-  
-    mod.forRot23 = (-1) * mod.forRot23;
-    mod.forRot31 = (-1) * mod.forRot31; 
-  
-    for ( int i=0; i<mod.x.size(); i++ ) 
-    {
-    
-      double xNew = mod.forRot11 * mod.x[i] + mod.forRot21 * mod.y[i] + 
-        mod.forRot31 * mod.z[i];
-      double yNew = mod.forRot12 * mod.x[i] + mod.forRot22 * mod.y[i] + 
-        mod.forRot32 * mod.z[i];
-      double zNew = mod.forRot13 * mod.x[i] + mod.forRot23 * mod.y[i] + 
-        mod.forRot33 * mod.z[i]; 
-    
-      xyz2ColLonRadDeg ( xNew, yNew, zNew, col, lon, rad );
-      
-      if ( (col >  0.) && (col <  90.) )
-        mod.colReg1 = true;
-      if ( (col > 90.) && (col < 180.) )
-        mod.colReg2 = true;
-      
-      if ( (lon >    0.) && (lon <  90.) )
-        mod.lonReg1 = true;      
-      if ( (lon >   90.) && (lon < 180.) )
-        mod.lonReg2 = true;      
-      if ( (lon >  180.) && (lon < 270.) )
-        mod.lonReg3 = true;      
-      if ( (lon >  270.) && (lon < 360.) )
-        mod.lonReg4 = true;      
-      if ( (lon >  360.) && (lon < 450.) )
-        mod.lonReg3 = true;
-      if ( (lon > -180.) && (lon < -90.) )
-        mod.lonReg3 = true;
-      if ( (lon >  -90.) && (lon <   0.) )
-        mod.lonReg4 = true;
-      
-    }
-        
-    a             = ( -1 ) * mod.rotRad;
-    mod.backRot11 = cos(a) + (x * x) * (1 - cos(a));
-    mod.backRot21 = z * sin(a) + x * y * (1 - cos(a));
-    mod.backRot31 = y * sin(a) + x * z * (1 - cos(a));
-    mod.backRot12 = x * y * (1 - cos(a)) - z * sin(a);
-    mod.backRot22 = cos(a) + (y * y) * (1 - cos(a));
-    mod.backRot32 = x * sin(a) + y * z * (1 - cos(a));
-    mod.backRot13 = y * sin(a) + x * z * (1 - cos(a));
-    mod.backRot23 = x * sin(a) + y * z * (1 - cos(a));
-    mod.backRot33 = cos(a) + (z * x) * (1 - cos(a));
+  double a = mod.rotRad;
+  double x = mod.rotVecX;
+  double y = mod.rotVecY;
+  double z = mod.rotVecZ;
 
-    mod.backRot23 = (-1) * mod.backRot23;
-    mod.backRot31 = (-1) * mod.backRot31;   
-    
+  std::cout << "Rotation found. Rotating model " << mod.rotAng << 
+    " degrees about ( " << x << ", " << y << ", " << z << " )." << std::endl;
+  
+  double colMin = 180.;
+  double colMax = 0.;
+  double lonMin = 360.;
+  double lonMax = -360.;
+  double radMin = 6371.;
+  double radMax = 0.;
+  
+  double col, lon, rad;
+  
+  mod.forRot11 = cos(a) + (x * x) * (1 - cos(a));
+  mod.forRot21 = z * sin(a) + x * y * (1 - cos(a));
+  mod.forRot31 = y * sin(a) + x * z * (1 - cos(a));
+  mod.forRot12 = x * y * (1 - cos(a)) - z * sin(a);
+  mod.forRot22 = cos(a) + (y * y) * (1 - cos(a));
+  mod.forRot32 = x * sin(a) + y * z * (1 - cos(a));
+  mod.forRot13 = y * sin(a) + x * z * (1 - cos(a));
+  mod.forRot23 = x * sin(a) + y * z * (1 - cos(a));
+  mod.forRot33 = cos(a) + (z * x) * (1 - cos(a));
+  
+  mod.forRot23 = (-1) * mod.forRot23;
+  mod.forRot31 = (-1) * mod.forRot31; 
+  
+  for ( int i=0; i<mod.x.size(); i++ ) 
+  {
+
+    double xNew = mod.forRot11 * mod.x[i] + mod.forRot21 * mod.y[i] + 
+      mod.forRot31 * mod.z[i];
+    double yNew = mod.forRot12 * mod.x[i] + mod.forRot22 * mod.y[i] + 
+      mod.forRot32 * mod.z[i];
+    double zNew = mod.forRot13 * mod.x[i] + mod.forRot23 * mod.y[i] + 
+      mod.forRot33 * mod.z[i]; 
+
+    xyz2ColLonRadDeg ( xNew, yNew, zNew, col, lon, rad );
+  
+    if ( (col >  0.) && (col <  90.) )
+      mod.colReg1 = true;
+    if ( (col > 90.) && (col < 180.) )
+      mod.colReg2 = true;
+  
+    if ( (lon >    0.) && (lon <  90.) )
+      mod.lonReg1 = true;      
+    if ( (lon >   90.) && (lon < 180.) )
+      mod.lonReg2 = true;      
+    if ( (lon >  180.) && (lon < 270.) )
+      mod.lonReg3 = true;      
+    if ( (lon >  270.) && (lon < 360.) )
+      mod.lonReg4 = true;      
+    if ( (lon >  360.) && (lon < 450.) )
+      mod.lonReg3 = true;
+    if ( (lon > -180.) && (lon < -90.) )
+      mod.lonReg3 = true;
+    if ( (lon >  -90.) && (lon <   0.) )
+      mod.lonReg4 = true;
+  
   }
+    
+  a             = ( -1 ) * mod.rotRad;
+  mod.backRot11 = cos(a) + (x * x) * (1 - cos(a));
+  mod.backRot21 = z * sin(a) + x * y * (1 - cos(a));
+  mod.backRot31 = y * sin(a) + x * z * (1 - cos(a));
+  mod.backRot12 = x * y * (1 - cos(a)) - z * sin(a);
+  mod.backRot22 = cos(a) + (y * y) * (1 - cos(a));
+  mod.backRot32 = x * sin(a) + y * z * (1 - cos(a));
+  mod.backRot13 = y * sin(a) + x * z * (1 - cos(a));
+  mod.backRot23 = x * sin(a) + y * z * (1 - cos(a));
+  mod.backRot33 = cos(a) + (z * x) * (1 - cos(a));
+
+  mod.backRot23 = (-1) * mod.backRot23;
+  mod.backRot31 = (-1) * mod.backRot31;   
     
 }                          
 

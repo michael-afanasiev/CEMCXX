@@ -29,9 +29,36 @@ void Driver::initialize ( Model_file &mod, Discontinuity &dis, Utilities &utl,
   myfile.clear ();
   myfile.seekg (0, ios::beg);
   
-  readDriver  ( myfile );
-  closeDriver ( myfile );
+  readDriver     ( myfile );
+  closeDriver    ( myfile );
+  populateParams ( mod );
+    
+  // Read model file.  
+  if ( exo.allFiles == false )
+    mod.read           ( );  
   
+  // Read discontinuities.
+  dis.read           ( );
+  
+  // Rotate model coordinates if necessary.
+  utl.inquireRotate  ( mod );
+      
+  // Project to elastic tensor.
+  if ( exo.allFiles == false )
+    mod.openUp         ( );
+  
+  // Determine which exodus files to read.  
+  exo.merge          ( reg, mod );
+  
+  return;
+  
+}
+
+void Driver::populateParams ( Model_file &mod )
+{
+  
+  Constants con;
+
   mod.mesh_directory        = params[0]; 
   mod.input_model_directory = params[1];
   mod.input_model_file_type = params[2];
@@ -42,25 +69,8 @@ void Driver::initialize ( Model_file &mod, Discontinuity &dis, Utilities &utl,
   mod.rotVecZ               = stod ( params[7] );
   mod.intentions            = params[8];
   mod.output_model_physics  = params[9];
-  
+
   mod.rotRad = mod.rotAng * con.PI / con.o80;  
-    
-  // Read model file.
-  mod.read           ( );  
-  
-  // Read discontinuities.
-  dis.read           ( );
-  
-  // Rotate model coordinates if necessary.
-  utl.inquireRotate  ( mod );
-      
-  // Project to elastic tensor.
-  mod.openUp         ( );
-  
-  // Determine which exodus files to read.  
-  exo.merge          ( reg, mod );
-  
-  return;
   
 }
 

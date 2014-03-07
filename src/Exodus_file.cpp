@@ -38,6 +38,26 @@ void Exodus_file::merge ( Region &reg, Model_file &mod )
 {
   
   cout << "Merging model.\n";
+  
+  if ( allFiles == true )
+  {
+    mod.colReg1 = true;
+    mod.colReg2 = true;
+    mod.lonReg1 = true;
+    mod.lonReg2 = true;
+    mod.lonReg3 = true;
+    mod.lonReg4 = true;
+    
+    if ( mod.intentions == "CRUST" )
+    {
+      mod.radMin = 6272;
+    } 
+    else
+    {
+      mod.radMin = 0;
+    }
+    
+  }
       
   if ( mod.colReg1 == true )
     colReg.push_back ("col0-90");
@@ -53,19 +73,23 @@ void Exodus_file::merge ( Region &reg, Model_file &mod )
   if ( mod.lonReg4 == true )
     lonReg.push_back ("lon270-360");
                     
-  if ( mod.radMin <= 1221 )
+  if ( mod.radMin < 1221 )
     radReg.push_back ( "rad0-1221" );    
-  if ( mod.radMin <= 3480 )
+  if ( mod.radMin < 3480 )
     radReg.push_back ( "rad1221-3480" );  
-  if ( mod.radMin <= 5371 )
+  if ( mod.radMin < 5371 )
     radReg.push_back ( "rad3480-5371" );  
-  if ( mod.radMin <= 6271 )     
-    radReg.push_back ( "rad5371-6271" );           
-  if ( mod.radMin <= 6319 )
+  if ( mod.radMin < 5701 )
+    radReg.push_back ( "rad5371-5701" );
+  if ( mod.radMin < 5971 )
+    radReg.push_back ( "rad5701-5971" );  
+  if ( mod.radMin < 6271 )     
+    radReg.push_back ( "rad5971-6271" );           
+  if ( mod.radMin < 6319 )
     radReg.push_back ( "rad6271-6319" );            
-  if ( mod.radMin <= 6351 )
+  if ( mod.radMin < 6351 )
     radReg.push_back ( "rad6319-6351" );  
-  if ( mod.radMin <= 6371 )   
+  if ( mod.radMin < 6371 )   
     radReg.push_back ( "rad6351-6371" );
     
   int l = 0;

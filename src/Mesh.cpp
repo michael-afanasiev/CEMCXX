@@ -252,11 +252,51 @@ void Mesh::allocateMesh ( )
      
 }
 
+void Mesh::getNodeNumMap   ( int exoid )
+{
+    
+  node_num_map = new int [num_nodes];
+  ier = ex_get_node_num_map ( exoid, node_num_map );
+  
+}
+
+void Mesh::getElemNumMap ( int exoid )
+{
+  
+  elem_num_map = new int [num_elem];
+  ier = ex_get_elem_num_map ( exoid, elem_num_map );
+  
+}
+
+void Mesh::getElementConnectivity ( int exoid )
+{
+  
+  int *ids = new int [num_elem_blk];
+  int ier  = ex_get_elem_blk_ids ( exoid, ids );
+  
+  for ( int i=0; i!=num_elem_blk; i++ ) {
+    
+    ier = ex_get_elem_block ( exoid, ids[i], elem_type, &num_elem_in_blk, 
+      &num_nodes_in_elem, &num_attr );
+  
+    int *elemConn = new int [num_elem_in_blk*num_node_per_elem];  
+    ier           = ex_get_elem_conn ( exoid, ids[i], elemConn );
+    
+    for ( int j=0; j!= num_elem_in_blk*num_node_per_elem; j++ ) {
+      refineElemConn.push_back (elemConn[j]);
+    }
+    
+    delete [] elemConn;
+    
+  }
+  
+}
+
 void Mesh::getConnectivity ( int exoid )
 {
         
   int *ids = new int [num_elem_blk];
-  int ier  = ex_get_elem_blk_ids ( exoid, ids );
+  int ier  = ex_get_elem_blk_ids ( exoid, ids );      
   
   vector <int> masterElemConn;
   for ( int i=0; i!=num_elem_blk; i++ ) {
