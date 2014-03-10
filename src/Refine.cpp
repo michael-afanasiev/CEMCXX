@@ -44,7 +44,7 @@ int main ()
       fname += std::to_string (i);
       fname += ".txt";
       
-      myfile.open ( fname, std::ios::out );        
+      // myfile.open ( fname, std::ios::out );        
       std::cout << "\n";        
     
       Mesh         msh;
@@ -52,21 +52,22 @@ int main ()
     
       exoFile -> openFile        ( exoFile -> fname );        
       msh.getInfo                ( exoFile -> idexo, 'p' );    
-      msh.getNodeNumMap          ( exoFile -> idexo );
-      msh.getElemNumMap          ( exoFile -> idexo );
-      msh.getElementConnectivity ( exoFile -> idexo );
+      // msh.getNodeNumMap          ( exoFile -> idexo );
+      // msh.getElemNumMap          ( exoFile -> idexo );
+      // msh.getElementConnectivity ( exoFile -> idexo );
       ipl.findNodes              ( msh, mod );
+      exoFile -> writeParams     ( msh );
       msh.deallocateMesh         ( mod );
       exoFile -> closeFile       ( );  
       
-      myfile << exoFile -> fname << std::endl;
-      for ( std::vector < int > :: iterator node=ipl.refineArr.begin();
-        node!=ipl.refineArr.end(); ++node )
-      {
-        myfile << *node << std::endl;
-      }
-      
-      myfile.close();
+      // myfile << exoFile -> fname << std::endl;
+      // for ( std::vector < int > :: iterator node=ipl.refineArr.begin();
+      //   node!=ipl.refineArr.end(); ++node )
+      // {
+      //   myfile << *node << std::endl;
+      // }
+      // 
+      // myfile.close();
       i++;
     }    
   }

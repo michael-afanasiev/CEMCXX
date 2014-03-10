@@ -60,15 +60,26 @@ int main ()
                                testY, testZ, mod );
         
         utl.xyz2ColLonRadRad ( testX, testY, testZ, col, lon, rad ); 
-                                                                                                    
-        if ( (rad < msh.radMax)  && 
-             (rad > msh.radMin)  &&
+        
+        if ( rad > 6171 && rad < 6321 ) 
+        {
+          // std::cout << rad << std::endl;
+          // std::cout << col << std::endl;
+          // std::cout << lon << std::endl;
+          // std::cin.get ();
+        }                                                             
+        if ( (rad <= msh.radMax)  && 
+             (rad >= msh.radMin)  &&
              (lon <= msh.lonMax) &&
              (lon >= msh.lonMin) &&
              (col <= msh.colMax) &&
              (col >= msh.colMin ) ) 
         {                                                         
-                                               
+                                
+        // std::cout << rad << " " << lon << " " << col << std::endl;
+        // std::cout << msh.radMax << " " << msh.radMin << std::endl;
+        // std::cout << msh.lonMax << " " << msh.lonMin << std::endl;
+        // std::cout << msh.colMax << " " << msh.colMin << std::endl;
         int pass = ipl.recover ( testX, testY, testZ, msh, c11, c12, c13, c14, 
           c15, c16, c22, c23, c24, c25, c26, c33, c34, c35, c36, c44, c45, c46, 
           c55, c56, c66, rho, 'p' ); 
@@ -82,11 +93,7 @@ int main ()
         mod.c44[i]    = c44;
         mod.c55[i]    = c55;
         mod.c66[i]    = c66;            
-        mod.rhoUnwrap[i] = rho;   
-        // if ( rad >= 6350 ) {
-        // std::cout << rad << ' ' << msh.radMin << ' ' << msh.radMax << std::endl;
-        // std::cin.get ();
-        // }
+        mod.rhoUnwrap[i] = rho;
         }                          
       }        
 

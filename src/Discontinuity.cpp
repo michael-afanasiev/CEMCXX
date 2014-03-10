@@ -69,23 +69,23 @@ void Discontinuity::lookCrust ( Mesh &msh, double &mshCol, double &mshLon,
     
     if ( mshRad >= (con.R_EARTH - crust_dp[0][point]) ) {
   
-      // double crust_vsv = crust_vs[0][point] - con.aniCorrection;
-      // double crust_vsh = crust_vs[0][point];
-      //   
-      // double N = msh.rho[mshInd] * crust_vsh * crust_vsh;
-      // double L = msh.rho[mshInd] * crust_vsv * crust_vsv;
-      //   
-      // double A = msh.c22[mshInd];
-      // double S = A - 2 * N;
-      // double F = A - 2 * L;
+      double crust_vsv = crust_vs[0][point] - con.aniCorrection;
+      double crust_vsh = crust_vs[0][point];
+        
+      double N = msh.rho[mshInd] * crust_vsh * crust_vsh;
+      double L = msh.rho[mshInd] * crust_vsv * crust_vsv;
+        
+      double A = msh.c22[mshInd];
+      double S = A - 2 * N;
+      double F = A - 2 * L;
   
       inCrust         = true;
-      // msh.c12[mshInd] = F;
-      // msh.c13[mshInd] = F;
-      // msh.c23[mshInd] = S;
-      // msh.c44[mshInd] = N;
-      // msh.c55[mshInd] = L;
-      // msh.c66[mshInd] = L;                
+      msh.c12[mshInd] = F;
+      msh.c13[mshInd] = F;
+      msh.c23[mshInd] = S;
+      msh.c44[mshInd] = N;
+      msh.c55[mshInd] = L;
+      msh.c66[mshInd] = L;                
   
     }
   }    

@@ -122,7 +122,7 @@ void Exodus_file::writeParams ( Mesh &msh )
 {
 
   char *cstr = new char [MAX_LINE_LENGTH];
-  const char *varnames[27];
+  const char *varnames[28];
 
   int ndim;
   int nump;
@@ -155,9 +155,10 @@ void Exodus_file::writeParams ( Mesh &msh )
   varnames [21] = "rho";
   varnames [22] = "Q__";
   varnames [23] = "elv";
-  varnames [24] = "du1";
-  varnames [25] = "du2";
-  varnames [26] = "du3";
+  varnames [24] = "siz";
+  varnames [25] = "du1";
+  varnames [26] = "du2";
+  varnames [27] = "du3";
   
   ier = ex_get_init ( idexo, cstr, &ndim, &nump, &numel, &numelblk, &numnps, 
     &numess );
@@ -165,11 +166,11 @@ void Exodus_file::writeParams ( Mesh &msh )
   ier = ex_put_init ( idexo, "Title", ndim, nump, numel, numelblk, 
     numnps, numess);
           
-  ier = ex_put_var_param ( idexo, "n", 27 );
+  ier = ex_put_var_param ( idexo, "n", 28 );
   
   // TODO Figure out why ier gives (-1) on ex_put_init.  
   
-  ier = ex_put_var_names ( idexo, "n", 27, 
+  ier = ex_put_var_names ( idexo, "n", 28, 
     const_cast <char**> ( varnames ));
     
   ier = ex_put_nodal_var ( idexo, 1, 1,  msh.num_nodes, msh.c11 );
@@ -196,8 +197,9 @@ void Exodus_file::writeParams ( Mesh &msh )
   ier = ex_put_nodal_var ( idexo, 1, 22, msh.num_nodes, msh.rho );
   ier = ex_put_nodal_var ( idexo, 1, 23, msh.num_nodes, msh.Q__ );
   ier = ex_put_nodal_var ( idexo, 1, 24, msh.num_nodes, msh.elv );
-  ier = ex_put_nodal_var ( idexo, 1, 25, msh.num_nodes, msh.du1 );
-  ier = ex_put_nodal_var ( idexo, 1, 26, msh.num_nodes, msh.du2 );
-  ier = ex_put_nodal_var ( idexo, 1, 27, msh.num_nodes, msh.du3 );
+  ier = ex_put_nodal_var ( idexo, 1, 25, msh.num_nodes, msh.siz );
+  ier = ex_put_nodal_var ( idexo, 1, 26, msh.num_nodes, msh.du1 );
+  ier = ex_put_nodal_var ( idexo, 1, 27, msh.num_nodes, msh.du2 );
+  ier = ex_put_nodal_var ( idexo, 1, 28, msh.num_nodes, msh.du3 );
     
 }

@@ -313,11 +313,11 @@ public:
   double *du1;
   double *du2;
   double *du3;
+  double *siz;
   
   double *xmsh;
   double *ymsh;
   double *zmsh;  
-  double *siz;
   
   double colMin = 180.;
   double colMax = 0.;

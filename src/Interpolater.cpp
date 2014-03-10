@@ -40,21 +40,10 @@ void Interpolator::findNodes ( Mesh &msh, Model_file &mod )
   Constants con;
   
   cout << "Finding nodes to refine." << endl;
-
-  int count=0; 
-  int within=0; 
-  int countT=0;  
   
-  vector <int> node;
-  node.reserve ( msh.num_node_per_elem );
-  
-  for ( vector <int> :: iterator i=msh.refineElemConn.begin(); 
-    i!=msh.refineElemConn.end(); ++i ) 
+  for ( int i=0; i<msh.num_nodes; i++ ) 
   {
-    
-    count++;    
-    countT++;
-    
+        
     // Define local variables.
     double mshColRot, mshLonRot, mshRadRot; // Sph. Coord. in rotated domain.
     double mshColPys, mshLonPys, mshRadPys; // Sph. Coord. in phsyical domain.
@@ -62,10 +51,12 @@ void Interpolator::findNodes ( Mesh &msh, Model_file &mod )
   
     /* Rotate from physical domain ( in exodus file ) to simulation domain
     ( in SES3D file ). Grab points in simulation domain */
-    utl.rotateBackward ( msh.xmsh[*i], msh.ymsh[*i], msh.zmsh[*i], 
+    utl.rotateBackward ( msh.xmsh[i], msh.ymsh[i], msh.zmsh[i], 
       xRot, yRot, zRot, mod );
     
     utl.xyz2ColLonRadDeg ( xRot, yRot, zRot, mshColRot, mshLonRot, mshRadRot );
+    
+    // Check taper condition based on distance from edge of rotated model.
     
     // Handle special cases of longitude axis wrapping.
     if ( mod.wrapAround == true && mshLonPys < 0. )
@@ -76,21 +67,10 @@ void Interpolator::findNodes ( Mesh &msh, Model_file &mod )
     if ( (mshColRot >= mod.colMin && mshColRot <= mod.colMax) &&
          (mshLonRot >= mod.lonMin && mshLonRot <= mod.lonMax) &&
          (mshRadRot >= mod.radMin) ) 
-    { 
-      node.push_back ( *i );
-      within++;                        
-    }
-    
-    if ( within == msh.num_node_per_elem & count == msh.num_node_per_elem )
-    {
-      refineArr.push_back ( msh.elem_num_map[countT/4] );
-    }
-    
-    if ( count == msh.num_node_per_elem )
-    {
-      count  = 0;
-      within = 0;
-      node.clear();
+    {       
+      double tap = taper ( mshColRot, mshLonRot, mshRadRot, mod );
+      
+      msh.siz[i] = (50. * tap) + (msh.siz[i] * ( 1 - tap ));
     }
     
   }
@@ -279,6 +259,7 @@ int Interpolator::recover ( double &testX, double &testY, double &testZ,
 {
   
   Utilities util;
+  Constants con;
   
   kdtree *tree = msh.tree;
   
@@ -307,7 +288,7 @@ int Interpolator::recover ( double &testX, double &testY, double &testZ,
     kdres *set  = kd_nearest3 ( tree, testX, testY, testZ );
     void *ind_p = kd_res_item_data ( set );
     point       = * ( int * ) ind_p;
-        
+            
     // Find the originally requested col, lon, and rad.
     if ( first == true ) {      
       util.xyz2ColLonRadRad ( origX, origY, origZ, col, lon, rad );        
@@ -321,8 +302,11 @@ int Interpolator::recover ( double &testX, double &testY, double &testZ,
     // Extract iterator for current point.
     ext = msh.elemOrder.equal_range (point);
     
-    // Extract node number.
-    nodeNum = msh.node_num_map[point];
+    // Extract node number if looking for it.
+    if ( mode == 'e' )
+    {
+      nodeNum = msh.node_num_map[point];
+    }
     
     // Loop over connecting elements (node indices contained in iterator).
     int nFound = 0;    
@@ -464,7 +448,30 @@ int Interpolator::recover ( double &testX, double &testY, double &testZ,
           c56 = l1 * c56p0 + l2 * c56p1 + l3 * c56p2 + l4 * c56p3;    
           c66 = l1 * c66p0 + l2 * c66p1 + l3 * c66p2 + l4 * c66p3;  
           rho = l1 * rhop0 + l2 * rhop1 + l3 * rhop2 + l4 * rhop3; 
-                
+          if ( rad == 6356 )
+          {
+            // cout << l1 << " " << l2 << " " << l3 << " " << l4 << endl;
+            // double radl1 = sqrt (msh.xmsh[it->second[0]] * 
+            //   msh.xmsh[it->second[0]] +
+            //   msh.ymsh[it->second[0]] * msh.ymsh[it->second[0]] + 
+            //   msh.zmsh[it->second[0]] * msh.zmsh[it->second[0]]);
+            // double radl2 = sqrt (msh.xmsh[it->second[1]] * 
+            //   msh.xmsh[it->second[1]] +
+            //   msh.ymsh[it->second[1]] * msh.ymsh[it->second[1]] + 
+            //   msh.zmsh[it->second[1]] * msh.zmsh[it->second[1]]);
+            // double radl3 = sqrt (msh.xmsh[it->second[2]] * 
+            //   msh.xmsh[it->second[2]] +
+            //   msh.ymsh[it->second[2]] * msh.ymsh[it->second[2]] + 
+            //   msh.zmsh[it->second[2]] * msh.zmsh[it->second[2]]);
+            // double radl4 = sqrt (msh.xmsh[it->second[3]] * 
+            //   msh.xmsh[it->second[3]] +
+            //   msh.ymsh[it->second[3]] * msh.ymsh[it->second[3]] + 
+            //   msh.zmsh[it->second[3]] * msh.zmsh[it->second[3]]);
+            // cout << radl1 << " " << radl2 << " " << radl3 << " " << radl4 << 
+            //   endl;
+            //                                     
+            // cin.get();
+          }
           break;              
         }                
       }                     
@@ -472,7 +479,10 @@ int Interpolator::recover ( double &testX, double &testY, double &testZ,
     
     /* If we haven't found the point on the first try, need to do some magical
     stuff */
-    if ( found == false ) {                
+    if ( found == false ) {   
+      
+      util.xyz2ColLonRadRad ( testX, testY, testZ, colPoint, lonPoint, 
+        radPoint );             
       
       count++;
       /* For col and lon, randomly choose which direction to look. This might
@@ -509,7 +519,9 @@ int Interpolator::recover ( double &testX, double &testY, double &testZ,
       
       if ( count > 1000000 ) {
         cout << "We're looping baby. Looping forever. And ever. " << 
-          "Boring! I'm outta here.\n";
+          "Boring! I'm outta here." << endl;
+        cout << "Col, lon, rad: " << col * con.o80 / con.PI << 
+          " " << lon * con.o80 / con.PI << " " << rad << endl;
         exit ( EXIT_FAILURE );
       }
       

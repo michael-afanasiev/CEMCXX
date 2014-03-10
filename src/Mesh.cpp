@@ -98,17 +98,17 @@ void Mesh::getMinMaxRad ( )
 void Mesh::populateParams ( ) 
 {
   
-  int numMshVar = 27;
+  int numMshVar = 28;
   
   char *var_names[numMshVar];
   for ( int i=0; i<numMshVar; i++ )
     var_names[i] = (char *) calloc ( (MAX_STR_LENGTH+1), sizeof(char) );
   
-  ier = ex_get_var_names ( exoid, "n", 27, var_names );
+  ier = ex_get_var_names ( exoid, "n", numMshVar, var_names );
     
   int c11i, c12i, c13i, c14i, c15i, c16i, c22i, c23i, c24i, c25i, c26i, c33i;
   int c34i, c35i, c36i, c44i, c45i, c46i, c55i, c56i, c66i, rhoi, Q__i, elvi;
-  int du1i, du2i, du3i;
+  int du1i, du2i, du3i, sizi;
   
   for ( int i=0; i<numMshVar; i++ ) {
     
@@ -166,6 +166,8 @@ void Mesh::populateParams ( )
       du2i = i + 1;    
     if (( strcmp ( var_names[i], "du3" ) ) == 0 )
       du3i = i + 1;
+    if (( strcmp ( var_names[i], "siz" ) ) == 0 )
+      sizi = i + 1;
     
   }  
   
@@ -196,6 +198,7 @@ void Mesh::populateParams ( )
   ier = ex_get_nodal_var ( exoid, 1, du1i, num_nodes, du1 );
   ier = ex_get_nodal_var ( exoid, 1, du2i, num_nodes, du2 );
   ier = ex_get_nodal_var ( exoid, 1, du3i, num_nodes, du3 );
+  ier = ex_get_nodal_var ( exoid, 1, sizi, num_nodes, siz );
   
   if ( ier != 0 ) {
     cout << "Error reading in mesh variables.\n";
@@ -249,6 +252,7 @@ void Mesh::allocateMesh ( )
   du1 = new double [num_nodes]();
   du2 = new double [num_nodes]();
   du3 = new double [num_nodes]();
+  siz = new double [num_nodes]();
      
 }
 
@@ -367,6 +371,7 @@ void Mesh::deallocateMesh ( Model_file &mod )
   delete [] du1;
   delete [] du2;
   delete [] du3;
+  delete [] siz;
   
   if ( mod.intentions == "EXTRACT" )
     kd_free ( tree );
