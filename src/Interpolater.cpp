@@ -273,28 +273,39 @@ int Interpolator::recover ( double &testX, double &testY, double &testZ,
   // These variables hold the orignally requested col, lon, and lat.
   double col, lon, rad;
   double colPoint, lonPoint, radPoint;
+  double colClose, lonClose, radClose;
   
   /* Here we keep track of whether we've found the variable, and if this is our
   first try. Assume we haven't found it at first.*/
-  bool found = false;  
-  bool first = true;
-  int  count = 0;
+  // std::vector < int > repeater;
+  // repeater.reserve ( 100 );
+  bool found  = false;  
+  int  count  = 0;
   int  nodeNum;
+  int  pointC;
   int  point;
   
-  while ( found == false ) {
-        
-    // Extract point from KDTree.
-    kdres *set  = kd_nearest3 ( tree, testX, testY, testZ );
-    void *ind_p = kd_res_item_data ( set );
-    point       = * ( int * ) ind_p;
+#ifdef VISUAL_DEBUG
+  ofstream myfile;
+  myfile.open ( "Bary.txt", ios::out );
+#endif
+                
+  // Find node closest to point.
+  kdres *set  = kd_nearest3 ( tree, testX, testY, testZ );
+  void *ind_p = kd_res_item_data ( set );
+  point       = * ( int * ) ind_p;
             
-    // Find the originally requested col, lon, and rad.
-    if ( first == true ) {      
-      util.xyz2ColLonRadRad ( origX, origY, origZ, col, lon, rad );        
-      first = false;      
-    }
+  // Find the originally requested col, lon, and rad.
+  util.xyz2ColLonRadRad ( origX, origY, origZ, col, lon, rad );        
+  pointC = point;
+  
+  // Find ColLonRad of original node.
+  util.xyz2ColLonRadRad ( msh.xmsh[point], msh.ymsh[point], msh.zmsh[point], 
+    colClose, lonClose, radClose );
 
+  // Repeat until enclosing tet is found.
+  while ( found == false ) {    
+  
     // Set up connectivity iterator.
     pair < multimap <int, vector <int> > :: iterator , multimap 
       <int, vector <int> > :: iterator > ext;
@@ -312,7 +323,8 @@ int Interpolator::recover ( double &testX, double &testY, double &testZ,
     int nFound = 0;    
     double l1, l2, l3, l4;
     for ( multimap <int, vector <int> > :: iterator it=ext.first; 
-      it!=ext.second; ++it ) {                    
+      it!=ext.second; ++it ) 
+      {                    
 
       /* Convert to barycentric coordinates (l*). The vector second contains 
         all the indices of the nodes belonging to a element (4 for a tet). So
@@ -325,14 +337,62 @@ int Interpolator::recover ( double &testX, double &testY, double &testZ,
         msh.zmsh[it->second[0]], msh.zmsh[it->second[1]],
         msh.zmsh[it->second[2]], msh.zmsh[it->second[3]],
         l1, l2, l3, l4 ); 
-
-
+          
+#ifdef VISUAL_DEBUG
+        double col1, lon1, rad1;
+        double col2, lon2, rad2;
+        double col3, lon3, rad3;
+        double col4, lon4, rad4;
+              
+        cout << l1 << " " << l2 << " " << l3 << " " << l4 << endl;
+        
+        util.xyz2ColLonRadDeg ( msh.xmsh[it->second[0]],  
+                                msh.ymsh[it->second[0]],
+                                msh.zmsh[it->second[0]],
+                                col1, lon1, rad1 );
+        util.xyz2ColLonRadDeg ( msh.xmsh[it->second[1]],  
+                                msh.ymsh[it->second[1]],
+                                msh.zmsh[it->second[1]],
+                                col2, lon2, rad2 );
+        util.xyz2ColLonRadDeg ( msh.xmsh[it->second[2]],  
+                                msh.ymsh[it->second[2]],
+                                msh.zmsh[it->second[2]],
+                                col3, lon3, rad3 );
+        util.xyz2ColLonRadDeg ( msh.xmsh[it->second[3]],  
+                                msh.ymsh[it->second[3]],
+                                msh.zmsh[it->second[3]],
+                                col4, lon4, rad4 );
+                               
+                               
+        cout << col1 << " " << lon1 << " " << rad1 << endl;                      
+        cout << col2 << " " << lon2 << " " << rad2 << endl;                      
+        cout << col3 << " " << lon3 << " " << rad3 << endl;                      
+        cout << col4 << " " << lon4 << " " << rad4 << endl;                      
+        cout << col * con.o80 / con.PI  << " " << lon * con.o80 / con.PI << 
+          " " << rad  << endl;
+                                              
+        myfile << 0 << " " << 0 << " " << origX << " " << origY << " " 
+          << origZ << endl;
+        myfile << 0 << " " << 0 << " " << msh.xmsh[it->second[0]] << " " << 
+          msh.ymsh[it->second[0]] << " " << msh.zmsh[it->second[0]] << endl;
+        
+        myfile << 0 << " " << 0 << " " << msh.xmsh[it->second[1]] << " " << 
+          msh.ymsh[it->second[1]] << " " << msh.zmsh[it->second[1]] << endl;
+        
+        myfile << 0 << " " << 0 << " " << msh.xmsh[it->second[2]] << " " << 
+          msh.ymsh[it->second[2]] << " " << msh.zmsh[it->second[2]] << endl;
+        
+        myfile << 0 << " " << 0 << " " << msh.xmsh[it->second[3]] << " " << 
+          msh.ymsh[it->second[3]] << " " << msh.zmsh[it->second[3]] << endl;
+#endif
+        
       // If barycentric coordinates are all >= 0.
       if ( l1 >= 0 && l2 >= 0 && l3 >= 0 && l4 >= 0 ) {
       
         found = true;
         
-        if ( mode == 'p' ) {
+        if ( mode == 'p' ) 
+        {
       
           double c11p0 = msh.c11[it->second[0]];
           double c12p0 = msh.c12[it->second[0]];
@@ -424,8 +484,8 @@ int Interpolator::recover ( double &testX, double &testY, double &testZ,
           double c55p3 = msh.c55[it->second[3]];
           double c56p3 = msh.c56[it->second[3]];
           double c66p3 = msh.c66[it->second[3]];    
-          double rhop3 = msh.rho[it->second[3]];     
-      
+          double rhop3 = msh.rho[it->second[3]];   
+                
           c11 = l1 * c11p0 + l2 * c11p1 + l3 * c11p2 + l4 * c11p3;    
           c12 = l1 * c12p0 + l2 * c12p1 + l3 * c12p2 + l4 * c12p3;    
           c13 = l1 * c13p0 + l2 * c13p1 + l3 * c13p2 + l4 * c13p3;    
@@ -448,43 +508,23 @@ int Interpolator::recover ( double &testX, double &testY, double &testZ,
           c56 = l1 * c56p0 + l2 * c56p1 + l3 * c56p2 + l4 * c56p3;    
           c66 = l1 * c66p0 + l2 * c66p1 + l3 * c66p2 + l4 * c66p3;  
           rho = l1 * rhop0 + l2 * rhop1 + l3 * rhop2 + l4 * rhop3; 
-          if ( rad == 6356 )
-          {
-            // cout << l1 << " " << l2 << " " << l3 << " " << l4 << endl;
-            // double radl1 = sqrt (msh.xmsh[it->second[0]] * 
-            //   msh.xmsh[it->second[0]] +
-            //   msh.ymsh[it->second[0]] * msh.ymsh[it->second[0]] + 
-            //   msh.zmsh[it->second[0]] * msh.zmsh[it->second[0]]);
-            // double radl2 = sqrt (msh.xmsh[it->second[1]] * 
-            //   msh.xmsh[it->second[1]] +
-            //   msh.ymsh[it->second[1]] * msh.ymsh[it->second[1]] + 
-            //   msh.zmsh[it->second[1]] * msh.zmsh[it->second[1]]);
-            // double radl3 = sqrt (msh.xmsh[it->second[2]] * 
-            //   msh.xmsh[it->second[2]] +
-            //   msh.ymsh[it->second[2]] * msh.ymsh[it->second[2]] + 
-            //   msh.zmsh[it->second[2]] * msh.zmsh[it->second[2]]);
-            // double radl4 = sqrt (msh.xmsh[it->second[3]] * 
-            //   msh.xmsh[it->second[3]] +
-            //   msh.ymsh[it->second[3]] * msh.ymsh[it->second[3]] + 
-            //   msh.zmsh[it->second[3]] * msh.zmsh[it->second[3]]);
-            // cout << radl1 << " " << radl2 << " " << radl3 << " " << radl4 << 
-            //   endl;
-            //                                     
-            // cin.get();
-          }
-          break;              
+
+          break;       
+                 
         }                
       }                     
     }
     
     /* If we haven't found the point on the first try, need to do some magical
     stuff */
-    if ( found == false ) {   
+    if ( found == false ) 
+    {   
       
       util.xyz2ColLonRadRad ( testX, testY, testZ, colPoint, lonPoint, 
         radPoint );             
       
       count++;
+      
       /* For col and lon, randomly choose which direction to look. This might
       be able to be switched to a more direction search (i.e. we look in the
       direction which is towards the requested point), but this is certainly
@@ -493,44 +533,72 @@ int Interpolator::recover ( double &testX, double &testY, double &testZ,
       discretization is much finer than lat/lon. */
       int signC = rand () % 2 ? 1 : -1;  
       int signL = rand () % 2 ? 1 : -1;
-      int signR = radPoint < rad ? 1 : -1;
+      int signR = radClose < rad ? 1 : -1;
       
       // TODO Make this average edge length a variable.
+      
       /* The theta discretization is controlled by the average edge length of an
       element in the lat/lon direction */      
       double dTheta = 85 / rad;
-      
+    
       /* Allow the search radius to range from 0 to 1 times some values */
       double randC = (rand () % 100) / 100.;
       double randL = (rand () % 100) / 100.;      
       double randR = (rand () % 100) / 100.;
-      
+
       /* Col and Lon are allowed to vary between their original values (0) and
       one edge length away. This seems to work. Radius is allowed to vary by
       1 km. This also seems to work, although I think it's a bit sketchier. 
       Could add a parameter to the radius search to make this variable, 
-      dependent on depth. It does work quite well now though */
-      double colTest = col + ( signC * randC * dTheta );
-      double lonTest = lon + ( signL * randL * dTheta );
-      double radTest = rad + ( signR * randR );
-      
-      /* Create a new testX, Y, and Z, point for the recursive search. */
-      util.colLonRadRad2xyz ( colTest, lonTest, radTest, testX, testY, testZ );
-      
-      if ( count > 1000000 ) {
-        cout << "We're looping baby. Looping forever. And ever. " << 
+      dependent on depth. It does work quite well now though */      
+      if ( count < 500 ) 
+      {
+        double colTest = col + ( signC * randC * dTheta );
+        double lonTest = lon + ( signL * randL * dTheta );
+        double radTest = rad + ( signR * randR );
+        
+        /* Create a new testX, Y, and Z, point for the recursive search. */
+        util.colLonRadRad2xyz ( colTest, lonTest, radTest, testX, testY, 
+          testZ );          
+      }
+      else
+      {
+        testX = origX + ( signC * randC * 85 );
+        testY = origY + ( signL * randL * 85 );
+        testZ = origZ + ( signR * randR * 50 );
+      }
+                
+      // Extract point from KDTree.
+      kdres *set  = kd_nearest3 ( tree, testX, testY, testZ );
+      void *ind_p = kd_res_item_data ( set );
+      point       = * ( int * ) ind_p;  
+          
+      if ( count > 1000000 ) 
+      {
+        cout << "Looping forever. And ever. " << 
           "Boring! I'm outta here." << endl;
+        cout << "I suggest you look into 'Interpolater.cpp' and adjust the " <<
+          "search limits." << endl;
         cout << "Col, lon, rad: " << col * con.o80 / con.PI << 
           " " << lon * con.o80 / con.PI << " " << rad << endl;
+#ifdef VISUAL_DEBUG
+        myfile.close();
+#endif
         exit ( EXIT_FAILURE );
       }
-      
     }    
   }  
   
-  if ( mode == 'e' ) {
+#ifdef VISUAL_DEBUG
+  myfile.close();
+#endif
+          
+  if ( mode == 'e' ) 
+  {
     return nodeNum;
-  } else { 
+  } 
+  else 
+  { 
     return 0;
   }
   
