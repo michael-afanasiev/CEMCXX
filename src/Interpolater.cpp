@@ -23,12 +23,12 @@ void Interpolator::interpolateCrust ( Mesh &msh, Discontinuity &dis )
     
       double col, lon, rad;
     
-      dis.inCrust = false;
+      bool inCrust = false;
     
       utl.xyz2ColLonRadDeg ( msh.xmsh[i], msh.ymsh[i], msh.zmsh[i], 
         col, lon, rad);
       
-      dis.lookCrust ( msh, col, lon, rad, i );    
+      dis.lookCrust ( msh, col, lon, rad, i, inCrust );    
     }
   }
 }
@@ -53,14 +53,10 @@ void Interpolator::findNodes ( Mesh &msh, Model_file &mod )
     ( in SES3D file ). Grab points in simulation domain */
     utl.rotateBackward ( msh.xmsh[i], msh.ymsh[i], msh.zmsh[i], 
       xRot, yRot, zRot, mod );
-    
+      
     utl.xyz2ColLonRadDeg ( xRot, yRot, zRot, mshColRot, mshLonRot, mshRadRot );
     
-    // Check taper condition based on distance from edge of rotated model.
-    
     // Handle special cases of longitude axis wrapping.
-    if ( mod.wrapAround == true && mshLonPys < 0. )
-      mshLonPys += 360;        
     if ( mod.wrapAround == true && mshLonRot < 0. )
       mshLonRot += 360;   
   
@@ -87,15 +83,16 @@ void Interpolator::interpolate ( Mesh &msh, Model_file &mod, Discontinuity
   cout << "Interpolating.\n";
     
   // Loop over every node point in the exodus file.
-  for ( int i=0; i<msh.num_nodes; i++ ) {
-        
+#pragma omp parallel for
+  for ( int i=0; i<msh.num_nodes; i++ ) {        
+
     // Define local variables.
     double mshColRot, mshLonRot, mshRadRot; // Sph. Coord. in rotated domain.
     double mshColPys, mshLonPys, mshRadPys; // Sph. Coord. in phsyical domain.
     double xRot,      yRot,      zRot;      // Cart. Coord in rotated domain.
     
     // At each node point, assume we are not in the crust.
-    dis.inCrust = false;
+    bool inCrust = false;
     
     /* Rotate from physical domain ( in exodus file ) to simulation domain
     ( in SES3D file ). Grab points in simulation domain */
@@ -116,7 +113,7 @@ void Interpolator::interpolate ( Mesh &msh, Model_file &mod, Discontinuity
       mshLonRot += 360;    
       
     // Check for discontinuity conditinos.
-    dis.lookCrust ( msh, mshColPys, mshLonPys, mshRadPys, i );
+    dis.lookCrust ( msh, mshColPys, mshLonPys, mshRadPys, i, inCrust );
 
     /* If the rotated coordinates are within the simulation domain, go ahead and
     interpolate. */
@@ -139,12 +136,12 @@ void Interpolator::interpolate ( Mesh &msh, Model_file &mod, Discontinuity
       double vsvExo = sqrt ( msh.c55[i] / msh.rho[i] );
       double vppExo = sqrt ( msh.c22[i] / msh.rho[i] );
       double rhoExo = msh.rho[i];
-      
+            
       double vshMod = mod.vshUnwrap[point];
       double vsvMod = mod.vsvUnwrap[point];
       double vppMod = mod.vppUnwrap[point];
       double rhoMod = mod.rhoUnwrap[point];
-      
+            
       double vshUse = vshExo + tap * vshMod;
       double vsvUse = vsvExo + tap * vsvMod;
       double vppUse = vppExo + tap * vppMod;
@@ -163,7 +160,9 @@ void Interpolator::interpolate ( Mesh &msh, Model_file &mod, Discontinuity
       msh.c33[i] = A;
       msh.rho[i] = rhoUse;      
       
-      if ( dis.inCrust == false ) {
+      // TODO make a retain crust feature.
+      if ( dis.inCrust == false ) 
+      {
         msh.c12[i] = F;
         msh.c13[i] = F;
         msh.c23[i] = S;
@@ -282,7 +281,6 @@ int Interpolator::recover ( double &testX, double &testY, double &testZ,
   bool found  = false;  
   int  count  = 0;
   int  nodeNum;
-  int  pointC;
   int  point;
   
 #ifdef VISUAL_DEBUG
@@ -297,7 +295,6 @@ int Interpolator::recover ( double &testX, double &testY, double &testZ,
             
   // Find the originally requested col, lon, and rad.
   util.xyz2ColLonRadRad ( origX, origY, origZ, col, lon, rad );        
-  pointC = point;
   
   // Find ColLonRad of original node.
   util.xyz2ColLonRadRad ( msh.xmsh[point], msh.ymsh[point], msh.zmsh[point], 
@@ -577,13 +574,17 @@ int Interpolator::recover ( double &testX, double &testY, double &testZ,
       {
         cout << "Looping forever. And ever. " << 
           "Boring! I'm outta here." << endl;
+        
         cout << "I suggest you look into 'Interpolater.cpp' and adjust the " <<
           "search limits." << endl;
+        
         cout << "Col, lon, rad: " << col * con.o80 / con.PI << 
           " " << lon * con.o80 / con.PI << " " << rad << endl;
+        
 #ifdef VISUAL_DEBUG
         myfile.close();
 #endif
+        
         exit ( EXIT_FAILURE );
       }
     }    

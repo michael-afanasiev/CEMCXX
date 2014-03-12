@@ -46,6 +46,7 @@ public:
     std::vector <std::vector <double> > &vec , char ftype );
       
   int *region;
+  int *KDdat;
   int num_regions;
   int num_x;
   int num_y;
@@ -57,6 +58,8 @@ public:
   double rotVecX;
   double rotVecY;
   double rotVecZ;
+  
+  double refineSize;
   
   double colMin = 180.;
   double colMax = 0.;
@@ -152,6 +155,7 @@ public:
   void createKDTreeUnpacked ( );
   void projectSubspace      ( );
   void writeSES3D           ( );
+  void deallocate           ( );
   void populateParams       ( Driver &drv, Exodus_file &exo );
   void dePopulateSES3D      ( std::string, std::vector<std::vector<double>> );
   void populateRadians      ( std::vector < std::vector <double> > &deg, 
@@ -175,10 +179,13 @@ public:
   
   kdtree *tree;
   
+  int *KDdat;
+  
   void read               ( );
   void createKDTreePacked ( );
+  void deallocate         ( );
   void lookCrust          ( Mesh &msh, double &mshCol, double &mshLon, 
-                            double &mshRad, int &mshInd );
+                            double &mshRad, int &mshInd, bool &checkCrust );
 
 };
 
@@ -285,6 +292,7 @@ public:
 
   int *node_num_map;
   int *elem_num_map;
+  int *KDdat;
   
   double *c11;
   double *c12;

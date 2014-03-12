@@ -38,15 +38,15 @@ void Discontinuity::createKDTreePacked ()
   tree = kd_create (3);
 
   int l    = 0;
-  int *dat = new int [crust_col_rad[0].size()*crust_lon_rad[0].size()]();
+  KDdat = new int [crust_col_rad[0].size()*crust_lon_rad[0].size()]();
     
   for ( int r=0; r!=crust_col_rad.size(); r++ ) {
     for ( int i=0; i!=crust_col_rad[r].size(); i++ ) {
       for ( int j=0; j!=crust_lon_rad[r].size(); j++ ) {
     
-        dat[l] = l;
+        KDdat[l] = l;
         kd_insert3 ( tree, crust_col_deg[r][i], crust_lon_deg[r][j], 
-          con.R_EARTH, &dat[l] );
+          con.R_EARTH, &KDdat[l] );
         l++;
     
       }
@@ -56,7 +56,7 @@ void Discontinuity::createKDTreePacked ()
 }
 
 void Discontinuity::lookCrust ( Mesh &msh, double &mshCol, double &mshLon, 
-                                double &mshRad, int &mshInd )
+                                double &mshRad, int &mshInd, bool &checkCrust )
 {
   
   Constants con;
@@ -79,7 +79,7 @@ void Discontinuity::lookCrust ( Mesh &msh, double &mshCol, double &mshLon,
       double S = A - 2 * N;
       double F = A - 2 * L;
   
-      inCrust         = true;
+      checkCrust      = true;
       msh.c12[mshInd] = F;
       msh.c13[mshInd] = F;
       msh.c23[mshInd] = S;
@@ -89,5 +89,13 @@ void Discontinuity::lookCrust ( Mesh &msh, double &mshCol, double &mshLon,
   
     }
   }    
+  
+}
+
+void Discontinuity::deallocate ( )
+{
+  
+  kd_free ( tree );
+  delete [] KDdat;
   
 }

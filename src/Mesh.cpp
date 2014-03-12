@@ -1,6 +1,7 @@
 #include <algorithm>
 #include <assert.h>
 #include <ctype.h>
+#include <cstring>
 
 #include "classes.hpp"
 
@@ -32,12 +33,11 @@ void Mesh::createKDTreeUnpacked ( )
  
   cout << "Creating KDTree ( mesh ).\n";
   tree     = kd_create (3);
-  int *dat = new int [num_nodes];
+  KDdat    = new int [num_nodes];
   for ( int i=0; i<num_nodes; i++ ) {
-    dat[i] = i;
-    kd_insert3 ( tree, xmsh[i], ymsh[i], zmsh[i], &dat[i] );
+    KDdat[i] = i;
+    kd_insert3 ( tree, xmsh[i], ymsh[i], zmsh[i], &KDdat[i] );
   }
-  delete [] dat;
   
 }
 
@@ -278,13 +278,32 @@ void Mesh::getElementConnectivity ( int exoid )
   int *ids = new int [num_elem_blk];
   int ier  = ex_get_elem_blk_ids ( exoid, ids );
   
+  if ( ier != 0 ) 
+  {
+    cout << "Error in getting elem block ids" << endl;
+    exit ( EXIT_FAILURE );
+  }
+  
+  
   for ( int i=0; i!=num_elem_blk; i++ ) {
     
     ier = ex_get_elem_block ( exoid, ids[i], elem_type, &num_elem_in_blk, 
       &num_nodes_in_elem, &num_attr );
+
+    if ( ier != 0 ) 
+    {
+      cout << "Error in getting elem block data" << endl;
+      exit ( EXIT_FAILURE );
+    }
   
     int *elemConn = new int [num_elem_in_blk*num_node_per_elem];  
     ier           = ex_get_elem_conn ( exoid, ids[i], elemConn );
+    
+    if ( ier != 0 ) 
+    {
+      cout << "Error in getting elem connectivity data" << endl;
+      exit ( EXIT_FAILURE );
+    }
     
     for ( int j=0; j!= num_elem_in_blk*num_node_per_elem; j++ ) {
       refineElemConn.push_back (elemConn[j]);
@@ -302,14 +321,33 @@ void Mesh::getConnectivity ( int exoid )
   int *ids = new int [num_elem_blk];
   int ier  = ex_get_elem_blk_ids ( exoid, ids );      
   
+  if ( ier != 0 ) 
+  {
+    cout << "Error in getting elem block ids" << endl;
+    exit ( EXIT_FAILURE );
+  }
+  
   vector <int> masterElemConn;
   for ( int i=0; i!=num_elem_blk; i++ ) {
     
     ier = ex_get_elem_block ( exoid, ids[i], elem_type, &num_elem_in_blk, 
       &num_nodes_in_elem, &num_attr );
+      
+    if ( ier != 0 ) 
+    {
+      cout << "Error in getting elem block data" << endl;
+      exit ( EXIT_FAILURE );
+    }
   
     int *elemConn = new int [num_elem_in_blk*num_node_per_elem];  
     ier           = ex_get_elem_conn ( exoid, ids[i], elemConn );
+    
+    if ( ier != 0 ) 
+    {
+      cout << "Error in getting elem connectivity data" << endl;
+      exit ( EXIT_FAILURE );
+    }
+    
     
     for ( int j=0; j!= num_elem_in_blk*num_node_per_elem; j++ ) {
       masterElemConn.push_back (elemConn[j]);
@@ -322,11 +360,14 @@ void Mesh::getConnectivity ( int exoid )
   vector <int> node;
   node.reserve ( num_node_per_elem );
   
-  cout << "Building connectivity array.\n";  
-  for ( int i=0; i<num_elem*num_node_per_elem; i++ ) {
+  cout << "Building connectivity array.\n"; 
+  
+  for ( int i=0; i<num_elem*num_node_per_elem; i++ ) 
+  {
     node.push_back ( masterElemConn[i] - 1 );
     
-    if ( (i+1) % num_node_per_elem == 0 ) {            
+    if ( (i+1) % num_node_per_elem == 0 ) 
+    {            
       elemOrder.insert ( pair <int, vector <int> > (node[0], node) );
       elemOrder.insert ( pair <int, vector <int> > (node[1], node) );
       elemOrder.insert ( pair <int, vector <int> > (node[2], node) );
@@ -336,6 +377,7 @@ void Mesh::getConnectivity ( int exoid )
     }    
   }     
 }
+
 
 void Mesh::deallocateMesh ( Model_file &mod )
 {
@@ -374,6 +416,8 @@ void Mesh::deallocateMesh ( Model_file &mod )
   delete [] siz;
   
   if ( mod.intentions == "EXTRACT" )
+    
+    delete [] KDdat;
     kd_free ( tree );
   
   // TODO Add data destructor.

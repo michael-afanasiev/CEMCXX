@@ -50,10 +50,9 @@ int main ()
       Interpolator ipl;    
     
       exoFile -> openFile    ( exoFile -> fname );        
-      msh.getInfo            ( exoFile -> idexo, 'p' );    
+      msh.getInfo            ( exoFile -> idexo, 'p' );         
       ipl.interpolate        ( msh, mod, dis );
       exoFile -> writeParams ( msh );
-      msh.deallocateMesh     ( mod );
       exoFile -> closeFile   ( );      
     
     }

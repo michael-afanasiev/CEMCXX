@@ -10,13 +10,19 @@ double Utilities::col2Lat ( double &col, char flag )
   */
   
   Constants con;  
-  double    lat;
+  double    lat=0;
   
   if ( flag == 'r' ) {
     lat = con.PIo2 - col;
   }
   else if ( flag == 'd' ) {
     lat = con.ninty - col;
+  }
+  
+  if ( lat == 0 )
+  {
+    cout << "Something wrong in your lattitude conversion." << endl;
+    exit ( EXIT_FAILURE );
   }
   
   return lat;

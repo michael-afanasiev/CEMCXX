@@ -109,11 +109,12 @@ void Model_file::createKDTreeUnpacked ( )
 {
   
   cout << "Creating KDTree ( model ).\n";
-  tree         = kd_create (3);
-  int *dat     = new int [num_p];
-  for ( int i=0; i<num_p; i++ ) {
-    dat[i] = i;
-    kd_insert3 ( tree, x[i], y[i], z[i], &dat[i] );
+  tree  = kd_create (3);
+  KDdat = new int [num_p];
+  for ( int i=0; i<num_p; i++ ) 
+  {
+    KDdat[i] = i;
+    kd_insert3 ( tree, x[i], y[i], z[i], &KDdat[i] );
   }
   
 }
@@ -388,6 +389,13 @@ void Model_file::writeSES3D ()
   
   int status = mkdir ( omd.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH );
   
+  if ( status != 0 )
+  {
+    cout << "Something fishy happened when I was creating the output " << 
+      "directory. It's probably not a big deal ( i.e. the directory was " <<
+      "just already present ) so I'm forging ahead." << endl;
+  }
+  
   if ( output_model_physics == "TTI" ) {
     dePopulateSES3D ( omd + "/rho", rho );
     dePopulateSES3D ( omd + "/vsv", vsv );
@@ -418,5 +426,13 @@ void Model_file::readSPECFEM3D ()
 {
   
   cout << "READING SPECFEM3D";
+  
+}
+
+void Model_file::deallocate ()
+{
+  
+  kd_free ( tree );
+  delete [] KDdat;
   
 }
