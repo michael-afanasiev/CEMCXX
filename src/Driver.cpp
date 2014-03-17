@@ -119,3 +119,17 @@ void Driver::readDriver ( ifstream &myfile )
   return;
     
 }
+
+void Driver::checkUsage ( Model_file &mod, std::string mode )
+{
+  
+  if ( mod.intentions != mode ) 
+  {
+    
+    std::cout << "\nHey bru I think you've got a mistake in your parameter " 
+      << "file. I'm stopping here for you to check it out "
+      << "( wrong intention? )" << std::endl;
+    exit ( EXIT_FAILURE );
+  }
+  
+}

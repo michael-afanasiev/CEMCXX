@@ -201,8 +201,10 @@ void Mesh::populateParams ( )
   ier = ex_get_nodal_var ( exoid, 1, sizi, num_nodes, siz );
   
   if ( ier != 0 ) {
-    cout << "Error reading in mesh variables.\n";
-    exit (EXIT_FAILURE);
+    cout << "***" << endl;
+    cout << "Error reading in mesh variables." << endl;
+    cout << "Don't worry, this is ok if you're refining." << endl;
+    cout << "***" << endl;
   }    
   
 }
@@ -416,10 +418,9 @@ void Mesh::deallocateMesh ( Model_file &mod )
   delete [] siz;
   
   if ( mod.intentions == "EXTRACT" )
-    
+  {    
     delete [] KDdat;
-    kd_free ( tree );
-  
-  // TODO Add data destructor.
+    kd_free ( tree );  
+  }
     
 }

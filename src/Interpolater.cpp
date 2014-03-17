@@ -33,7 +33,7 @@ void Interpolator::interpolateCrust ( Mesh &msh, Discontinuity &dis )
   }
 }
 
-void Interpolator::findNodes ( Mesh &msh, Model_file &mod )
+void Interpolator::findNodes ( Mesh &msh, Model_file &mod, ofstream &myfile )
 {
   
   Utilities utl;
@@ -65,8 +65,9 @@ void Interpolator::findNodes ( Mesh &msh, Model_file &mod )
          (mshRadRot >= mod.radMin) ) 
     {       
       double tap = taper ( mshColRot, mshLonRot, mshRadRot, mod );
-      
-      msh.siz[i] = (50. * tap) + (msh.siz[i] * ( 1 - tap ));
+      msh.siz[i] = mod.refineSize;
+      msh.numFound += 1;
+      myfile << msh.node_num_map[i] << endl;
     }
     
   }

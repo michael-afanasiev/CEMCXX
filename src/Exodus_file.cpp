@@ -2,6 +2,7 @@
 #include <cstdio>
 #include <string.h>
 #include <unistd.h>
+#include <dirent.h>
 #include "classes.hpp"
 
 using namespace std;
@@ -94,22 +95,36 @@ void Exodus_file::merge ( Region &reg, Model_file &mod )
     
   int l = 0;
   Exodus_file currentExo;
-  for ( vector <string>::iterator i=colReg.begin(); i!=colReg.end(); ++i ) {
-    for ( vector <string>::iterator j=lonReg.begin(); j!=lonReg.end(); ++j ) {
-      for ( vector <string>::iterator k=radReg.begin(); k!=radReg.end(); ++k ) {
-        
-        string call = mod.mesh_directory;
-                        
-        call.append (*i);
-        call.append (".");
-        call.append (*j);
-        call.append (".");
-        call.append (*k);
-        call.append (".ex2");
+  for ( vector <string>::iterator i=colReg.begin(); i!=colReg.end(); ++i ) 
+  {
+    for ( vector <string>::iterator j=lonReg.begin(); j!=lonReg.end(); ++j ) 
+    {
+      
+      string dir  = mod.mesh_directory;
+      string call = mod.mesh_directory;
+      
+      dir.append (*i);
+      dir.append (".");
+      dir.append (*j);
+      dir.append ("/");
+      
+      DIR *dp = opendir ( dir.c_str() );
+      vector <string> fnames;
+      
+      while ( struct dirent *dirp = readdir ( dp ) )
+      {
+        string test = dirp->d_name;
+        if ( test.substr ( test.length() - 1 ) != "." )
+        {  
+          fnames.push_back ( dir + dirp->d_name );
+        }
+      }
+      
+      for ( vector <string>::iterator k=fnames.begin(); k!=fnames.end(); ++k ) 
+      {                                
                         
         reg.regionsExo.push_back ( currentExo );
-        reg.regionsExo[l].fname = call;
-
+        reg.regionsExo[l].fname = *k;
         l++;
                         
       }

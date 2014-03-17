@@ -233,6 +233,7 @@ private:
 public: 
   
   void readDriver  ( std::ifstream &myfile );
+  void checkUsage  ( Model_file &mod, std::string mode );
   void initialize  ( Model_file &mod, Discontinuity &dis, Utilities &utl, 
   Exodus_file &exo, Region &reg );
   void populateParams ( Model_file &mod );
@@ -288,6 +289,7 @@ public:
   int num_side_sets;
   int num_elem_in_blk;
   int num_nodes_in_elem;
+  int numFound = 0;
   int num_node_per_elem=4;
 
   int *node_num_map;
@@ -367,7 +369,7 @@ public:
   std::vector <int> refineArr;
   std::vector < std::vector <int> > elemWithin;
     
-  void findNodes        ( Mesh &msh, Model_file &mod );
+  void findNodes        ( Mesh &msh, Model_file &mod, std::ofstream &myfile );
   void interpolateCrust ( Mesh &msh, Discontinuity &dis );
   void interpolate      ( Mesh &msh, Model_file &mod, Discontinuity &dis );  
   int  recover      ( double &testX, double &testY, double &testZ, Mesh &msh,

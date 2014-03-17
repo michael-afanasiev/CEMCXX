@@ -10,7 +10,7 @@ double Utilities::col2Lat ( double &col, char flag )
   */
   
   Constants con;  
-  double    lat=0;
+  double    lat=1e20;
   
   if ( flag == 'r' ) {
     lat = con.PIo2 - col;
@@ -19,7 +19,7 @@ double Utilities::col2Lat ( double &col, char flag )
     lat = con.ninty - col;
   }
   
-  if ( lat == 0 )
+  if ( lat == 1e20 )
   {
     cout << "Something wrong in your lattitude conversion." << endl;
     exit ( EXIT_FAILURE );
