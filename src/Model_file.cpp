@@ -190,7 +190,9 @@ void Model_file::populateRadiansSES3D ()
         lonReg4 = true;
       
       if ( lonReg2 == true && lonReg3 == true )
+      {
         wrapAround = true;
+      }
                         
     }
      
@@ -379,7 +381,7 @@ void Model_file::readSES3D ()
     
   populateRadiansSES3D ();
   colLonRad2xyzSES3D   ();  
-        
+          
 }
 
 void Model_file::writeSES3D ()

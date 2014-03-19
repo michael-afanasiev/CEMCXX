@@ -159,6 +159,11 @@ void Utilities::inquireRotate ( Model_file &mod )
       mod.lonReg4 = true;
   
   }
+  
+  if ( mod.lonReg2 == true && mod.lonReg3 == true )
+  {
+    mod.wrapAround = true;
+  }
     
   a             = ( -1 ) * mod.rotRad;
   mod.backRot11 = cos(a) + (x * x) * (1 - cos(a));

@@ -237,6 +237,7 @@ public:
   void initialize  ( Model_file &mod, Discontinuity &dis, Utilities &utl, 
   Exodus_file &exo, Region &reg );
   void populateParams ( Model_file &mod );
+  void report      ( Model_file &mod );
   
 };
 

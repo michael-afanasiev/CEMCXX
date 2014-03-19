@@ -201,10 +201,9 @@ void Mesh::populateParams ( )
   ier = ex_get_nodal_var ( exoid, 1, sizi, num_nodes, siz );
   
   if ( ier != 0 ) {
-    cout << "***" << endl;
-    cout << "Error reading in mesh variables." << endl;
+    cout << "***";
+    cout << "Error reading in mesh variables.";
     cout << "Don't worry, this is ok if you're refining." << endl;
-    cout << "***" << endl;
   }    
   
 }

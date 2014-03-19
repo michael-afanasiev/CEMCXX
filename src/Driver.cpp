@@ -49,7 +49,7 @@ void Driver::initialize ( Model_file &mod, Discontinuity &dis, Utilities &utl,
   
   // Determine which exodus files to read.  
   exo.merge          ( reg, mod );
-  
+    
   return;
   
 }
@@ -132,4 +132,29 @@ void Driver::checkUsage ( Model_file &mod, std::string mode )
     exit ( EXIT_FAILURE );
   }
   
+}
+
+void Driver::report ( Model_file &mod )
+{
+  
+  ofstream myfile;
+  
+  time_t now = time (0);
+  tm   *gmtm = gmtime (&now);
+  char *dt   = asctime (gmtm);
+  
+  myfile.open ( "./dat/history/history.txt", std::ios::app );
+  
+  myfile << dt                        << std::endl;
+  myfile << mod.input_model_directory << std::endl;
+  myfile << mod.input_model_file_type << std::endl;
+  myfile << mod.input_model_physics   << std::endl;
+  myfile << mod.rotAng                << std::endl;
+  myfile << mod.rotVecX               << std::endl;
+  myfile << mod.rotVecY               << std::endl;
+  myfile << mod.rotVecZ               << std::endl;    
+  myfile << "\n"                      << std::endl;
+  
+  myfile.close ();
+
 }

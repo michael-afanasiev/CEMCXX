@@ -4,9 +4,7 @@
 
 int main () 
 {
-  
-  std::ifstream myfile;
-  
+    
   Region        reg;  
   Constants     con;
   Exodus_file   exo;
@@ -57,6 +55,7 @@ int main ()
     
     }
   }
-                  
+  
+  drv.report ( mod );hist                  
   return 0;    
 }

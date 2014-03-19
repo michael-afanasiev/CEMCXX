@@ -58,7 +58,9 @@ void Interpolator::findNodes ( Mesh &msh, Model_file &mod, ofstream &myfile )
     
     // Handle special cases of longitude axis wrapping.
     if ( mod.wrapAround == true && mshLonRot < 0. )
+    {
       mshLonRot += 360;   
+    }
   
     if ( (mshColRot >= mod.colMin && mshColRot <= mod.colMax) &&
          (mshLonRot >= mod.lonMin && mshLonRot <= mod.lonMax) &&
