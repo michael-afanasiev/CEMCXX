@@ -56,6 +56,6 @@ int main ()
     }
   }
   
-  drv.report ( mod );hist                  
+  drv.report ( mod );              
   return 0;    
 }

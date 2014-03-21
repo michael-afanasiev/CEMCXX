@@ -61,21 +61,21 @@ void Exodus_file::merge ( Region &reg, Model_file &mod )
   }
       
   if ( mod.colReg1 == true )
-    colReg.push_back ("col0-90");
+    colReg.push_back ("col000-090");
   if ( mod.colReg2 == true )
-    colReg.push_back ("col90-180");
+    colReg.push_back ("col090-180");
     
   if ( mod.lonReg1 == true )
-    lonReg.push_back ("lon0-90");
+    lonReg.push_back ("lon000-090");
   if ( mod.lonReg2 == true )
-    lonReg.push_back ("lon90-180");
+    lonReg.push_back ("lon090-180");
   if ( mod.lonReg3 == true )
     lonReg.push_back ("lon180-270");
   if ( mod.lonReg4 == true )
     lonReg.push_back ("lon270-360");
                     
   if ( mod.radMin < 1221 )
-    radReg.push_back ( "rad0-1221" );    
+    radReg.push_back ( "rad0000-1221" );    
   if ( mod.radMin < 3480 )
     radReg.push_back ( "rad1221-3480" );  
   if ( mod.radMin < 5371 )

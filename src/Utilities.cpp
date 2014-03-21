@@ -267,3 +267,16 @@ void Utilities::convertBary ( double &xp, double &yp, double &zp,
   l4 = 1 - l1 - l2 - l3;
   
 }
+
+int Utilities::getFilesize ( std::string fname )
+{
+
+  FILE          *pFile;
+    
+  pFile = fopen ( fname.c_str(), "rb" );
+  fseek ( pFile, 0, SEEK_END );
+  int size = ftell ( pFile );
+  fclose ( pFile );   
+  
+  return size;  
+}

@@ -31,6 +31,7 @@ public:
   double o80           = 180.0;
   double ninty         = 90.0;
   double aniCorrection = 0.188078;
+  double toMB          = 9.5367e-7;
   
 };
 
@@ -212,8 +213,8 @@ public:
                           double &x1, double &x2, double &x3, double &x4,
                           double &y1, double &y2, double &y3, double &y4,
                           double &z1, double &z2, double &z3, double &z4,
-                          double &l1, double &l2, double &l3, double &l4 ); 
-  
+                          double &l1, double &l2, double &l3, double &l4 );   
+  int getFilesize       ( std::string fname );
 };
 
 

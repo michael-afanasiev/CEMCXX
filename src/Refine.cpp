@@ -2,16 +2,13 @@
 #include <cmath>
 #include <cstring>
 
-void checkArgv ( )
-{
-  std::cerr << "Usage: refine [desired refinement size]" << std::endl;
-  exit ( EXIT_FAILURE );
-}
+void estimateSize ( Mesh &, int &, bool &t, std::ofstream &, std::string  );
+void setupRefineFile ( std::ofstream &, std::string, int );
 
-int main ( int argc, char* argv[] ) 
+int main ( ) 
 {
  
-  std::ofstream      splitFile;
+  std::ofstream splitFile;
   
   Region        reg;  
   Exodus_file   exo;
@@ -19,16 +16,9 @@ int main ( int argc, char* argv[] )
   Utilities     utl;
   Model_file    mod;
   Discontinuity dis;
+  Constants     con;
   
-  double toMB = 9.5367e-7;
   splitFile.open ( "./tmp/splitInstructions.txt", std::ios::out );
-  
-  if ( argc < 2 )
-    checkArgv ( );
-  
-  std::string arg = argv[1];
-  mod.refineSize = stoi ( arg );
-  std::cout << mod.refineSize << std::endl;
   
   std::cout << "Begin model building.\n";
   
@@ -38,14 +28,16 @@ int main ( int argc, char* argv[] )
   
   std::cout << "\n----- Outputting refinment. -----\n";
       
-  int i = 0;
+  int numRefine  = 0;
+  bool willSplit = false;
+  
   for ( std::vector < Exodus_file > :: 
     iterator exoFile=reg.regionsExo.begin();
     exoFile!=reg.regionsExo.end(); ++exoFile ) 
-  {            
+  {         
+       
     std::cout << "\n";        
   
-    FILE          *pFile;
     Mesh           msh;
     Interpolator   ipl;            
   
@@ -54,50 +46,81 @@ int main ( int argc, char* argv[] )
     msh.getInfo         ( exoFile -> idexo, 'p' );
     
     // Get current file size.
-    pFile = fopen ( exoFile -> fname.c_str(), "rb" );
-    fseek ( pFile, 0, SEEK_END );
-    int size = ftell ( pFile );
-    fclose ( pFile );        
+    int size = utl.getFilesize ( exoFile -> fname );
     
     // Set up file to hold refined elements.
     std::ofstream  myfile;    
-    
-    std::string fname = "./dat/refine/Refine";
-    fname.append ( std::to_string(i) );
-    fname.append ( ".txt" );
-    
-    myfile.open ( fname, std::ios::out );    
-    myfile << exoFile -> fname << std::endl;
+    setupRefineFile ( myfile, exoFile -> fname, numRefine );
     
     // Get node number map and find refinable nodes.
     msh.getNodeNumMap     ( exoFile -> idexo );    
     ipl.findNodes         ( msh, mod, myfile );
+    exoFile -> writeParams ( msh );
         
-    // If the files containes refined nodes...
+    // If the files containes refined nodes, estimate size.
     if ( msh.numFound != 0. )
     {                      
-      double percent = (double (msh.numFound) / double (msh.num_nodes)) * 100.;
-      std::cout << "Percentage of refined elements: " << percent << 
-        "%" << std::endl;
-      double newElem = msh.num_nodes - msh.numFound + msh.numFound * 
-        pow ( 8, 2 );
-      double newSize = ( newElem / msh.num_elem ) * size * toMB;
-    
-      std::cout << "Old size: "           << size * toMB << std::endl;
-      std::cout << "Estimated new size: " << newSize << std::endl;
-      if ( newSize > 250. )
-      {
-        std::cout << "I think " << exoFile -> fname << " will be larger than "
-        << "250 MB after refinment. Splitting file ... " << std::endl;
-        splitFile << exoFile -> fname << std::endl;
-      }
-      i++;
+      estimateSize ( msh, size, willSplit, splitFile, exoFile -> fname );
+      numRefine++;
     }
     
+    // Destroy.
     msh.deallocateMesh     ( mod );
     exoFile -> closeFile   ( );       
   }    
   
   splitFile.close ();
+  
+  if ( willSplit == true )
+  {
+    std::cout << "\nHey bud, split your files before refining." 
+      << " Do this by running ./scr/splitMesh.py" << std::endl;
+  }
+  else
+  {
+    std::cout << "\nLooks like the file doesn't need to be split!"
+      << " Go ahead and run ./scr/refineElements why don't ya!" << std::endl;
+  }
+  
   return 0;
+}
+
+// FUNCTIONS.
+void estimateSize ( Mesh &msh, int &size, bool &willSplit, 
+  std::ofstream &splitFile, std::string fname )
+{
+  
+  Constants con;
+  
+  double percent = (double (msh.numFound) / double (msh.num_nodes)) * 100.;
+  std::cout << "Percentage of refined elements: " << percent << 
+    "%" << std::endl;
+  double newElem = msh.num_nodes - msh.numFound + msh.numFound * 
+    pow ( 8, 2 );
+  double newSize = ( (newElem+msh.num_elem) / msh.num_elem ) * size * con.toMB;
+
+  std::cout << "Old size: "           << size * con.toMB << " MB" << std::endl;
+  std::cout << "Estimated new size: " << newSize << " MB" << std::endl;
+  
+  if ( newSize > 250. )
+  {
+    std::cout << "I think " << fname << " will be larger than "
+    << "250 MB after refinment. Splitting file ... " << std::endl;
+    splitFile << fname << std::endl;
+    willSplit = true;
+  }
+  
+}
+
+void setupRefineFile ( std::ofstream &myfile, std::string exoName, 
+  int numRefine )
+{
+  
+  std::string fRefineName = "./dat/refine/Refine";
+  fRefineName.append ( std::to_string(numRefine) );
+  fRefineName.append ( ".txt" );
+  
+  myfile.open ( fRefineName, std::ios::out );    
+  myfile << exoName << std::endl;
+  
 }

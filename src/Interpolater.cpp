@@ -67,6 +67,7 @@ void Interpolator::findNodes ( Mesh &msh, Model_file &mod, ofstream &myfile )
          (mshRadRot >= mod.radMin) ) 
     {       
       double tap = taper ( mshColRot, mshLonRot, mshRadRot, mod );
+      mod.refineSize = 50.;
       msh.siz[i] = mod.refineSize;
       msh.numFound += 1;
       myfile << msh.node_num_map[i] << endl;
