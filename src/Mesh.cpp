@@ -273,8 +273,10 @@ void Mesh::getElemNumMap ( int exoid )
   
 }
 
-void Mesh::getElementConnectivity ( int exoid )
+void Mesh::getElementConnectivity ( int exoid, Model_file &mod )
 {
+  
+  Utilities utl;
   
   int *ids = new int [num_elem_blk];
   int ier  = ex_get_elem_blk_ids ( exoid, ids );
@@ -284,9 +286,9 @@ void Mesh::getElementConnectivity ( int exoid )
     cout << "Error in getting elem block ids" << endl;
     exit ( EXIT_FAILURE );
   }
-  
-  
-  for ( int i=0; i!=num_elem_blk; i++ ) {
+    
+  for ( int i=0; i!=num_elem_blk; i++ ) 
+  {
     
     ier = ex_get_elem_block ( exoid, ids[i], elem_type, &num_elem_in_blk, 
       &num_nodes_in_elem, &num_attr );
@@ -297,6 +299,12 @@ void Mesh::getElementConnectivity ( int exoid )
       exit ( EXIT_FAILURE );
     }
   
+    std::vector <int> tmpElemConn;
+    std::vector <int> tmpNewElemConn;
+    
+    tmpElemConn.reserve    ( num_elem_in_blk*num_node_per_elem );
+    tmpNewElemConn.reserve ( num_elem_in_blk*num_node_per_elem );
+      
     int *elemConn = new int [num_elem_in_blk*num_node_per_elem];  
     ier           = ex_get_elem_conn ( exoid, ids[i], elemConn );
     
@@ -305,15 +313,77 @@ void Mesh::getElementConnectivity ( int exoid )
       cout << "Error in getting elem connectivity data" << endl;
       exit ( EXIT_FAILURE );
     }
+        
+    int outCount = 0;
+    int inCount  = 0;    
+    for ( int j=0; j<num_elem_in_blk*num_node_per_elem; j++ ) 
+    {
+
+      // Define local variables.
+      double mshColRot, mshLonRot, mshRadRot; // Sph. Coord. in rotated domain.
+      double mshColPys, mshLonPys, mshRadPys; // Sph. Coord. in phsyical domain.
+      double xRot,      yRot,      zRot;      // Cart. Coord in rotated domain.
+      
+      int ind = elemConn[j]-1;
+      utl.rotateBackward ( xmsh[ind], ymsh[ind], zmsh[ind], xRot, yRot, zRot, 
+        mod );
+      utl.xyz2ColLonRadDeg ( xRot, yRot, zRot, mshColRot, mshLonRot, 
+        mshRadRot );
+      
+      if ( mod.wrapAround == true && mshLonRot < 0. )
+      {
+        mshLonRot += 360;   
+      }
     
-    for ( int j=0; j!= num_elem_in_blk*num_node_per_elem; j++ ) {
-      refineElemConn.push_back (elemConn[j]);
+      double tiny = -0.5;
+    
+      outCount++;
+      if ( (mshColRot >= mod.colMin && mshColRot <= mod.colMax) &&
+           (mshLonRot >= mod.lonMin && mshLonRot <= mod.lonMax) &&
+           (mshRadRot >= mod.radMin) ) 
+      {               
+        inCount++;
+        if ( inCount == num_node_per_elem )
+        {
+          tmpNewElemConn.push_back ( elemConn[j-3] );
+          tmpNewElemConn.push_back ( elemConn[j-2] );
+          tmpNewElemConn.push_back ( elemConn[j-1] );
+          tmpNewElemConn.push_back ( elemConn[j]   );
+        }
+      }            
+      else
+      {
+        inCount++;
+        if ( inCount == num_node_per_elem )
+        {
+          tmpElemConn.push_back ( elemConn[j-3] );
+          tmpElemConn.push_back ( elemConn[j-2] );
+          tmpElemConn.push_back ( elemConn[j-1] );
+          tmpElemConn.push_back ( elemConn[j]   );                              
+        }
+      
+      }
+      
+      if ( (outCount % num_node_per_elem) == 0 )
+      {
+        inCount = 0;
+      }            
+          
     }
     
-    delete [] elemConn;
+    if ( tmpElemConn.size() != 0 )
+    {
+      refineElemConn.push_back ( tmpElemConn );
+    }
+    if ( tmpNewElemConn.size() != 0 )
+    {
+      refineElemConn.push_back ( tmpNewElemConn );
+    }
     
-  }
-  
+    tmpElemConn.clear();      
+    tmpNewElemConn.clear();
+    delete [] elemConn;
+  }  
 }
 
 void Mesh::getConnectivity ( int exoid )
