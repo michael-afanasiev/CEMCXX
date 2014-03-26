@@ -55,7 +55,6 @@ int main ( )
     // Get node number map and find refinable nodes.
     msh.getNodeNumMap     ( exoFile -> idexo );    
     ipl.findNodes         ( msh, mod, myfile );
-    exoFile -> writeParams ( msh );
         
     // If the files containes refined nodes, estimate size.
     if ( msh.numFound != 0. )

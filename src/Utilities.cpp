@@ -2,6 +2,49 @@
 #include "classes.hpp"
 using namespace std;
 
+void Utilities::checkRegion ( Mesh &msh, double &rad )
+{
+  
+  Constants con;
+  
+  if ( msh.regString == "innerCore" )
+  {
+    if ( rad >= con.innerCoreRad )
+      rad = con.innerCoreRad - con.tiny;
+  }
+
+  if ( msh.regString == "outerCore" )
+  {
+    if ( rad >= con.outerCoreRad )
+      rad = con.outerCoreRad - con.tiny;
+    if ( rad <= con.innerCoreRad )
+      rad = con.innerCoreRad + con.tiny;
+  }
+  
+  if ( msh.regString == "lowerMantle" )
+  {
+    if ( rad >= con.R670 )
+      rad = con.R670 - con.tiny;
+    if ( rad <= con.outerCoreRad )
+      rad = con.outerCoreRad + con.tiny;
+  }
+  
+  if ( msh.regString == "transitionZone" )
+  {
+    if (rad >= con.R400)
+      rad = con.R400 - con.tiny;
+    if (rad <= con.R670)
+      rad = con.R670 + con.tiny;     
+  }    
+  
+  if ( msh.regString == "upperMantle" )
+  {
+    if ( rad <= con.R400 )
+      rad = con.R400 + con.tiny;
+  }        
+  
+}
+
 double Utilities::col2Lat ( double &col, char flag ) 
 {
   /**
@@ -39,6 +82,9 @@ void Utilities::xyz2ColLonRadDeg ( double &x,   double &y,   double &z,
   col = acos  ( z / rad ) * con.o80 / con.PI ;
   lon = atan2 ( y, x ) * con.o80 / con.PI ;
   
+  if ( rad > con.R_EARTH )
+    rad = con.R_EARTH;
+  
 }
 
 void Utilities::xyz2ColLonRadRad ( double &x,   double &y,   double &z, 
@@ -51,6 +97,9 @@ void Utilities::xyz2ColLonRadRad ( double &x,   double &y,   double &z,
   col = acos  ( z / rad );
   lon = atan2 ( y, x );
   
+  if ( rad > con.R_EARTH )
+    rad = con.R_EARTH;
+    
 }
                                   
 void Utilities::colLonRadDeg2xyz ( double col,  double lon,  double rad,

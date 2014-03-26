@@ -136,7 +136,10 @@ void Model_file::colLonRad2xyzSES3D ()
         
           x[l] = rad[r][k] * cos ( lon_rad[r][j] ) * sin ( col_rad[r][i] );
           y[l] = rad[r][k] * sin ( lon_rad[r][j] ) * sin ( col_rad[r][i] );
-          z[l] = rad[r][k] * cos ( col_rad[r][i] );            
+          z[l] = rad[r][k] * cos ( col_rad[r][i] );  
+          
+          radUnwrap[l] = rad[r][k];          
+          
           l++;
         
         }
@@ -378,6 +381,7 @@ void Model_file::readSES3D ()
   x.resize ( num_p );
   y.resize ( num_p );
   z.resize ( num_p );
+  radUnwrap.resize ( num_p );
     
   populateRadiansSES3D ();
   colLonRad2xyzSES3D   ();  

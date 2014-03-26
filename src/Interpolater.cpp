@@ -67,8 +67,6 @@ void Interpolator::findNodes ( Mesh &msh, Model_file &mod, ofstream &myfile )
          (mshRadRot >= mod.radMin) ) 
     {       
       double tap = taper ( mshColRot, mshLonRot, mshRadRot, mod );
-      mod.refineSize = 50.;
-      msh.siz[i] = mod.refineSize;
       msh.numFound += 1;
       myfile << msh.node_num_map[i] << endl;
     }
@@ -81,8 +79,10 @@ void Interpolator::interpolate ( Mesh &msh, Model_file &mod, Discontinuity
   &dis ) 
 {
 
+
   Utilities utl;
   Constants con;
+  Mod1d     bm;
     
   cout << "Interpolating.\n";
     
@@ -125,7 +125,7 @@ void Interpolator::interpolate ( Mesh &msh, Model_file &mod, Discontinuity
          (mshLonRot >= mod.lonMin && mshLonRot <= mod.lonMax) &&
          (mshRadRot >= mod.radMin) ) 
     {                                             
-      
+                  
       /* Find the xyz values which are closest to the rotated point. Index of 
       the xyz values are stored in 'point'. */       
       kdres *set   = kd_nearest3 ( mod.tree, xRot, yRot, zRot );    
@@ -134,6 +134,10 @@ void Interpolator::interpolate ( Mesh &msh, Model_file &mod, Discontinuity
                                
       // Check taper condition based on distance from edge of rotated model.
       double tap = taper ( mshColRot, mshLonRot, mshRadRot, mod );
+      
+      // Get 1d background values.
+      double vs1d, vp1d, rho1d;
+      bm.eumod ( mshRadRot, vs1d, vp1d, rho1d );
       
       // TTI.
       double vshExo = sqrt ( msh.c44[i] / msh.rho[i] );
@@ -144,12 +148,17 @@ void Interpolator::interpolate ( Mesh &msh, Model_file &mod, Discontinuity
       double vshMod = mod.vshUnwrap[point];
       double vsvMod = mod.vsvUnwrap[point];
       double vppMod = mod.vppUnwrap[point];
-      double rhoMod = mod.rhoUnwrap[point];
+      double rhoMod = mod.rhoUnwrap[point]; 
             
-      double vshUse = vshExo + tap * vshMod;
-      double vsvUse = vsvExo + tap * vsvMod;
-      double vppUse = vppExo + tap * vppMod;
-      double rhoUse = rhoExo + tap * rhoMod;
+      // double vshUse = ( 1 - tap ) * vshExo + tap * ( vshMod + vs1d);
+      // double vsvUse = ( 1 - tap ) * vsvExo + tap * ( vsvMod + vs1d);
+      // double vppUse = ( 1 - tap ) * vppExo + tap * ( vppMod + vp1d);
+      // double rhoUse = ( 1 - tap ) * rhoExo + tap * ( rhoMod + rho1d);
+
+      double vshUse = tap * ( vshMod + vs1d);
+      double vsvUse = tap * ( vsvMod + vs1d);
+      double vppUse = tap * ( vppMod + vp1d);
+      double rhoUse = tap * ( rhoMod + rho1d);
       
       double N = rhoUse * vshUse * vshUse;
       double L = rhoUse * vsvUse * vsvUse;
@@ -163,7 +172,15 @@ void Interpolator::interpolate ( Mesh &msh, Model_file &mod, Discontinuity
       msh.c22[i] = A;
       msh.c33[i] = A;
       msh.rho[i] = rhoUse;      
-      
+
+      if ( mod.radUnwrap[point] >= 5971. )
+      {
+        msh.c11[i] = 0;
+        msh.c22[i] = mod.radUnwrap[point];
+        cout << msh.c22[i] << endl;
+        cout << mod.radUnwrap[point-1] << endl;
+        cin.get();
+      }
       // TODO make a retain crust feature.
       if ( dis.inCrust == false ) 
       {

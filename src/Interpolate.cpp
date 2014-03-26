@@ -1,7 +1,5 @@
 #include "classes.hpp"
 
-// using namespace std;
-
 int main () 
 {
     
@@ -25,6 +23,7 @@ int main ()
       "file. I'm stopping here for you to check it out ( wrong intention? )\n" 
         << std::endl;
     exit ( EXIT_FAILURE );
+    
   }
   
   

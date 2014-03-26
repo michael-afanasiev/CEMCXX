@@ -11,6 +11,7 @@ class Driver;
 class Region;
 class Exodus_file;
 class Interpolator;
+class Mod1d;
 
 class Region
 {
@@ -18,6 +19,15 @@ class Region
 public:
   std::vector < Exodus_file > regionsExo;
 
+};
+
+class Mod1d
+{
+  
+public:
+  
+  void eumod ( double &, double &, double &, double & );
+  
 };
 
 class Constants
@@ -32,6 +42,12 @@ public:
   double ninty         = 90.0;
   double aniCorrection = 0.188078;
   double toMB          = 9.5367e-7;
+  double tiny          = 1e-4;
+  
+  double innerCoreRad = 1221.0;
+  double outerCoreRad = 3480.0;
+  double R670         = 5701.0;
+  double R400         = 5971.0; 
   
 };
 
@@ -98,6 +114,7 @@ public:
   std::vector <double> vshUnwrap;
   std::vector <double> vsvUnwrap;
   std::vector <double> vppUnwrap;
+  std::vector <double> radUnwrap;
       
   double forRot11;
   double forRot21;
@@ -212,8 +229,10 @@ public:
   void convertBary      ( double &xp, double &yp, double &zp, 
                           double &x1, double &x2, double &x3, double &x4,
                           double &y1, double &y2, double &y3, double &y4,
-                          double &z1, double &z2, double &z3, double &z4,
+                          double &z1, double &z2, double &z3, double &z4,                          
                           double &l1, double &l2, double &l3, double &l4 );   
+  void checkRegion      ( Mesh &msh, double &rad );
+                          
   int getFilesize       ( std::string fname );
 };
 
@@ -346,6 +365,8 @@ public:
   char name;
   char title [MAX_LINE_LENGTH+1]; 
   char elem_type [MAX_LINE_LENGTH+1];
+  
+  std::string regString;
   
   // Internal functions.
     

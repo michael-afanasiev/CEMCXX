@@ -71,14 +71,14 @@ void Mesh::getMinMaxRad ( )
         radMax = rad;
           
     }
-
+    
     if ( (xmsh[i] == 0) && (ymsh[i] == 0) && (zmsh[i] > 0) )
       colMin = 0;
     if ( (xmsh[i] == 0) && (ymsh[i] == 0) && (zmsh[i] < 0) )
       colMax = 180;
     
   }
-      
+          
   if ( (lonMax == 180.) && (lonMin < 0.) ) 
   {    
     lonMin = -90;
@@ -91,8 +91,19 @@ void Mesh::getMinMaxRad ( )
   colMin = colMin * con.PI / con.o80;
   colMax = colMax * con.PI / con.o80;
   lonMin = lonMin * con.PI / con.o80;
-  lonMax = lonMax * con.PI / con.o80;
+  lonMax = lonMax * con.PI / con.o80;   
   
+  if ( radMax <= (con.innerCoreRad + 1) )
+    regString = "innerCore";
+  if ( (radMax <= (con.outerCoreRad + 1)) && (radMin >= (con.innerCoreRad - 1)) )
+    regString = "outerCore";
+  if ( (radMax <= (con.R670 + 1)) && (radMin >= (con.outerCoreRad - 1)) )
+    regString = "lowerMantle";
+  if ( (radMax <= (con.R400 + 1)) && (radMin >= (con.R670 - 1)) )
+    regString = "transitionZone";
+  if ( radMin >= (con.R400 - 1) )
+    regString = "upperMantle";
+       
 }
 
 void Mesh::populateParams ( ) 
