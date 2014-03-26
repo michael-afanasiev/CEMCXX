@@ -288,6 +288,7 @@ public:
   
   // Internal functions.
   
+  void writeNew   ( Mesh &msh );
   void merge       ( Region &reg, Model_file &mod );
   void openFile    ( std::string fname );
   void writeParams ( Mesh &msh );
@@ -360,7 +361,7 @@ public:
   kdtree *tree;
   
   std::multimap <int, std::vector <int> > elemOrder;  
-  std::vector <int> refineElemConn;
+  std::vector < std::vector <int> > refineElemConn;
   
   char name;
   char title [MAX_LINE_LENGTH+1]; 
@@ -380,7 +381,7 @@ public:
   void getMinMaxRad           ( );
   void getNodeNumMap          ( int exoid );
   void getElemNumMap          ( int exoid );
-  void getElementConnectivity ( int exoid );  
+  void getElementConnectivity ( int exoid, Model_file &mod );  
            
 };
 

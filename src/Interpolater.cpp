@@ -41,36 +41,67 @@ void Interpolator::findNodes ( Mesh &msh, Model_file &mod, ofstream &myfile )
   
   cout << "Finding nodes to refine." << endl;
   
-  for ( int i=0; i<msh.num_nodes; i++ ) 
+  int outCount = 0; 
+  int inCount  = 0;
+  
+  std::vector <int> node;
+  for ( std::vector < vector <int> > :: iterator out=msh.refineElemConn.begin();
+    out!=msh.refineElemConn.end(); ++out )       
   {
-        
-    // Define local variables.
-    double mshColRot, mshLonRot, mshRadRot; // Sph. Coord. in rotated domain.
-    double mshColPys, mshLonPys, mshRadPys; // Sph. Coord. in phsyical domain.
-    double xRot,      yRot,      zRot;      // Cart. Coord in rotated domain.
-  
-    /* Rotate from physical domain ( in exodus file ) to simulation domain
-    ( in SES3D file ). Grab points in simulation domain */
-    utl.rotateBackward ( msh.xmsh[i], msh.ymsh[i], msh.zmsh[i], 
-      xRot, yRot, zRot, mod );
-      
-    utl.xyz2ColLonRadDeg ( xRot, yRot, zRot, mshColRot, mshLonRot, mshRadRot );
     
-    // Handle special cases of longitude axis wrapping.
-    if ( mod.wrapAround == true && mshLonRot < 0. )
+    for ( std::vector <int> :: iterator in=out->begin(); in!=out->end(); ++in )
     {
-      mshLonRot += 360;   
-    }
+      
+      // Define local variables.
+      double mshColRot, mshLonRot, mshRadRot; // Sph. Coord. in rotated domain.
+      double mshColPys, mshLonPys, mshRadPys; // Sph. Coord. in phsyical domain.
+      double xRot,      yRot,      zRot;      // Cart. Coord in rotated domain.
   
-    if ( (mshColRot >= mod.colMin && mshColRot <= mod.colMax) &&
-         (mshLonRot >= mod.lonMin && mshLonRot <= mod.lonMax) &&
-         (mshRadRot >= mod.radMin) ) 
-    {       
-      double tap = taper ( mshColRot, mshLonRot, mshRadRot, mod );
-      msh.numFound += 1;
-      myfile << msh.node_num_map[i] << endl;
-    }
+      /* Rotate from physical domain ( in exodus file ) to simulation domain
+      ( in SES3D file ). Grab points in simulation domain */
+      utl.rotateBackward ( msh.xmsh[*in-1], msh.ymsh[*in-1], msh.zmsh[*in-1], 
+        xRot, yRot, zRot, mod );
+        
+      utl.xyz2ColLonRadDeg ( xRot, yRot, zRot, mshColRot, mshLonRot, 
+        mshRadRot );
     
+      // Handle special cases of longitude axis wrapping.
+      if ( mod.wrapAround == true && mshLonRot < 0. )
+      {
+        mshLonRot += 360;   
+      }
+      
+      outCount++;
+      if ( (mshColRot >= mod.colMin && mshColRot <= mod.colMax) &&
+           (mshLonRot >= mod.lonMin && mshLonRot <= mod.lonMax) &&
+           (mshRadRot >= mod.radMin) ) 
+      {       
+        inCount++;
+      
+        if ( inCount == msh.num_node_per_elem )
+        {
+          node.push_back ( *(in-3) );
+          node.push_back ( *(in-2) );
+          node.push_back ( *(in-1) );
+          node.push_back ( *(in-0) );  
+        }
+
+      }          
+      
+      if ( (outCount % msh.num_node_per_elem) == 0 )
+      {
+        inCount = 0;
+      }
+            
+    }                        
+    
+  }
+  
+
+  if ( node.size() != 0 )
+  {
+    msh.refineElemConn.push_back (node);
+    cout << "Pushed" << endl;
   }
   
 }

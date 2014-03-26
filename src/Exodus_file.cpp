@@ -7,6 +7,58 @@
 
 using namespace std;
 
+void Exodus_file::writeNew ( Mesh &msh )
+{
+  
+  cout << "creating file." << endl;
+  
+  int *elemConn = new int [msh.num_elem*msh.num_node_per_elem];
+    
+  int id = ex_create ( "./text.ex2", EX_CLOBBER, &comp_ws, &io_ws );
+  
+  ier = ex_put_init ( id, "TEST", 3, msh.num_nodes, msh.num_elem, 
+    msh.refineElemConn.size(), 0, 0 );
+  
+  ier = ex_put_coord        ( id, msh.xmsh, msh.ymsh, msh.zmsh );
+  
+  ier = ex_put_node_num_map ( id, msh.node_num_map );
+  ier = ex_put_elem_num_map ( id, msh.elem_num_map );
+  ier = ex_put_map          ( id, msh.elem_num_map );
+  
+  int blkNum = 0;
+  for ( vector < vector <int> > :: iterator out=msh.refineElemConn.begin(); 
+    out!=msh.refineElemConn.end(); ++out )
+  {
+    
+    blkNum++;
+    int numElemInBlk = out->size() / double (msh.num_node_per_elem);
+    int *blkElemConn = new int 
+      [out->size()*msh.num_node_per_elem];
+
+    int connInd = 0;
+    for ( vector <int> :: iterator in=out->begin(); in!=out->end(); ++in )
+    {
+      
+      blkElemConn[connInd] = *in;
+      connInd++;
+      
+    }        
+    
+    ier = ex_put_elem_block   ( id, blkNum, "TETRA", numElemInBlk, 4, 0 );
+    ier = ex_put_elem_conn    ( id, blkNum, blkElemConn );
+    delete [] blkElemConn;
+    
+  }
+
+  ier = ex_close ( id );
+  
+  if ( ier == 0 )
+    cout << "New exodus file closed succesfully" << endl;
+  
+  // exit ( EXIT_SUCCESS );
+  
+}
+
 void Exodus_file::openFile ( string fname ) 
 {
     
