@@ -33,7 +33,6 @@ int main ()
     std::cout << "\n----- Interpolating -----\n";
     std::cout << "\n";
     
-    mod.createKDTreeUnpacked ( );
     dis.createKDTreePacked   ( );
     
     for ( std::vector < Exodus_file > :: 
@@ -46,12 +45,14 @@ int main ()
       Mesh msh;
       Interpolator ipl;    
     
-      exoFile -> openFile    ( exoFile -> fname );        
-      msh.getInfo            ( exoFile -> idexo, 'p' );         
-      ipl.interpolate        ( msh, mod, dis );
-      exoFile -> writeParams ( msh );
-      exoFile -> closeFile   ( );      
-    
+      exoFile -> openFile      ( exoFile -> fname );        
+      msh.getInfo              ( exoFile -> idexo, 'p' );  
+      mod.createKDTreeUnpacked ( msh );       
+      ipl.interpolate          ( msh, mod, dis );
+      exoFile -> writeParams   ( msh );
+      exoFile -> closeFile     ( );      
+      mod.deallocate           ( );
+      
     }
   }
   

@@ -1,0 +1,81 @@
+#include <cmath>
+
+#include "classes.hpp"
+
+double Attenuation::QL6 ( double &rad )
+{
+  
+  Constants con;
+  
+  double Q;
+  
+  double x = ( con.R_EARTH - rad ) / 271.;
+  
+  if ( (rad <= 6371) && (rad >= 6100) )
+  {
+    Q = 300. - 5370.82 * x * x + 14401.62 * x * x * x -13365.78 * 
+      x * x * x * x + 4199.98 * x * x * x * x * x;
+  }
+  else if ( (rad <= 6100) && ( rad >= 5701) )
+  {
+    Q = 165.;
+  }
+  else if ( (rad <=5701) && (rad >= 3480) )
+  {
+    Q = 355.;
+  }
+  else if ( (rad <= 3480) && (rad >= 1221) )
+  {
+    Q = 0.0;    
+  }
+  else
+  {
+    Q = 104.0;
+  }
+  
+  return Q;
+  
+}
+
+double Attenuation::correct ( std::string &model, double &rad, double &rho )
+{
+  
+  Constants con;
+  
+  tau_s[0] = 1.65159913;
+  tau_s[1] = 13.66501919;
+  tau_s[2] = 37.07774555;  
+  D[0]     = 2.59203931;
+  D[1]     = 2.48647256; 
+  D[2]     = 0.07372733;
+  
+  double Q;
+  
+  if ( model == "QL6" )
+    Q = QL6 ( rad );
+  
+  double angFreq = 2. * con.PI * freqRef;
+  double tau     = 2. / ( con.PI * Q );
+  
+  double A = 0.0;
+  double B = 0.0;
+  
+  for ( int i=0; i<nRelaxationMechanisms; i++ )
+  {
+    A = A + ( D[i] * angFreq * angFreq * tau_s[i] * tau_s[i] ) /
+      ( 1 + angFreq * angFreq * tau_s[i] * tau_s[i] );
+    B = B + ( D[i] * angFreq * tau_s[i] ) /
+      ( 1 + angFreq * angFreq * tau_s[i] * tau_s[i] );
+  }
+  
+  A = 1 + tau * A;
+  B = tau * B;
+  
+  double correctionFactor = sqrt ( 2 * ( A * A + B * B ) ) /
+    ( ( A + sqrt ( A * A + B * B ) ));
+  std::cout << correctionFactor << std::endl;
+  std::cin.get();
+  
+  return correctionFactor;
+  
+}

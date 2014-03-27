@@ -105,16 +105,19 @@ void Model_file::populateSES3D ( string name, int &num_regions,
   
 }
 
-void Model_file::createKDTreeUnpacked ( )
+void Model_file::createKDTreeUnpacked ( Mesh &msh )
 {
   
   cout << "Creating KDTree ( model ).\n";
   tree  = kd_create (3);
   KDdat = new int [num_p];
   for ( int i=0; i<num_p; i++ ) 
-  {
+  { 
     KDdat[i] = i;
-    kd_insert3 ( tree, x[i], y[i], z[i], &KDdat[i] );
+    if ( (radUnwrap[i] <= msh.radMax) && (radUnwrap[i] >= msh.radMin) )
+    {   
+      kd_insert3 ( tree, x[i], y[i], z[i], &KDdat[i] );
+    }
   }
   
 }

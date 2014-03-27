@@ -110,7 +110,7 @@ void Interpolator::interpolate ( Mesh &msh, Model_file &mod, Discontinuity
   &dis ) 
 {
 
-
+  Attenuation atn;
   Utilities utl;
   Constants con;
   Mod1d     bm;
@@ -166,31 +166,39 @@ void Interpolator::interpolate ( Mesh &msh, Model_file &mod, Discontinuity
       // Check taper condition based on distance from edge of rotated model.
       double tap = taper ( mshColRot, mshLonRot, mshRadRot, mod );
       
+      // Adjust radius and ensure we don't grab from across boundaries.
+      utl.checkRegion ( msh, mshRadRot );
+      
       // Get 1d background values.
       double vs1d, vp1d, rho1d;
-      bm.eumod ( mshRadRot, vs1d, vp1d, rho1d );
+      bm.eumod    ( mshRadRot, vs1d, vp1d, rho1d );
+      
+      
       
       // TTI.
       double vshExo = sqrt ( msh.c44[i] / msh.rho[i] );
       double vsvExo = sqrt ( msh.c55[i] / msh.rho[i] );
       double vppExo = sqrt ( msh.c22[i] / msh.rho[i] );
       double rhoExo = msh.rho[i];
-            
+                  
       double vshMod = mod.vshUnwrap[point];
       double vsvMod = mod.vsvUnwrap[point];
       double vppMod = mod.vppUnwrap[point];
       double rhoMod = mod.rhoUnwrap[point]; 
-            
-      // double vshUse = ( 1 - tap ) * vshExo + tap * ( vshMod + vs1d);
-      // double vsvUse = ( 1 - tap ) * vsvExo + tap * ( vsvMod + vs1d);
-      // double vppUse = ( 1 - tap ) * vppExo + tap * ( vppMod + vp1d);
-      // double rhoUse = ( 1 - tap ) * rhoExo + tap * ( rhoMod + rho1d);
 
-      double vshUse = tap * ( vshMod + vs1d);
-      double vsvUse = tap * ( vsvMod + vs1d);
-      double vppUse = tap * ( vppMod + vp1d);
-      double rhoUse = tap * ( rhoMod + rho1d);
+      double rhoUse = ( 1 - tap ) * rhoExo + tap * ( rhoMod + rho1d);
+
+      // Get attenuation corrector.
+      double qvCor = atn.correct ( atn.qModelName, mshRadRot, rhoUse );
       
+      double vshModCor = ( vshMod + vs1d) * qvCor;
+      double vsvModCor = ( vsvMod + vs1d) * qvCor;
+      double vppModCor = ( vppMod + vp1d) * qvCor;
+            
+      double vshUse = ( 1 - tap ) * vshExo + tap * vshModCor;
+      double vsvUse = ( 1 - tap ) * vsvExo + tap * vsvModCor;
+      double vppUse = ( 1 - tap ) * vppExo + tap * vppModCor;
+            
       double N = rhoUse * vshUse * vshUse;
       double L = rhoUse * vsvUse * vsvUse;
       double A = rhoUse * vppUse * vppUse;
@@ -204,16 +212,8 @@ void Interpolator::interpolate ( Mesh &msh, Model_file &mod, Discontinuity
       msh.c33[i] = A;
       msh.rho[i] = rhoUse;      
 
-      if ( mod.radUnwrap[point] >= 5971. )
-      {
-        msh.c11[i] = 0;
-        msh.c22[i] = mod.radUnwrap[point];
-        cout << msh.c22[i] << endl;
-        cout << mod.radUnwrap[point-1] << endl;
-        cin.get();
-      }
       // TODO make a retain crust feature.
-      if ( dis.inCrust == false ) 
+      if ( (dis.inCrust == false) || (dis.overwriteCrust == true) ) 
       {
         msh.c12[i] = F;
         msh.c13[i] = F;

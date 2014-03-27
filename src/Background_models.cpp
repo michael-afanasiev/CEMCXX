@@ -6,10 +6,21 @@ void Mod1d::eumod ( double &rad, double &vsv, double &vpv, double &rho )
   Constants con;
   
   double x = rad / con.R_EARTH;
-
-  if ( (rad <= 6371) && (rad >= 6291) )  
+  
+  if ( (rad <= 6371) && (rad >= 6356) )
   {
-    // STRETCH MANTLE
+    rho = 2.60;
+    vpv = 5.80;
+    vsv = 3.20;
+  }  
+  else if ( (rad <= 6356) && (rad >= 6346.6) )
+  {
+    rho = 2.90;
+    vpv = 6.80;
+    vsv = 3.90;
+  }  
+  else if ( (rad <= 6346.6) && (rad >= 6291) )  
+  {
     rho = 2.6910 + 0.6924 * x;
     vpv = 4.1875 + 3.9382 * x - 0.035;
     vsv = 2.1519 + 2.3481 * x - 0.065;

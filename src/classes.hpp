@@ -170,7 +170,7 @@ public:
   void colLonRad2xyzSES3D   ( );
   void populateRadiansSES3D ( );
   void openUp               ( );
-  void createKDTreeUnpacked ( );
+  void createKDTreeUnpacked ( Mesh &msh );
   void projectSubspace      ( );
   void writeSES3D           ( );
   void deallocate           ( );
@@ -187,6 +187,7 @@ class Discontinuity
 public:
   
   bool inCrust;
+  bool overwriteCrust;
   
   std::vector <std::vector <double> > crust_col_deg;
   std::vector <std::vector <double> > crust_lon_deg;
@@ -407,4 +408,23 @@ public:
 private:
   double taper      ( double &x, double &y, double &z, Model_file &mod );
   
+};
+
+class Attenuation
+{
+
+public:
+  
+  int nRelaxationMechanisms = 3;
+  
+  double freqRef = 1;
+  double *tau_s  = new double [3];
+  double *D      = new double [3];
+  
+  std::string qModelName = "QL6";
+  
+  double QL6      ( double &rad );
+  double correct ( std::string &model, double &rad, double &rho );
+
+
 };
