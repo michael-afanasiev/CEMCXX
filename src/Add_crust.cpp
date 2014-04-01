@@ -22,7 +22,6 @@ int main ()
   // Read parameter file.
   drv.initialize ( mod, dis, utl, exo, reg );  
     
-  std::cout << mod.intentions;
   if ( mod.intentions != "CRUST" ) 
   {
     

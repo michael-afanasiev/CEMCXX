@@ -101,7 +101,21 @@ void Discontinuity::lookCrust ( Mesh &msh, double &mshCol, double &mshLon,
       vpv = 6.80;
     }
     
-    if ( mshRad >= (con.R_EARTH - crust_dp[0][point]) ) {
+    /* The moho is defined in a weird way ( depth from sea level if in the 
+    ocean, and depth from elevation if in the crust). First, convert crust 
+    elevation to km, and then decided whether we're taking the sea level or
+    or crust as reference */
+    double ref;
+    if ( msh.elv[mshInd] <= 0. )
+    {
+      ref = con.R_EARTH;
+    }
+    else
+    {
+      ref = msh.elv[mshInd] / 1000.;
+    }
+    
+    if ( mshRad >= (ref - crust_dp[0][point]) ) {
   
       double crust_vsv = crust_vs[0][point] - con.aniCorrection;
       double crust_vsh = crust_vs[0][point];
@@ -137,7 +151,6 @@ void Discontinuity::lookTopo ( Mesh &msh, double &mshCol, double &mshLon,
   
   if ( mshRad > ( con.R_EARTH - 2 ) )
   {
-    std::cout << mshCol << std::endl;
     kdres *set = kd_nearest3      ( elvTree, mshCol, mshLon, con.R_EARTH );         
     void *ind  = kd_res_item_data ( set );
     int  point = * ( int * ) ind;
@@ -153,6 +166,7 @@ void Discontinuity::readTopography ( )
   std::ifstream myfile;
   Constants con;
   
+  std::cout << "Reading topography." << std::endl;
   myfile.open ( "./dat/discontinuities/10MinuteTopoGrid.txt", std::ios::in );
   
   std::string line;
