@@ -61,8 +61,8 @@ int main ()
         
         utl.xyz2ColLonRadRad ( testX, testY, testZ, col, lon, rad ); 
         
-        if ( (rad <= msh.radMax)  && 
-             (rad >= msh.radMin)  &&
+        if ( (rad <= msh.radMax) && 
+             (rad >= msh.radMin) &&
              (lon <= msh.lonMax) &&
              (lon >= msh.lonMin) &&
              (col <= msh.colMax) &&

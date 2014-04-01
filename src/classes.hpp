@@ -196,15 +196,25 @@ public:
   std::vector <std::vector <double> > crust_vs;
   std::vector <std::vector <double> > crust_dp;
   
-  kdtree *tree;
+  std::vector <double> colElv;
+  std::vector <double> lonElv;
+  std::vector <double> elv;
   
-  int *KDdat;
+  kdtree *crustTree;
+  kdtree *elvTree;
   
-  void read               ( );
-  void createKDTreePacked ( );
-  void deallocate         ( );
-  void lookCrust          ( Mesh &msh, double &mshCol, double &mshLon, 
+  int *KDdatCrust;
+  int *KDdatElv;
+  
+  void read                 ( );
+  void createKDTreePacked   ( );
+  void createKDTreeUnpacked ( );
+  void deallocate           ( );
+  void readTopography       ( );
+  void lookCrust            ( Mesh &msh, double &mshCol, double &mshLon, 
                             double &mshRad, int &mshInd, bool &checkCrust );
+  void lookTopo             ( Mesh &msh, double &mshCol, double &mshLon, 
+                              double &mshRad, int &mshInd );
 
 };
 
@@ -396,6 +406,7 @@ public:
     
   void findNodes        ( Mesh &msh, Model_file &mod, std::ofstream &myfile );
   void interpolateCrust ( Mesh &msh, Discontinuity &dis );
+  void interpolateTopo  ( Mesh &msh, Discontinuity &dis );
   void interpolate      ( Mesh &msh, Model_file &mod, Discontinuity &dis );  
   int  recover      ( double &testX, double &testY, double &testZ, Mesh &msh,
                       double &c11, double &c12, double &c13, double &c14, 
@@ -424,7 +435,7 @@ public:
   std::string qModelName = "QL6";
   
   double QL6      ( double &rad );
-  double correct ( std::string &model, double &rad, double &rho );
+  double correct ( std::string &model, double &rad );
 
 
 };

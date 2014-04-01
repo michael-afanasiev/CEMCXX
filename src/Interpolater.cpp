@@ -33,6 +33,28 @@ void Interpolator::interpolateCrust ( Mesh &msh, Discontinuity &dis )
   }
 }
 
+void Interpolator::interpolateTopo ( Mesh &msh, Discontinuity &dis )
+{
+  
+  Utilities utl;
+  Constants con;
+  
+  cout << "Adding topography." << endl;
+  
+  if ( msh.radMin > (6350.) )
+  {
+    for ( int i=0; i<msh.num_nodes; i++ )
+    {
+      double col, lon, rad;
+        
+      utl.xyz2ColLonRadDeg ( msh.xmsh[i], msh.ymsh[i], msh.zmsh[i], 
+        col, lon, rad);
+        
+      dis.lookTopo ( msh, col, lon, rad, i );
+    }
+  }
+}
+
 void Interpolator::findNodes ( Mesh &msh, Model_file &mod, ofstream &myfile )
 {
   
@@ -141,14 +163,16 @@ void Interpolator::interpolate ( Mesh &msh, Model_file &mod, Discontinuity
       mshColPys, mshLonPys, mshRadPys );
     utl.xyz2ColLonRadDeg ( xRot, yRot, zRot, mshColRot, mshLonRot, mshRadRot );
     
+    // TODO this is fucked up
     // Handle special cases of longitude axis wrapping.
-    if ( mod.wrapAround == true && mshLonPys < 0. )
-      mshLonPys += 360;        
-    if ( mod.wrapAround == true && mshLonRot < 0. )
-      mshLonRot += 360;    
+    // if ( mod.wrapAround == true && mshLonPys < 0. )
+    //   mshLonPys += 360;        
+    // if ( mod.wrapAround == true && mshLonRot < 0. )
+    //   mshLonRot += 360;    
       
     // Check for discontinuity conditinos.
-    dis.lookCrust ( msh, mshColPys, mshLonPys, mshRadPys, i, inCrust );
+    utl.checkRegion ( msh, mshRadPys );
+    dis.lookCrust   ( msh, mshColPys, mshLonPys, mshRadPys, i, inCrust );
 
     /* If the rotated coordinates are within the simulation domain, go ahead and
     interpolate. */
@@ -171,10 +195,9 @@ void Interpolator::interpolate ( Mesh &msh, Model_file &mod, Discontinuity
       
       // Get 1d background values.
       double vs1d, vp1d, rho1d;
-      bm.eumod    ( mshRadRot, vs1d, vp1d, rho1d );
-      
-      
-      
+      bm.eumod                   ( mshRadRot, vs1d, vp1d, rho1d );     
+      double qvCor = atn.correct ( atn.qModelName, mshRadRot );
+                   
       // TTI.
       double vshExo = sqrt ( msh.c44[i] / msh.rho[i] );
       double vsvExo = sqrt ( msh.c55[i] / msh.rho[i] );
@@ -186,14 +209,16 @@ void Interpolator::interpolate ( Mesh &msh, Model_file &mod, Discontinuity
       double vppMod = mod.vppUnwrap[point];
       double rhoMod = mod.rhoUnwrap[point]; 
 
-      double rhoUse = ( 1 - tap ) * rhoExo + tap * ( rhoMod + rho1d);
-
-      // Get attenuation corrector.
-      double qvCor = atn.correct ( atn.qModelName, mshRadRot, rhoUse );
+      // double rhoUse = ( 1 - tap ) * rhoExo + tap * ( rhoMod + rho1d);
       
-      double vshModCor = ( vshMod + vs1d) * qvCor;
-      double vsvModCor = ( vsvMod + vs1d) * qvCor;
-      double vppModCor = ( vppMod + vp1d) * qvCor;
+      // double vshModCor = ( vshMod + vs1d ) * qvCor;
+      // double vsvModCor = ( vsvMod + vs1d ) * qvCor;
+      // double vppModCor = ( vppMod + vp1d ) * qvCor;
+
+      double rhoUse    = ( 1 - tap ) * rhoExo + tap * ( rhoMod );
+      double vshModCor = vshMod * qvCor;
+      double vsvModCor = vsvMod * qvCor;
+      double vppModCor = vppMod * qvCor;
             
       double vshUse = ( 1 - tap ) * vshExo + tap * vshModCor;
       double vsvUse = ( 1 - tap ) * vsvExo + tap * vsvModCor;
@@ -206,21 +231,23 @@ void Interpolator::interpolate ( Mesh &msh, Model_file &mod, Discontinuity
       double C = A;
       double F = A - 2 * L;
       double S = A - 2 * N;
-            
-      msh.c11[i] = C;
-      msh.c22[i] = A;
-      msh.c33[i] = A;
-      msh.rho[i] = rhoUse;      
+                  
+      dis.overwriteCrust = true;
 
       // TODO make a retain crust feature.
       if ( (dis.inCrust == false) || (dis.overwriteCrust == true) ) 
       {
+        msh.c11[i] = C;
+        msh.c22[i] = A;
+        msh.c33[i] = A;
         msh.c12[i] = F;
         msh.c13[i] = F;
         msh.c23[i] = S;
         msh.c44[i] = N;
         msh.c55[i] = L;
         msh.c66[i] = L;
+        msh.rho[i] = rhoUse;              
+        
       }                  
     }          
   }          

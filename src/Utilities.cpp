@@ -150,8 +150,11 @@ void Utilities::inquireRotate ( Model_file &mod )
   double y = mod.rotVecY;
   double z = mod.rotVecZ;
 
-  std::cout << "Rotation found. Rotating model " << mod.rotAng << 
-    " degrees about ( " << x << ", " << y << ", " << z << " )." << std::endl;
+  if ( mod.doRotate == true )
+  {
+    std::cout << "Rotation found. Rotating model " << mod.rotAng << 
+      " degrees about ( " << x << ", " << y << ", " << z << " )." << std::endl;
+  }
   
   double colMin = 180.;
   double colMax = 0.;

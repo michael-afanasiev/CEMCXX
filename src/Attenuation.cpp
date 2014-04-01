@@ -37,7 +37,7 @@ double Attenuation::QL6 ( double &rad )
   
 }
 
-double Attenuation::correct ( std::string &model, double &rad, double &rho )
+double Attenuation::correct ( std::string &model, double &rad )
 {
   
   Constants con;
@@ -53,6 +53,9 @@ double Attenuation::correct ( std::string &model, double &rad, double &rho )
   
   if ( model == "QL6" )
     Q = QL6 ( rad );
+  
+  freqRef = 1./30.;
+  double freqMes = 1./18.;
   
   double angFreq = 2. * con.PI * freqRef;
   double tau     = 2. / ( con.PI * Q );
@@ -71,10 +74,11 @@ double Attenuation::correct ( std::string &model, double &rad, double &rho )
   A = 1 + tau * A;
   B = tau * B;
   
-  double correctionFactor = sqrt ( 2 * ( A * A + B * B ) ) /
-    ( ( A + sqrt ( A * A + B * B ) ));
-  std::cout << correctionFactor << std::endl;
-  std::cin.get();
+  double factor = sqrt( ( 2 * ( A * A + B * B ) ) /
+    ( ( A + sqrt ( A * A + B * B ) )) );
+  
+  double correctionFactor = factor - ( 1 / (con.PI * Q) * 
+    log (freqRef / freqMes) );
   
   return correctionFactor;
   

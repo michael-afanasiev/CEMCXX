@@ -34,7 +34,8 @@ void Mesh::createKDTreeUnpacked ( )
   cout << "Creating KDTree ( mesh ).\n";
   tree     = kd_create (3);
   KDdat    = new int [num_nodes];
-  for ( int i=0; i<num_nodes; i++ ) {
+  for ( int i=0; i<num_nodes; i++ ) 
+  {
     KDdat[i] = i;
     kd_insert3 ( tree, xmsh[i], ymsh[i], zmsh[i], &KDdat[i] );
   }
@@ -55,8 +56,8 @@ void Mesh::getMinMaxRad ( )
     
     util.xyz2ColLonRadDeg ( xmsh[i], ymsh[i], zmsh[i], col, lon, rad );    
             
-    if ( (xmsh[i] != 0) || (ymsh[i] != 0) ) {
-
+    if ( (xmsh[i] != 0) || (ymsh[i] != 0) ) 
+    {
       if ( col < colMin )
         colMin = col;
       if ( col > colMax )
@@ -68,8 +69,7 @@ void Mesh::getMinMaxRad ( )
       if ( rad < radMin )
         radMin = rad;
       if ( rad > radMax )
-        radMax = rad;
-          
+        radMax = rad;          
     }
     
     if ( (xmsh[i] == 0) && (ymsh[i] == 0) && (zmsh[i] > 0) )
@@ -211,7 +211,8 @@ void Mesh::populateParams ( )
   ier = ex_get_nodal_var ( exoid, 1, du3i, num_nodes, du3 );
   ier = ex_get_nodal_var ( exoid, 1, sizi, num_nodes, siz );
   
-  if ( ier != 0 ) {
+  if ( ier != 0 ) 
+  {
     cout << "***";
     cout << "Error reading in mesh variables.";
     cout << "Don't worry, this is ok if you're refining." << endl;
@@ -224,7 +225,8 @@ void Mesh::populateCoord ( )
        
   ier = ex_get_coord ( exoid, xmsh, ymsh, zmsh );    
   
-  if (ier != 0) {
+  if (ier != 0) 
+  {
     std::cout << "***Fatal error reading in coordinates. Exiting.\n";
     exit (EXIT_FAILURE);
   }

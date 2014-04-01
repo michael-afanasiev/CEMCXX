@@ -1,3 +1,5 @@
+#include <sstream>
+
 #include "kdtree.h"
 #include "classes.hpp"
 
@@ -25,7 +27,6 @@ void Discontinuity::read ()
   mod.populateRadians ( crust_col_deg, crust_col_rad );
   mod.populateRadians ( crust_lon_deg, crust_lon_rad );
   
-
 }
 
 void Discontinuity::createKDTreePacked () 
@@ -35,22 +36,42 @@ void Discontinuity::createKDTreePacked ()
     
   std::cout << "Creating KDTree ( crust ).\n";
   
-  tree = kd_create (3);
+  crustTree = kd_create (3);
 
   int l    = 0;
-  KDdat = new int [crust_col_rad[0].size()*crust_lon_rad[0].size()]();
+  KDdatCrust = new int [crust_col_rad[0].size()*crust_lon_rad[0].size()]();
     
   for ( int r=0; r!=crust_col_rad.size(); r++ ) {
     for ( int i=0; i!=crust_col_rad[r].size(); i++ ) {
       for ( int j=0; j!=crust_lon_rad[r].size(); j++ ) {
     
-        KDdat[l] = l;
-        kd_insert3 ( tree, crust_col_deg[r][i], crust_lon_deg[r][j], 
-          con.R_EARTH, &KDdat[l] );
+        KDdatCrust[l] = l;
+        kd_insert3 ( crustTree, crust_col_deg[r][i], crust_lon_deg[r][j], 
+          con.R_EARTH, &KDdatCrust[l] );
         l++;
     
       }
     }               
+  }
+  
+}
+
+void Discontinuity::createKDTreeUnpacked ( )
+{
+  
+  Constants con;
+  
+  std::cout << "Creating KDTree ( model ).\n";
+  elvTree  = kd_create (3);
+  KDdatElv = new int [ lonElv.size() ];
+
+#pragma omp parallel for
+  for ( int i=0; i<lonElv.size(); i++ ) 
+  { 
+    KDdatElv[i] = i;
+    {   
+      kd_insert3 ( elvTree, colElv[i], lonElv[i], con.R_EARTH, &KDdatElv[i] );
+    }
   }
   
 }
@@ -60,42 +81,113 @@ void Discontinuity::lookCrust ( Mesh &msh, double &mshCol, double &mshLon,
 {
   
   Constants con;
+  double rho, vpv;
   
   if ( mshRad > (con.R_EARTH - 100) ) {          
 
-    kdres *set = kd_nearest3      ( tree, mshCol, mshLon, con.R_EARTH );         
+    kdres *set = kd_nearest3      ( crustTree, mshCol, mshLon, con.R_EARTH );         
     void *ind  = kd_res_item_data ( set );
     int  point = * ( int * ) ind;
+    
+    // Lay down PREM density.
+    if ( (mshRad <= 6371) && (mshRad >= 6356) )
+    {
+      rho = 2.60;
+      vpv = 5.80;
+    }
+    else if ( (mshRad <= 6356) && (mshRad >= 6346.6) )
+    {
+      rho = 2.90;
+      vpv = 6.80;
+    }
     
     if ( mshRad >= (con.R_EARTH - crust_dp[0][point]) ) {
   
       double crust_vsv = crust_vs[0][point] - con.aniCorrection;
       double crust_vsh = crust_vs[0][point];
         
-      double N = msh.rho[mshInd] * crust_vsh * crust_vsh;
-      double L = msh.rho[mshInd] * crust_vsv * crust_vsv;
+      double N = rho * crust_vsh * crust_vsh;
+      double L = rho * crust_vsv * crust_vsv;
         
-      double A = msh.c22[mshInd];
+      double A = rho * vpv * vpv;
       double S = A - 2 * N;
       double F = A - 2 * L;
   
       checkCrust      = true;
+      msh.c11[mshInd] = A;
+      msh.c22[mshInd] = A;
+      msh.c33[mshInd] = A;        
       msh.c12[mshInd] = F;
       msh.c13[mshInd] = F;
       msh.c23[mshInd] = S;
       msh.c44[mshInd] = N;
       msh.c55[mshInd] = L;
       msh.c66[mshInd] = L;                
-  
+      msh.rho[mshInd] = rho;  
     }
   }    
   
 }
 
+void Discontinuity::lookTopo ( Mesh &msh, double &mshCol, double &mshLon, 
+                               double &mshRad, int &mshInd )
+{
+  
+  Constants con;
+  
+  if ( mshRad > ( con.R_EARTH - 2 ) )
+  {
+    std::cout << mshCol << std::endl;
+    kdres *set = kd_nearest3      ( elvTree, mshCol, mshLon, con.R_EARTH );         
+    void *ind  = kd_res_item_data ( set );
+    int  point = * ( int * ) ind;
+    
+    msh.elv[mshInd] = elv[point];
+  }
+  
+}
+
+void Discontinuity::readTopography ( )
+{
+  
+  std::ifstream myfile;
+  Constants con;
+  
+  myfile.open ( "./dat/discontinuities/10MinuteTopoGrid.txt", std::ios::in );
+  
+  std::string line;
+  while ( std::getline (myfile, line) )    
+  {
+    
+    std::stringstream linestream (line);
+    std::string value;
+    
+    int i = 0;
+    while ( std::getline (linestream, value, ',') )
+    {
+      if ( i == 0 )
+      {
+        double lon = stod ( value );
+        if ( lon < 0. )
+          lon = 360 + lon;
+        lonElv.push_back ( stod (value) );
+      }        
+      if ( i == 1 )
+        colElv.push_back ( 90. - stod (value) );
+      if ( i == 2 )
+        elv.push_back ( stod (value) );
+      i++;
+    }     
+  }
+        
+}
+
 void Discontinuity::deallocate ( )
 {
   
-  kd_free ( tree );
-  delete [] KDdat;
+  kd_free ( crustTree );
+  kd_free ( elvTree );
+  delete [] KDdatCrust;
+  delete [] KDdatElv;
   
 }

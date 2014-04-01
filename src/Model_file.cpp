@@ -111,6 +111,8 @@ void Model_file::createKDTreeUnpacked ( Mesh &msh )
   cout << "Creating KDTree ( model ).\n";
   tree  = kd_create (3);
   KDdat = new int [num_p];
+
+#pragma omp parallel for
   for ( int i=0; i<num_p; i++ ) 
   { 
     KDdat[i] = i;
