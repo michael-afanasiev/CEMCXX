@@ -41,7 +41,7 @@ void Interpolator::interpolateTopo ( Mesh &msh, Discontinuity &dis )
   
   cout << "Adding topography." << endl;
   
-  if ( msh.radMin > (6350.) )
+  if ( msh.radMin > (6271.) )
   {
     for ( int i=0; i<msh.num_nodes; i++ )
     {
@@ -197,6 +197,9 @@ void Interpolator::interpolate ( Mesh &msh, Model_file &mod, Discontinuity
       double vs1d, vp1d, rho1d;
       bm.eumod                   ( mshRadRot, vs1d, vp1d, rho1d );     
       double qvCor = atn.correct ( atn.qModelName, mshRadRot );
+      
+      // FIXME 
+      qvCor == 1.;
                    
       // TTI.
       double vshExo = sqrt ( msh.c44[i] / msh.rho[i] );
@@ -209,17 +212,27 @@ void Interpolator::interpolate ( Mesh &msh, Model_file &mod, Discontinuity
       double vppMod = mod.vppUnwrap[point];
       double rhoMod = mod.rhoUnwrap[point]; 
 
-      // double rhoUse = ( 1 - tap ) * rhoExo + tap * ( rhoMod + rho1d);
-      
-      // double vshModCor = ( vshMod + vs1d ) * qvCor;
-      // double vsvModCor = ( vsvMod + vs1d ) * qvCor;
-      // double vppModCor = ( vppMod + vp1d ) * qvCor;
+      double rhoModCor;
+      double vshModCor;
+      double vsvModCor;
+      double vppModCor;
 
-      double rhoUse    = ( 1 - tap ) * rhoExo + tap * ( rhoMod );
-      double vshModCor = vshMod * qvCor;
-      double vsvModCor = vsvMod * qvCor;
-      double vppModCor = vppMod * qvCor;
+      if ( mod.kernel == false )
+      {        
+        rhoModCor = rhoMod;
+        vshModCor = vshMod * qvCor;
+        vsvModCor = vsvMod * qvCor;
+        vppModCor = vppMod * qvCor;
+      }
+      else
+      {
+        rhoModCor = ( rhoMod + rho1d );      
+        vshModCor = ( vshMod + vs1d ) * qvCor;
+        vsvModCor = ( vsvMod + vs1d ) * qvCor;
+        vppModCor = ( vppMod + vp1d ) * qvCor;
+      }
             
+      double rhoUse = ( 1 - tap ) * rhoExo + tap * rhoModCor;
       double vshUse = ( 1 - tap ) * vshExo + tap * vshModCor;
       double vsvUse = ( 1 - tap ) * vsvExo + tap * vsvModCor;
       double vppUse = ( 1 - tap ) * vppExo + tap * vppModCor;
@@ -231,12 +244,11 @@ void Interpolator::interpolate ( Mesh &msh, Model_file &mod, Discontinuity
       double C = A;
       double F = A - 2 * L;
       double S = A - 2 * N;
-                  
-      dis.overwriteCrust = true;
 
-      // TODO make a retain crust feature.
-      if ( (dis.inCrust == false) || (dis.overwriteCrust == true) ) 
+      if ( (inCrust == false) || 
+           ((mod.overwriteCrust == true) && (dis.inCrust == true)) ) 
       {
+        cout << "hi" << endl;
         msh.c11[i] = C;
         msh.c22[i] = A;
         msh.c33[i] = A;
@@ -261,7 +273,7 @@ double Interpolator::taper ( double &col, double &lon, double &rad,
   Utilities util;
   
   double tap;
-  double dTaper    = 500.;
+  double dTaper    = 2000.;
   double dTaperRad = 50.;
   
   col = col * con.PI / con.o80;

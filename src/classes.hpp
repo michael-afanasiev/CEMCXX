@@ -144,6 +144,8 @@ public:
   bool lonReg4    = false;
   bool wrapAround = false;
   bool doRotate   = false;
+  bool overwriteCrust;
+  bool kernel;
   
   kdtree *tree;
 
@@ -187,7 +189,6 @@ class Discontinuity
 public:
   
   bool inCrust;
-  bool overwriteCrust;
   
   std::vector <std::vector <double> > crust_col_deg;
   std::vector <std::vector <double> > crust_lon_deg;

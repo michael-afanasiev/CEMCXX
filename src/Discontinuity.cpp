@@ -1,4 +1,5 @@
 #include <sstream>
+#include <cmath>
 
 #include "kdtree.h"
 #include "classes.hpp"
@@ -100,6 +101,11 @@ void Discontinuity::lookCrust ( Mesh &msh, double &mshCol, double &mshLon,
       rho = 2.90;
       vpv = 6.80;
     }
+    else
+    {
+      rho = msh.rho[mshInd];
+      vpv = sqrt (msh.c22[mshInd] / rho);
+    }
     
     /* The moho is defined in a weird way ( depth from sea level if in the 
     ocean, and depth from elevation if in the crust). First, convert crust 
@@ -112,11 +118,11 @@ void Discontinuity::lookCrust ( Mesh &msh, double &mshCol, double &mshLon,
     }
     else
     {
-      ref = msh.elv[mshInd] / 1000.;
+      ref = con.R_EARTH + msh.elv[mshInd] / 1000.;
     }
     
-    if ( mshRad >= (ref - crust_dp[0][point]) ) {
-  
+    if ( mshRad >= (ref - crust_dp[0][point]) ) 
+    {
       double crust_vsv = crust_vs[0][point] - con.aniCorrection;
       double crust_vsh = crust_vs[0][point];
         
@@ -149,7 +155,7 @@ void Discontinuity::lookTopo ( Mesh &msh, double &mshCol, double &mshLon,
   
   Constants con;
   
-  if ( mshRad > ( con.R_EARTH - 2 ) )
+  if ( mshRad > ( con.R_EARTH - 100 ) )
   {
     kdres *set = kd_nearest3      ( elvTree, mshCol, mshLon, con.R_EARTH );         
     void *ind  = kd_res_item_data ( set );

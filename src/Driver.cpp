@@ -69,7 +69,25 @@ void Driver::populateParams ( Model_file &mod )
   mod.rotVecZ               = stod ( params[7] );
   mod.intentions            = params[8];
   mod.output_model_physics  = params[9];
+  
+  if ( params[10] == "TRUE" )
+  {
+    mod.overwriteCrust = true;
+  }
+  else
+  {
+    mod.overwriteCrust = false;
+  }
 
+  if ( params[11] == "TRUE" )
+  {
+    mod.kernel = true;
+  }
+  else
+  {
+    mod.kernel = false;
+  }
+  
   mod.rotRad = mod.rotAng * con.PI / con.o80;  
   
 }
