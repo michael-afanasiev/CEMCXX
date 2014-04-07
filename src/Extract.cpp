@@ -90,7 +90,13 @@ int main ()
     }
     
     mod.projectSubspace ( );
-    mod.writeSES3D      ( );           
+    // mod.writeSES3D      ( );       
+    
+    std::cout << "Writing NetCDF" << std::endl;
+    mod.writeNetCDF     ( mod.rho, "rho" );    
+    mod.writeNetCDF     ( mod.vpp, "vpp" );
+    mod.writeNetCDF     ( mod.vsh, "vsh" );
+    mod.writeNetCDF     ( mod.vsv, "vsv" );
   }
   
   return 0;

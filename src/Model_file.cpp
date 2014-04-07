@@ -3,6 +3,8 @@
 #include <iostream>
 #include <fstream>
 
+#include <netcdf>
+
 #include <sys/types.h>
 #include <sys/stat.h>
 
@@ -437,6 +439,80 @@ void Model_file::readSPECFEM3D ()
 {
   
   cout << "READING SPECFEM3D";
+  
+}
+
+int Model_file::writeNetCDF ( std::vector <std::vector<double>> &par, 
+  std::string name )
+{
+  
+  // Set up paramaeters for NetCDF writing ( taken from tutorial )
+  static const int NC_ERR = 2;
+  
+  using namespace netCDF;
+  using namespace netCDF::exceptions;
+  
+  // Compression filters ( 9 is highest )
+  bool enableShuffleFilter = true;
+  bool enableDeflateFilter = true;
+  int deflateLevel = 9;
+  
+  // Write to input / CEM directory.
+  string imd = input_model_directory;
+  string omd = imd + "CEM/";
+  
+  // Necessary try / catch block ( taken from tutorial )
+  try
+  {
+    
+    NcFile output ( omd + name + ".nc", NcFile::replace );
+        
+    // Read total number of parameters.
+    int totSize    = 0;
+    int numRegions = par.size();
+    for ( int r=0; r<numRegions; r++ )
+    {
+      totSize += par[r].size();
+    }
+                
+    // Create new 1D array to output data from. Copy from packed regional arrays.
+    double *dataOut = new double [totSize];    
+    int l           = 0;
+    for ( int r=0; r<numRegions; r++ )
+    {
+      for ( vector <double> :: iterator p=par[r].begin(); p!=par[r].end(); 
+        ++p )
+      {
+        dataOut[l] = *p;
+        l++;
+      }
+    }
+
+    // Add a dimension to the netCDF file with n_par entries.
+    NcDim dDim = output.addDim ( "param", totSize );
+    
+    // Create the parameter vector.
+    vector <NcDim> dims;
+    dims.push_back ( dDim );
+    NcVar data = output.addVar ( "data", ncFloat, dims );
+    
+    // Set compression level.
+    data.setCompression ( enableShuffleFilter, enableDeflateFilter, 
+      deflateLevel );
+      
+    // Write to the data array.
+    data.putVar ( dataOut );
+    
+    return 0;    
+    
+  }
+  catch ( NcException& e )
+  {
+    
+    e.what ();
+    return NC_ERR;
+    
+  }  
   
 }
 

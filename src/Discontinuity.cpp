@@ -90,23 +90,6 @@ void Discontinuity::lookCrust ( Mesh &msh, double &mshCol, double &mshLon,
     void *ind  = kd_res_item_data ( set );
     int  point = * ( int * ) ind;
     
-    // Lay down PREM density.
-    if ( (mshRad <= 6371) && (mshRad >= 6356) )
-    {
-      rho = 2.60;
-      vpv = 5.80;
-    }
-    else if ( (mshRad <= 6356) && (mshRad >= 6346.6) )
-    {
-      rho = 2.90;
-      vpv = 6.80;
-    }
-    else
-    {
-      rho = msh.rho[mshInd];
-      vpv = sqrt (msh.c22[mshInd] / rho);
-    }
-    
     /* The moho is defined in a weird way ( depth from sea level if in the 
     ocean, and depth from elevation if in the crust). First, convert crust 
     elevation to km, and then decided whether we're taking the sea level or
@@ -125,6 +108,12 @@ void Discontinuity::lookCrust ( Mesh &msh, double &mshCol, double &mshLon,
     {
       double crust_vsv = crust_vs[0][point] - con.aniCorrection;
       double crust_vsh = crust_vs[0][point];
+      
+      // Scaling from isotropic vs to rho (Fichtner, multiscale)
+      rho = 0.2277 * crust_vsh + 2.016;
+      
+      // Scaling from vs to vp
+      vpv = 1.5399 * crust_vsh + 0.840;        
         
       double N = rho * crust_vsh * crust_vsh;
       double L = rho * crust_vsv * crust_vsv;

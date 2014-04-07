@@ -176,6 +176,8 @@ public:
   void projectSubspace      ( );
   void writeSES3D           ( );
   void deallocate           ( );
+  int  writeNetCDF          ( std::vector <std::vector <double>> &par,
+                              std::string name );
   void populateParams       ( Driver &drv, Exodus_file &exo );
   void dePopulateSES3D      ( std::string, std::vector<std::vector<double>> );
   void populateRadians      ( std::vector < std::vector <double> > &deg, 
