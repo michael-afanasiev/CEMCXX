@@ -55,9 +55,15 @@ int main ()
         double c11, c12, c13, c14, c15, c16,c22, c23, c24, c25, c26, c33, c34;
         double c35, c36, c44, c45, c46, c55, c56, c66, rho, testX, testY, testZ;
         double col, lon, rad;                  
-        
+
+        utl.checkRegionExtr  ( mod.x[i], mod.y[i], mod.z[i], mod.r[i] );        
         utl.rotateForward    ( mod.x[i], mod.y[i], mod.z[i], testX, 
                                testY, testZ, mod );
+        
+        // std::cout << mod.x[i] << ' ' << testX    << std::endl;
+        // std::cout << mod.y[i] << ' ' << testY    << std::endl;
+        // std::cout << mod.z[i] << ' ' << testZ    << std::endl;
+        // std::cout << rad      << ' ' << mod.r[i] << std::endl;
         
         utl.xyz2ColLonRadRad ( testX, testY, testZ, col, lon, rad ); 
         

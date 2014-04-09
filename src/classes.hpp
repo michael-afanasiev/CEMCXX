@@ -115,6 +115,8 @@ public:
   std::vector <double> vsvUnwrap;
   std::vector <double> vppUnwrap;
   std::vector <double> radUnwrap;
+  
+  std::vector <int> r;
       
   double forRot11;
   double forRot21;
@@ -246,6 +248,7 @@ public:
                           double &z1, double &z2, double &z3, double &z4,                          
                           double &l1, double &l2, double &l3, double &l4 );   
   void checkRegion      ( Mesh &msh, double &rad );
+  void checkRegionExtr  ( double &x, double &y, double &z, int &r );
                           
   int getFilesize       ( std::string fname );
 };

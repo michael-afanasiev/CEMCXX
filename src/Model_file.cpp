@@ -438,8 +438,90 @@ void Model_file::dePopulateSES3D ( string omf, vector < vector <double > > ou )
 void Model_file::readSPECFEM3D ()
 {
   
-  cout << "READING SPECFEM3D";
+  using namespace netCDF;
+  using namespace netCDF::exceptions;
   
+  ifstream headerFile;
+  string   line;
+  
+  int      lineNo;
+  int      numProc;
+  int      numCoord;
+  
+  lineNo = 0;
+  headerFile.open ( "./cemRequest/header", std::ios::in );
+  while ( getline(headerFile, line) )
+  {
+    if (lineNo == 0)
+    {
+      numProc = stoi (line);
+    }
+    if (lineNo == 1)
+    {
+      numCoord = stoi (line);
+    }
+    lineNo++;
+  }
+   
+  try
+  {
+      
+    NcFile dataFile ( "./cemRequest/xyz_reg02_proc0000", NcFile::read );
+    
+    NcVar dataX=dataFile.getVar("dataX");
+    NcVar dataY=dataFile.getVar("dataY");
+    NcVar dataZ=dataFile.getVar("dataZ"); 
+    NcVar dataR=dataFile.getVar("regC_");       
+
+    // Get the dim object so we can get the size of the data.
+    NcDim dim = dataX.getDim (0);
+    numCoord  = dim.getSize();
+    
+    double *dumX = new double [numCoord];
+    double *dumY = new double [numCoord];
+    double *dumZ = new double [numCoord];    
+    int *dumR    = new int [numCoord];
+    
+    num_p = numCoord;
+    
+    dataX.getVar (dumX);
+    dataY.getVar (dumY);
+    dataZ.getVar (dumZ);
+    dataR.getVar (dumR);
+    
+    x.insert (x.end(), dumX, dumX+numCoord);
+    y.insert (y.end(), dumY, dumY+numCoord);
+    z.insert (z.end(), dumZ, dumZ+numCoord);
+    r.insert (r.end(), dumR, dumR+numCoord);
+    
+    delete [] dumX;
+    delete [] dumY;
+    delete [] dumZ;
+    delete [] dumR;
+            
+  } 
+  catch (NcException& e)
+  {
+    
+    e.what();
+    cout << "FAILURE" << endl;
+    
+  }
+  
+  rho.resize ( 1 );
+  vsv.resize ( 1 );
+  vsh.resize ( 1 );
+  vpp.resize ( 1 );   
+  
+  rho[0].resize ( numCoord );
+  vsv[0].resize ( numCoord );
+  vsh[0].resize ( numCoord );
+  vpp[0].resize ( numCoord );
+  
+  rotAng = 0.;
+  rotVecX = 0.;
+  rotVecY = 0.;
+  rotVecZ = 0.;      
 }
 
 int Model_file::writeNetCDF ( std::vector <std::vector<double>> &par, 

@@ -15,10 +15,10 @@ void Utilities::checkRegion ( Mesh &msh, double &rad )
 
   if ( msh.regString == "outerCore" )
   {
-    if ( rad >= con.outerCoreRad )
-      rad = con.outerCoreRad - con.tiny;
-    if ( rad <= con.innerCoreRad )
-      rad = con.innerCoreRad + con.tiny;
+    if ( rad >= (con.outerCoreRad-1) )
+      rad = con.outerCoreRad - 1;
+    if ( rad <= (con.innerCoreRad+1) )
+      rad = con.innerCoreRad + 1;
   }
   
   if ( msh.regString == "lowerMantle" )
@@ -42,6 +42,42 @@ void Utilities::checkRegion ( Mesh &msh, double &rad )
     if ( rad <= con.R400 )
       rad = con.R400 + con.tiny;
   }        
+  
+}
+
+void Utilities::checkRegionExtr ( double &x, double &y, double &z, int &r )
+{
+  
+  Constants con;
+  
+  double rad = sqrt ( x * x + y * y + z * z );
+  
+  if ( r == 1 )
+  {
+    if ( rad <= (con.outerCoreRad) )
+    {
+      x = x-1;
+      y = y-1;
+      z = z-1;
+    }
+      
+  }
+  
+  if ( r == 3 )
+  {
+    if ( rad     <= (con.innerCoreRad+1) )
+    {
+      x = x+1;
+      y = y+1;
+      z = z+1;
+    }
+    else if ( rad >= (con.outerCoreRad-1) )
+    {
+      x = x-1;
+      y = y-1;
+      z = z-1;        
+    }
+  }
   
 }
 
