@@ -45,40 +45,184 @@ void Utilities::checkRegion ( Mesh &msh, double &rad )
   
 }
 
-void Utilities::checkRegionExtr ( double &x, double &y, double &z, int &r )
+void Utilities::checkRegionExtr ( double x, double y, double z, short r,
+                                  double &xUse, double &yUse, double &zUse )
 {
   
   Constants con;
   
   double rad = sqrt ( x * x + y * y + z * z );
+  bool fixed = false;
   
   if ( r == 1 )
   {
-    if ( rad <= (con.outerCoreRad) )
+    if ( abs(rad-con.R020) <= con.tiny )
     {
-      x = x-1;
-      y = y-1;
-      z = z-1;
+      xUse = x + con.tiny;
+      yUse = y + con.tiny;
+      zUse = z + con.tiny;       
+      fixed = true;     
     }
-      
+    if ( abs(rad-con.R_EARTH) <= con.tiny )
+    {
+      xUse = x - con.tiny;
+      yUse = y - con.tiny;
+      zUse = z - con.tiny;            
+      fixed = true;           
+    }
+    if ( rad >= con.R_EARTH )
+    {
+      xUse = x - con.tiny;
+      yUse = y - con.tiny;
+      zUse = z - con.tiny;            
+      fixed = true;
+    }
   }
-  
-  if ( r == 3 )
+   
+  if ( r == 2 ) 
   {
-    if ( rad     <= (con.innerCoreRad+1) )
+    if ( abs(rad-con.R020) <= con.tiny )
     {
-      x = x+1;
-      y = y+1;
-      z = z+1;
+      xUse = x + con.tiny;
+      yUse = y + con.tiny;
+      zUse = z + con.tiny;                    
+      fixed = true;     
     }
-    else if ( rad >= (con.outerCoreRad-1) )
+    if ( abs(rad-con.R052) <= con.tiny )
     {
-      x = x-1;
-      y = y-1;
-      z = z-1;        
+      xUse = x - con.tiny;
+      yUse = y - con.tiny;
+      zUse = z - con.tiny;       
+      fixed = true;     
     }
   }
   
+  if ( r == 3 ) 
+  {
+    if ( abs(rad-con.R052) <= con.tiny )
+    {
+      xUse = x + con.tiny;
+      yUse = y + con.tiny;
+      zUse = z + con.tiny;                    
+      fixed = true;     
+    }
+    if ( abs(rad-con.R100) <= con.tiny )
+    {
+      xUse = x - con.tiny;
+      yUse = y - con.tiny;
+      zUse = z - con.tiny;       
+      fixed = true;     
+    }
+  }
+  
+  if ( r == 4 ) 
+  {
+    if ( abs(rad-con.R100) <= con.tiny )
+    {
+      xUse = x + con.tiny;
+      yUse = y + con.tiny;
+      zUse = z + con.tiny;                    
+      fixed = true;     
+    }
+    if ( abs(rad-con.R400) <= con.tiny )
+    {
+      xUse = x - con.tiny;
+      yUse = y - con.tiny;
+      zUse = z - con.tiny;       
+      fixed = true;     
+    }
+  }
+  
+  if ( r == 5 ) 
+  {
+    if ( abs(rad-con.R400) <= con.tiny )
+    {
+      xUse = x + con.tiny;
+      yUse = y + con.tiny;
+      zUse = z + con.tiny;                    
+      fixed = true;     
+    }
+    if ( abs(rad-con.R670) <= con.tiny )
+    {
+      xUse = x - con.tiny;
+      yUse = y - con.tiny;
+      zUse = z - con.tiny;       
+      fixed = true;     
+    }
+  }
+  
+  if ( r == 6 ) 
+  {
+    if ( abs(rad-con.R670) <= con.tiny )
+    {
+      xUse = x + con.tiny;
+      yUse = y + con.tiny;
+      zUse = z + con.tiny;                    
+      fixed = true;     
+    }
+    if ( abs(rad-con.RTHO) <= con.tiny )
+    {
+      xUse = x - con.tiny;
+      yUse = y - con.tiny;
+      zUse = z - con.tiny;       
+      fixed = true;     
+    }
+  }
+  
+  if ( r == 7 ) 
+  {
+    if ( abs(rad-con.RTHO) <= con.tiny )
+    {      
+      xUse = x + con.tiny;
+      yUse = y + con.tiny;
+      zUse = z + con.tiny;                    
+      fixed = true;     
+    }
+    if ( abs(rad-con.outerCoreRad) <= con.tiny )
+    {
+      xUse = x - con.tiny;
+      yUse = y - con.tiny;
+      zUse = z - con.tiny;       
+      fixed = true;     
+    }
+  }
+  
+  if ( r == 8 ) 
+  {
+    if ( abs(rad-con.outerCoreRad) <= con.tiny )
+    {
+      xUse = x + con.tiny;
+      yUse = y + con.tiny;
+      zUse = z + con.tiny;                    
+      fixed = true;     
+    }
+    if ( abs(rad-con.innerCoreRad) <= con.tiny )
+    {
+      xUse = x - con.tiny;
+      yUse = y - con.tiny;
+      zUse = z - con.tiny;       
+      fixed = true;     
+    }
+  }
+  
+  if ( r == 9 ) 
+  {
+    if ( abs(rad-con.innerCoreRad) <= con.tiny )
+    {
+      xUse = x - con.tiny;
+      yUse = y - con.tiny;
+      zUse = z - con.tiny;                    
+      fixed = true;     
+    }
+  }
+  
+  if ( fixed == false )
+  {
+    xUse = x;
+    yUse = y;
+    zUse = z;
+  }
+          
 }
 
 double Utilities::col2Lat ( double &col, char flag ) 

@@ -42,12 +42,16 @@ public:
   double ninty         = 90.0;
   double aniCorrection = 0.188078;
   double toMB          = 9.5367e-7;
-  double tiny          = 1e-4;
+  double tiny          = 3;
   
   double innerCoreRad = 1221.0;
   double outerCoreRad = 3480.0;
+  double RTHO         = 5371.0;
   double R670         = 5701.0;
   double R400         = 5971.0; 
+  double R100         = 6271.0;
+  double R052         = 6319.0;
+  double R020         = 6351.0;
   
 };
 
@@ -116,7 +120,7 @@ public:
   std::vector <double> vppUnwrap;
   std::vector <double> radUnwrap;
   
-  std::vector <int> r;
+  std::vector <short> r;
       
   double forRot11;
   double forRot21;
@@ -168,22 +172,22 @@ public:
   std::string output_model_physics;
   std::string mesh_directory;
   
-  // Internal functions.
-  
-  void read                 ( );
-  void colLonRad2xyzSES3D   ( );
-  void populateRadiansSES3D ( );
-  void openUp               ( );
-  void createKDTreeUnpacked ( Mesh &msh );
-  void projectSubspace      ( );
-  void writeSES3D           ( );
-  void deallocate           ( );
-  int  writeNetCDF          ( std::vector <std::vector <double>> &par,
-                              std::string name );
-  void populateParams       ( Driver &drv, Exodus_file &exo );
-  void dePopulateSES3D      ( std::string, std::vector<std::vector<double>> );
-  void populateRadians      ( std::vector < std::vector <double> > &deg, 
-                              std::vector < std::vector <double> > &rad );
+  // Internal functions.  
+  void read                   ( );
+  void colLonRad2xyzSES3D     ( );
+  void populateRadiansSES3D   ( );
+  void openUp                 ( );
+  void projectSubspaceSES3D   ( );
+  void writeSES3D             ( );
+  void deallocate             ( );
+  void projectSubspaceSPECFEM ( );
+  void createKDTreeUnpacked   ( Mesh &msh );
+  int  writeNetCDF            ( std::vector <std::vector <double>> &par,
+                                std::string name );
+  void populateParams         ( Driver &drv, Exodus_file &exo );
+  void dePopulateSES3D        ( std::string, std::vector<std::vector<double>> );
+  void populateRadians        ( std::vector < std::vector <double> > &deg, 
+                                std::vector < std::vector <double> > &rad );
   
 };
 
@@ -248,7 +252,8 @@ public:
                           double &z1, double &z2, double &z3, double &z4,                          
                           double &l1, double &l2, double &l3, double &l4 );   
   void checkRegion      ( Mesh &msh, double &rad );
-  void checkRegionExtr  ( double &x, double &y, double &z, int &r );
+  void checkRegionExtr  ( double x, double y, double z, short r,
+                          double &xUse, double &yUse, double &zUse );
                           
   int getFilesize       ( std::string fname );
 };

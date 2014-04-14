@@ -315,7 +315,32 @@ void Model_file::openUp ( )
   
 }
 
-void Model_file::projectSubspace ( )
+void Model_file::projectSubspaceSPECFEM ( )
+{
+  
+  vsh.resize(1);
+  vsv.resize(1);
+  vpp.resize(1);
+  rho.resize(1);
+
+  vsh[0].resize(c66.size());
+  vsv[0].resize(c66.size());
+  vpp[0].resize(c66.size());
+  rho[0].resize(c66.size());
+
+  
+  int r = 0;
+  for ( int i=0; i<c66.size(); i++ )
+  {
+    vsh[r][i] = sqrt ( c44[i] / rhoUnwrap[i] );
+    vsv[r][i] = sqrt ( c55[i] / rhoUnwrap[i] );
+    vpp[r][i] = sqrt ( c22[i] / rhoUnwrap[i] );
+    rho[r][i] = rhoUnwrap[i];
+  }
+  
+}
+
+void Model_file::projectSubspaceSES3D ( )
 {
   
   int ll = 0;
@@ -466,7 +491,7 @@ void Model_file::readSPECFEM3D ()
   try
   {
       
-    NcFile dataFile ( "./cemRequest/xyz_reg02_proc0000", NcFile::read );
+    NcFile dataFile ( "./cemRequest/xyz_reg01_proc0000", NcFile::read );
     
     NcVar dataX=dataFile.getVar("dataX");
     NcVar dataY=dataFile.getVar("dataY");
@@ -480,7 +505,7 @@ void Model_file::readSPECFEM3D ()
     double *dumX = new double [numCoord];
     double *dumY = new double [numCoord];
     double *dumZ = new double [numCoord];    
-    int *dumR    = new int [numCoord];
+    short  *dumR = new short  [numCoord];
     
     num_p = numCoord;
     
@@ -488,6 +513,9 @@ void Model_file::readSPECFEM3D ()
     dataY.getVar (dumY);
     dataZ.getVar (dumZ);
     dataR.getVar (dumR);
+    
+    cout << dumR[1] << endl;
+    cin.get();
     
     x.insert (x.end(), dumX, dumX+numCoord);
     y.insert (y.end(), dumY, dumY+numCoord);
@@ -537,7 +565,7 @@ int Model_file::writeNetCDF ( std::vector <std::vector<double>> &par,
   // Compression filters ( 9 is highest )
   bool enableShuffleFilter = true;
   bool enableDeflateFilter = true;
-  int deflateLevel = 9;
+  int deflateLevel         = 9;
   
   // Write to input / CEM directory.
   string imd = input_model_directory;
@@ -550,17 +578,12 @@ int Model_file::writeNetCDF ( std::vector <std::vector<double>> &par,
     NcFile output ( omd + name + ".nc", NcFile::replace );
         
     // Read total number of parameters.
-    int totSize    = 0;
-    int numRegions = par.size();
-    for ( int r=0; r<numRegions; r++ )
-    {
-      totSize += par[r].size();
-    }
+    int totSize    = par[0].size();
                 
     // Create new 1D array to output data from. Copy from packed regional arrays.
     double *dataOut = new double [totSize];    
-    int l           = 0;
-    for ( int r=0; r<numRegions; r++ )
+    int l = 0;
+    for ( int r=0; r<par.size(); r++ )
     {
       for ( vector <double> :: iterator p=par[r].begin(); p!=par[r].end(); 
         ++p )
@@ -569,7 +592,6 @@ int Model_file::writeNetCDF ( std::vector <std::vector<double>> &par,
         l++;
       }
     }
-
     // Add a dimension to the netCDF file with n_par entries.
     NcDim dDim = output.addDim ( "param", totSize );
     
