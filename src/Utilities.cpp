@@ -83,16 +83,16 @@ void Utilities::checkRegionExtr ( double x, double y, double z, short r,
   {
     if ( abs(rad-con.R020) <= con.tiny )
     {
-      xUse = x + con.tiny;
-      yUse = y + con.tiny;
-      zUse = z + con.tiny;                    
+      xUse = x - con.tiny;
+      yUse = y - con.tiny;
+      zUse = z - con.tiny;                    
       fixed = true;     
     }
     if ( abs(rad-con.R052) <= con.tiny )
     {
-      xUse = x - con.tiny;
-      yUse = y - con.tiny;
-      zUse = z - con.tiny;       
+      xUse = x + con.tiny;
+      yUse = y + con.tiny;
+      zUse = z + con.tiny;       
       fixed = true;     
     }
   }
@@ -101,16 +101,16 @@ void Utilities::checkRegionExtr ( double x, double y, double z, short r,
   {
     if ( abs(rad-con.R052) <= con.tiny )
     {
-      xUse = x + con.tiny;
-      yUse = y + con.tiny;
-      zUse = z + con.tiny;                    
+      xUse = x - con.tiny;
+      yUse = y - con.tiny;
+      zUse = z - con.tiny;                    
       fixed = true;     
     }
     if ( abs(rad-con.R100) <= con.tiny )
     {
-      xUse = x - con.tiny;
-      yUse = y - con.tiny;
-      zUse = z - con.tiny;       
+      xUse = x + con.tiny;
+      yUse = y + con.tiny;
+      zUse = z + con.tiny;       
       fixed = true;     
     }
   }
@@ -119,16 +119,16 @@ void Utilities::checkRegionExtr ( double x, double y, double z, short r,
   {
     if ( abs(rad-con.R100) <= con.tiny )
     {
-      xUse = x + con.tiny;
-      yUse = y + con.tiny;
-      zUse = z + con.tiny;                    
+      xUse = x - con.tiny;
+      yUse = y - con.tiny;
+      zUse = z - con.tiny;                    
       fixed = true;     
     }
     if ( abs(rad-con.R400) <= con.tiny )
     {
-      xUse = x - con.tiny;
-      yUse = y - con.tiny;
-      zUse = z - con.tiny;       
+      xUse = x + con.tiny;
+      yUse = y + con.tiny;
+      zUse = z + con.tiny;       
       fixed = true;     
     }
   }
@@ -137,16 +137,16 @@ void Utilities::checkRegionExtr ( double x, double y, double z, short r,
   {
     if ( abs(rad-con.R400) <= con.tiny )
     {
-      xUse = x + con.tiny;
-      yUse = y + con.tiny;
-      zUse = z + con.tiny;                    
+      xUse = x - con.tiny;
+      yUse = y - con.tiny;
+      zUse = z - con.tiny;                    
       fixed = true;     
     }
     if ( abs(rad-con.R670) <= con.tiny )
     {
-      xUse = x - con.tiny;
-      yUse = y - con.tiny;
-      zUse = z - con.tiny;       
+      xUse = x + con.tiny;
+      yUse = y + con.tiny;
+      zUse = z + con.tiny;       
       fixed = true;     
     }
   }
@@ -155,16 +155,16 @@ void Utilities::checkRegionExtr ( double x, double y, double z, short r,
   {
     if ( abs(rad-con.R670) <= con.tiny )
     {
-      xUse = x + con.tiny;
-      yUse = y + con.tiny;
-      zUse = z + con.tiny;                    
+      xUse = x - con.tiny;
+      yUse = y - con.tiny;
+      zUse = z - con.tiny;                    
       fixed = true;     
     }
     if ( abs(rad-con.RTHO) <= con.tiny )
     {
-      xUse = x - con.tiny;
-      yUse = y - con.tiny;
-      zUse = z - con.tiny;       
+      xUse = x + con.tiny;
+      yUse = y + con.tiny;
+      zUse = z + con.tiny;       
       fixed = true;     
     }
   }
@@ -173,16 +173,16 @@ void Utilities::checkRegionExtr ( double x, double y, double z, short r,
   {
     if ( abs(rad-con.RTHO) <= con.tiny )
     {      
-      xUse = x + con.tiny;
-      yUse = y + con.tiny;
-      zUse = z + con.tiny;                    
+      xUse = x - con.tiny;
+      yUse = y - con.tiny;
+      zUse = z - con.tiny;                    
       fixed = true;     
     }
     if ( abs(rad-con.outerCoreRad) <= con.tiny )
     {
-      xUse = x - con.tiny;
-      yUse = y - con.tiny;
-      zUse = z - con.tiny;       
+      xUse = x + con.tiny;
+      yUse = y + con.tiny;
+      zUse = z + con.tiny;       
       fixed = true;     
     }
   }
@@ -191,16 +191,16 @@ void Utilities::checkRegionExtr ( double x, double y, double z, short r,
   {
     if ( abs(rad-con.outerCoreRad) <= con.tiny )
     {
-      xUse = x + con.tiny;
-      yUse = y + con.tiny;
-      zUse = z + con.tiny;                    
+      xUse = x - con.tiny;
+      yUse = y - con.tiny;
+      zUse = z - con.tiny;                    
       fixed = true;     
     }
     if ( abs(rad-con.innerCoreRad) <= con.tiny )
     {
-      xUse = x - con.tiny;
-      yUse = y - con.tiny;
-      zUse = z - con.tiny;       
+      xUse = x + con.tiny;
+      yUse = y + con.tiny;
+      zUse = z + con.tiny;       
       fixed = true;     
     }
   }

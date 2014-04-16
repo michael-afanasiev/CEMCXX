@@ -79,7 +79,7 @@ int main ()
   }
   
   mod.projectSubspaceSES3D ( );
-  mod.writeSES3D      ( );       
+  mod.writeSES3D           ( );       
   
   return 0;
 }

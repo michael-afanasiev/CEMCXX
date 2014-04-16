@@ -121,6 +121,8 @@ public:
   std::vector <double> radUnwrap;
   
   std::vector <short> r;
+  
+  std::string specFileName;
       
   double forRot11;
   double forRot21;
@@ -181,6 +183,7 @@ public:
   void writeSES3D             ( );
   void deallocate             ( );
   void projectSubspaceSPECFEM ( );
+  void getSpecFileName        ( int &, int & );
   void createKDTreeUnpacked   ( Mesh &msh );
   int  writeNetCDF            ( std::vector <std::vector <double>> &par,
                                 std::string name );

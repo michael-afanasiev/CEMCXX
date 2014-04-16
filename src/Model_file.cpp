@@ -2,6 +2,10 @@
 #include <algorithm>
 #include <iostream>
 #include <fstream>
+#include <sstream>
+#include <cstring>
+#include <string>
+#include <iomanip>
 
 #include <netcdf>
 
@@ -327,7 +331,6 @@ void Model_file::projectSubspaceSPECFEM ( )
   vsv[0].resize(c66.size());
   vpp[0].resize(c66.size());
   rho[0].resize(c66.size());
-
   
   int r = 0;
   for ( int i=0; i<c66.size(); i++ )
@@ -491,7 +494,7 @@ void Model_file::readSPECFEM3D ()
   try
   {
       
-    NcFile dataFile ( "./cemRequest/xyz_reg01_proc0000", NcFile::read );
+    NcFile dataFile ( specFileName, NcFile::read );
     
     NcVar dataX=dataFile.getVar("dataX");
     NcVar dataY=dataFile.getVar("dataY");
@@ -513,9 +516,6 @@ void Model_file::readSPECFEM3D ()
     dataY.getVar (dumY);
     dataZ.getVar (dumZ);
     dataR.getVar (dumR);
-    
-    cout << dumR[1] << endl;
-    cin.get();
     
     x.insert (x.end(), dumX, dumX+numCoord);
     y.insert (y.end(), dumY, dumY+numCoord);
@@ -575,7 +575,7 @@ int Model_file::writeNetCDF ( std::vector <std::vector<double>> &par,
   try
   {
     
-    NcFile output ( omd + name + ".nc", NcFile::replace );
+    NcFile output ( name + ".nc", NcFile::replace );
         
     // Read total number of parameters.
     int totSize    = par[0].size();
@@ -598,7 +598,7 @@ int Model_file::writeNetCDF ( std::vector <std::vector<double>> &par,
     // Create the parameter vector.
     vector <NcDim> dims;
     dims.push_back ( dDim );
-    NcVar data = output.addVar ( "data", ncFloat, dims );
+    NcVar data = output.addVar ( "data", ncDouble, dims );
     
     // Set compression level.
     data.setCompression ( enableShuffleFilter, enableDeflateFilter, 
@@ -617,6 +617,25 @@ int Model_file::writeNetCDF ( std::vector <std::vector<double>> &par,
     return NC_ERR;
     
   }  
+  
+}
+
+void Model_file::getSpecFileName ( int &regC, int &iProc )
+{
+  
+  std::stringstream ssReg;
+  std::stringstream ssPrc;
+  
+  ssReg << std::setw(2) << std::setfill('0');
+  ssPrc << std::setw(4) << std::setfill('0');
+        
+  ssReg << std::to_string (regC+1);
+  ssPrc << std::to_string (iProc);      
+        
+  specFileName = "./cemRequest/xyz_reg";
+  specFileName.append (ssReg.str());
+  specFileName.append ("_proc");
+  specFileName.append (ssPrc.str());
   
 }
 
