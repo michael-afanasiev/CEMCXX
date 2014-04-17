@@ -209,9 +209,9 @@ void Utilities::checkRegionExtr ( double x, double y, double z, short r,
   {
     if ( abs(rad-con.innerCoreRad) <= con.tiny )
     {
-      xUse = x - con.bigtiny;
-      yUse = y - con.bigtiny;
-      zUse = z - con.bigtiny;                    
+      xUse = x - con.big ftiny;
+      yUse = y - con.big ftiny;
+      zUse = z - con.big ftiny;                    
       fixed = true;     
     }
   }
@@ -295,6 +295,7 @@ void Utilities::colLonRadDeg2xyz ( double col,  double lon,  double rad,
   x = rad * cos (lon) * sin (col);
   y = rad * sin (lon) * sin (col);
   z = rad * cos (col);  
+  
   
 }    
 
