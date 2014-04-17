@@ -42,7 +42,8 @@ public:
   double ninty         = 90.0;
   double aniCorrection = 0.188078;
   double toMB          = 9.5367e-7;
-  double tiny          = 3;
+  double tiny          = 1;
+  double bigtiny       = 3;
   
   double innerCoreRad = 1221.0;
   double outerCoreRad = 3480.0;
@@ -277,12 +278,12 @@ private:
   
 public: 
   
-  void readDriver  ( std::ifstream &myfile );
-  void checkUsage  ( Model_file &mod, std::string mode );
-  void initialize  ( Model_file &mod, Discontinuity &dis, Utilities &utl, 
-  Exodus_file &exo, Region &reg );
+  void readDriver     ( std::ifstream &myfile );
+  void checkUsage     ( Model_file &mod, std::string mode );
+  void initialize     ( Model_file &mod, Discontinuity &dis, Utilities &utl, 
+                        Exodus_file &exo, Region &reg );
   void populateParams ( Model_file &mod );
-  void report      ( Model_file &mod );
+  void report         ( Model_file &mod );
   
 };
 
@@ -313,7 +314,7 @@ public:
   
   // Internal functions.
   
-  void writeNew   ( Mesh &msh );
+  void writeNew    ( Mesh &msh );
   void merge       ( Region &reg, Model_file &mod );
   void openFile    ( std::string fname );
   void writeParams ( Mesh &msh );
@@ -422,13 +423,14 @@ public:
   void interpolateCrust ( Mesh &msh, Discontinuity &dis );
   void interpolateTopo  ( Mesh &msh, Discontinuity &dis );
   void interpolate      ( Mesh &msh, Model_file &mod, Discontinuity &dis );  
-  int  recover      ( double &testX, double &testY, double &testZ, Mesh &msh,
-                      double &c11, double &c12, double &c13, double &c14, 
-                      double &c15, double &c16, double &c22, double &c23, 
-                      double &c24, double &c25, double &c26, double &c33, 
-                      double &c34, double &c35, double &c36, double &c44, 
-                      double &c45, double &c46, double &c55, double &c56, 
-                      double &c66, double &rho, char mode ); 
+  int  recover          ( double &testX, double &testY, double &testZ, 
+                          Mesh &msh,
+                          double &c11, double &c12, double &c13, double &c14, 
+                          double &c15, double &c16, double &c22, double &c23, 
+                          double &c24, double &c25, double &c26, double &c33, 
+                          double &c34, double &c35, double &c36, double &c44, 
+                          double &c45, double &c46, double &c55, double &c56, 
+                          double &c66, double &rho, char mode ); 
                       
 private:
   double taper      ( double &x, double &y, double &z, Model_file &mod );

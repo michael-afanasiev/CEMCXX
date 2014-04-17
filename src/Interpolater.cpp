@@ -199,7 +199,7 @@ void Interpolator::interpolate ( Mesh &msh, Model_file &mod, Discontinuity
       double qvCor = atn.correct ( atn.qModelName, mshRadRot );
       
       // FIXME 
-      qvCor == 1.;
+      // qvCor == 1.;
                    
       // TTI.
       double vshExo = sqrt ( msh.c44[i] / msh.rho[i] );

@@ -473,8 +473,8 @@ void Model_file::readSPECFEM3D ()
   string   line;
   
   int      lineNo;
-  int      numProc;
   int      numCoord;
+  int      numProc;
   
   lineNo = 0;
   headerFile.open ( "./cemRequest/header", std::ios::in );
