@@ -474,22 +474,6 @@ void Model_file::readSPECFEM3D ()
   
   int      lineNo;
   int      numCoord;
-  int      numProc;
-  
-  lineNo = 0;
-  headerFile.open ( "./cemRequest/header", std::ios::in );
-  while ( getline(headerFile, line) )
-  {
-    if (lineNo == 0)
-    {
-      numProc = stoi (line);
-    }
-    if (lineNo == 1)
-    {
-      numCoord = stoi (line);
-    }
-    lineNo++;
-  }
    
   try
   {
@@ -588,6 +572,10 @@ int Model_file::writeNetCDF ( std::vector <std::vector<double>> &par,
       for ( vector <double> :: iterator p=par[r].begin(); p!=par[r].end(); 
         ++p )
       {
+        // if ( *p < 1 )
+        // {
+        //   cout << "BAD " << l << endl;
+        // }
         dataOut[l] = *p;
         l++;
       }

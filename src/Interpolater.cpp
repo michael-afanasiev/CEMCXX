@@ -345,11 +345,14 @@ int Interpolator::recover ( double &testX, double &testY, double &testZ,
                double &c15, double &c16, double &c22, double &c23, double &c24, 
                double &c25, double &c26, double &c33, double &c34, double &c35, 
                double &c36, double &c44, double &c45, double &c46, double &c55, 
-               double &c56, double &c66, double &rho, char mode )
+               double &c56, double &c66, double &rho, char mode, 
+               bool &internalFound )
 {
   
   Utilities util;
   Constants con;
+  
+  internalFound = false;
   
   kdtree *tree = msh.tree;
   kdres  *set;
@@ -488,7 +491,8 @@ int Interpolator::recover ( double &testX, double &testY, double &testZ,
       // If barycentric coordinates are all >= 0.
       if ( l1 >= 0 && l2 >= 0 && l3 >= 0 && l4 >= 0 ) {
       
-        found = true;
+        found         = true;
+        internalFound = true;
         
         if ( mode == 'p' ) 
         {
@@ -721,6 +725,12 @@ int Interpolator::recover ( double &testX, double &testY, double &testZ,
         c56 = msh.c56[point];
         c66 = msh.c66[point];    
         rho = msh.rho[point];    
+        
+        if ( rho < 1 )
+        {
+          cout << rho << " " << rad << endl;
+        }
+        
         
         found = true;      
         break;         

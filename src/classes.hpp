@@ -45,7 +45,7 @@ public:
   double tiny          = 1;
   double bigtiny       = 3;
   double tinytiny      = 1e-2;
-  double oneDegRad     = 2. * PI / o80;
+  double oneDegRad     = 1. * PI / o80;
   
   double innerCoreRad = 1221.0;
   double outerCoreRad = 3480.0;
@@ -153,6 +153,15 @@ public:
   bool lonReg2    = false;
   bool lonReg3    = false;
   bool lonReg4    = false;
+  bool radReg1    = false;
+  bool radReg2    = false;
+  bool radReg3    = false;
+  bool radReg4    = false;
+  bool radReg5    = false;
+  bool radReg6    = false;
+  bool radReg7    = false;
+  bool radReg8    = false;
+  bool radReg9    = false;
   bool wrapAround = false;
   bool doRotate   = false;
   bool overwriteCrust;
@@ -434,7 +443,7 @@ public:
                           double &c24, double &c25, double &c26, double &c33, 
                           double &c34, double &c35, double &c36, double &c44, 
                           double &c45, double &c46, double &c55, double &c56, 
-                          double &c66, double &rho, char mode ); 
+                          double &c66, double &rho, char mode, bool & ); 
                       
 private:
   double taper      ( double &x, double &y, double &z, Model_file &mod );

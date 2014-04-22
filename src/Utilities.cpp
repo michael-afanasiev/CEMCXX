@@ -55,6 +55,10 @@ void Utilities::checkRegionExtr ( double x, double y, double z, short r,
   double col, lon, rad;
   
   utl.xyz2ColLonRadDeg ( x, y, z, col, lon, rad );
+  if ( x == 0 && y == 0 )
+  {
+    cout << col << " " << lon << " " << rad << endl;
+  }
 
   bool fixed = false;
   
@@ -222,11 +226,14 @@ void Utilities::xyz2ColLonRadDeg ( double &x,   double &y,   double &z,
   Constants con;
   
   rad = sqrt  ( x * x + y * y + z * z );
-  col = acos  ( z / rad ) * con.o80 / con.PI ;
-  lon = atan2 ( y, x ) * con.o80 / con.PI ;
+  col = acos  ( z / rad );
+  lon = atan2 ( y, x );
   
   if ( rad > con.R_EARTH )
-    rad = con.R_EARTH;
+    rad = con.R_EARTH - 1;
+  
+  col = col * con.o80 / con.PI;
+  lon = lon * con.o80 / con.PI;
   
 }
 
@@ -241,7 +248,7 @@ void Utilities::xyz2ColLonRadRad ( double &x,   double &y,   double &z,
   lon = atan2 ( y, x );
   
   if ( rad > con.R_EARTH )
-    rad = con.R_EARTH;
+    rad = con.R_EARTH - 1;  
     
 }
                                   
@@ -250,8 +257,7 @@ void Utilities::colLonRadDeg2xyz ( double col,  double lon,  double rad,
 {
   
   Constants con;
-    
-  
+      
   col = col * con.PI / con.o80;
   lon = lon * con.PI / con.o80;
   
@@ -269,97 +275,23 @@ void Utilities::fixTiny ( double &x, double &y, double &z, double &col,
   Constants con;
   
   mode = 'p';
-  
- // cout << abs (lon) << " " << lon <<  endl;
     
-  // if ( mod.colReg1 == true && col < con.oneDegRad )
-  // {
-  //   col = col + con.oneDegRad;
-  //   mode = 's';  
-  // }
-  // 
-  // if ( mod.colReg1 == true && abs (col - con.PIo2) < con.oneDegRad )
-  // {
-  //   col = col - con.oneDegRad;
-  //   mode = 's';  
-  // }
-  // 
-  // if ( mod.colReg2 == true && abs (col - con.PIo2) < con.oneDegRad )
-  // {
-  //   col = col + con.oneDegRad;
-  //   mode = 's';      
-  // }
-  // 
-  // if ( mod.colReg2 == true && abs (col - con.PI) < con.oneDegRad )
-  // {
-  //   col = col - con.oneDegRad;
-  //   mode = 's';      
-  // }
-  // 
-  // if ( mod.lonReg1 == true && lon < con.oneDegRad )
-  // {
-  //   lon = lon + con.oneDegRad;  
-  //   mode = 's';      
-  // }
-  // 
-  // if ( mod.lonReg1 == true && abs ( lon - con.PIo2) < con.oneDegRad )
-  // {
-  //   lon = lon - con.oneDegRad;       
-  //   mode = 's'; 
-  // }
-  // 
-  // if ( mod.lonReg2 == true && abs ( lon - con.PIo2) < con.oneDegRad )
-  // {
-  //   lon = lon + con.oneDegRad;   
-  //   mode = 's';     
-  // }
-  // 
-  // if ( mod.lonReg2 == true && abs ( lon - con.PI) < con.oneDegRad )
-  // {
-  //   lon = lon - con.oneDegRad;  
-  //   mode = 's';      
-  // }
-  // 
-  // if ( mod.lonReg3 == true && abs ( lon - con.PI) < con.oneDegRad )
-  // {
-  //   lon = lon + con.oneDegRad;    
-  //   mode = 's';    
-  // }
-  // 
-  // if ( mod.lonReg3 == true && abs ( lon - (con.PIo2)) < con.oneDegRad )
-  // {
-  //   lon = lon - con.oneDegRad;    
-  //   mode = 's';    
-  // }
-  // 
-  // if ( mod.lonReg4 == true && abs ( lon - (con.PIo2)) < con.oneDegRad )
-  // {
-  //   lon = lon + con.oneDegRad; 
-  //   mode = 's';       
-  //   cout << "HI" << endl;    
-  // }
-  // 
-  // if ( mod.lonReg4 == true &&  ( abs (lon) < con.oneDegRad ) )
-  // {
-  //   lon = lon - con.oneDegRad;    
-  //   mode = 's';
-  //   cout << "HI " << lon << " " << con.oneDegRad << endl;    
-  // }
-  // 
-  // if ( rad >= 6370 )
-  // {
-  //   mode = 's';
-  // }
+  double tinytiny = con.oneDegRad / 10.;
   
-  // colLonRadDeg2xyz ( col, lon, rad, x, y, z );
-  
-  if ( abs (x) < 100. || abs (y) < 100.|| abs (z) < 100. )
+  if ( abs (lon) == 0. )
   {
-    mode = 's';
-    // cout << x << " " << y << " " << z << endl;
+    lon = tinytiny;
   }
+  if ( lon == con.PIo2 )
+    lon = con.PIo2 + tinytiny;
   
-  // cout << mode << endl;
+  if ( lon == con.PI )
+    lon = con.PI + tinytiny;
+  
+  if ( lon == 3 * con.PIo2 )
+    lon = 3 * con.PIo2 + tinytiny;
+  
+  colLonRadRad2xyz ( col, lon, rad, x, y, z );
   
 }   
 
@@ -435,25 +367,44 @@ void Utilities::inquireRotate ( Model_file &mod )
 
     xyz2ColLonRadDeg ( xNew, yNew, zNew, col, lon, rad );
   
-    if ( (col >  0.) && (col <  90.) )
+    if ( (col >=  0.) && (col <=  90.) )
       mod.colReg1 = true;
-    if ( (col > 90.) && (col < 180.) )
+    if ( (col >= 90.) && (col <= 180.) )
       mod.colReg2 = true;
   
-    if ( (lon >    0.) && (lon <  90.) )
+    if ( (lon >=    -1.) && (lon <=  91.) )
       mod.lonReg1 = true;      
-    if ( (lon >   90.) && (lon < 180.) )
+    if ( (lon >=   89.) && (lon <= 181.) )
       mod.lonReg2 = true;      
-    if ( (lon >  180.) && (lon < 270.) )
+    if ( (lon >=  179.) && (lon <= 271.) )
       mod.lonReg3 = true;      
-    if ( (lon >  270.) && (lon < 360.) )
+    if ( (lon >=  269.) && (lon <= 361.) )
       mod.lonReg4 = true;      
-    if ( (lon >  360.) && (lon < 450.) )
+    if ( (lon >=  359.) && (lon <= 451.) )
       mod.lonReg3 = true;
-    if ( (lon > -180.) && (lon < -90.) )
+    if ( (lon >= -181.) && (lon <= -89.) )
       mod.lonReg3 = true;
-    if ( (lon >  -90.) && (lon <   0.) )
+    if ( (lon >=  -91.) && (lon <=   1.) )
       mod.lonReg4 = true;
+    
+    if ( rad <= 1221. && rad >= 0.    )
+      mod.radReg1 = true;
+    if ( rad <= 3480. && rad >= 1221. )
+      mod.radReg2 = true;
+    if ( rad <= 5371. && rad >= 3480. )
+      mod.radReg3 = true;
+    if ( rad <= 5701. && rad >= 5371. )
+      mod.radReg4 = true;
+    if ( rad <= 5971. && rad >= 5701. )
+      mod.radReg5 = true;
+    if ( rad <= 6271. && rad >= 5971. )
+      mod.radReg6 = true;
+    if ( rad <= 6319. && rad >= 6271. )
+      mod.radReg7 = true;
+    if ( rad <= 6351. && rad >= 6319. )
+      mod.radReg8 = true;
+    if ( rad <= 6371. && rad >= 6351. )
+      mod.radReg9 = true;
   
   }
   

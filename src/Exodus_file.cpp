@@ -105,10 +105,10 @@ void Exodus_file::merge ( Region &reg, Model_file &mod )
     {
       mod.radMin = 6272;
     } 
-    else
-    {
-      mod.radMin = 0;
-    }
+    // else
+    // {
+    //   mod.radMin = 0;
+    // }
     
   }
       
@@ -126,23 +126,23 @@ void Exodus_file::merge ( Region &reg, Model_file &mod )
   if ( mod.lonReg4 == true )
     lonReg.push_back ("lon270-360");
                     
-  if ( mod.radMin < 1221 )
+  if ( mod.radReg1 == true )
     radReg.push_back ( "rad0000-1221" );    
-  if ( mod.radMin < 3480 )
+  if ( mod.radReg2 == true )
     radReg.push_back ( "rad1221-3480" );  
-  if ( mod.radMin < 5371 )
+  if ( mod.radReg3 == true )
     radReg.push_back ( "rad3480-5371" );  
-  if ( mod.radMin < 5701 )
+  if ( mod.radReg4 == true )
     radReg.push_back ( "rad5371-5701" );
-  if ( mod.radMin < 5971 )
+  if ( mod.radReg5 == true )
     radReg.push_back ( "rad5701-5971" );  
-  if ( mod.radMin < 6271 )     
+  if ( mod.radReg6 == true )
     radReg.push_back ( "rad5971-6271" );           
-  if ( mod.radMin < 6319 )
+  if ( mod.radReg7 == true )
     radReg.push_back ( "rad6271-6319" );            
-  if ( mod.radMin < 6351 )
+  if ( mod.radReg8 == true )
     radReg.push_back ( "rad6319-6351" );  
-  if ( mod.radMin < 6371 )   
+  if ( mod.radReg9 == true )
     radReg.push_back ( "rad6351-6371" );
     
   int l = 0;
@@ -163,15 +163,20 @@ void Exodus_file::merge ( Region &reg, Model_file &mod )
       DIR *dp = opendir ( dir.c_str() );
       vector <string> fnames;
       
-      while ( struct dirent *dirp = readdir ( dp ) )
+      for ( vector <string>::iterator l=radReg.begin(); l!=radReg.end(); ++l )
       {
-        string test = dirp->d_name;
-        if ( test.substr ( test.length() - 1 ) != "." )
-        {  
-          fnames.push_back ( dir + dirp->d_name );
-        }
+        fnames.push_back ( dir + *i + "." + *j + "." + *l + ".000.ex2" );
       }
       
+      // while ( struct dirent *dirp = readdir ( dp ) )
+      // {
+      //   string test = dirp->d_name;
+      //   if ( test.substr ( test.length() - 1 ) != "." )
+      //   {  
+      //     fnames.push_back ( dir + dirp->d_name );
+      //   }
+      // }
+                  
       for ( vector <string>::iterator k=fnames.begin(); k!=fnames.end(); ++k ) 
       {                                
                         

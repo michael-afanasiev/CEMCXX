@@ -501,7 +501,6 @@ void Mesh::deallocateMesh ( Model_file &mod )
   
   if ( mod.intentions == "EXTRACT" )
   {    
-    cout << "DE" << endl;
     delete [] KDdat;
     kd_free ( tree );  
   }

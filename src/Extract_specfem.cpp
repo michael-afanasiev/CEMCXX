@@ -35,6 +35,12 @@ int main ( int argc, char *argv[] )
   drv.checkUsage ( mod, "EXTRACT" );
 
   std::cout << "\n----- Extracting -----\n";
+  
+  bool *internalFound = new bool [mod.x.size()];   
+  for ( int i=0; i<mod.x.size(); i++ )
+  {
+    internalFound[i] = false;
+  }
     
   for ( std::vector < Exodus_file > :: 
     iterator exoFile=reg.regionsExo.begin();
@@ -53,58 +59,75 @@ int main ( int argc, char *argv[] )
     std::cout << "Extracting." << std::endl;
   
 #pragma omp parallel for
+    
+    
     for ( int i=0; i<mod.x.size(); i++ )               
     {
       double c11, c12, c13, c14, c15, c16,c22, c23, c24, c25, c26, c33, c34;
       double c35, c36, c44, c45, c46, c55, c56, c66, rho, testX, testY, testZ;
       double col, lon, rad, xUse, yUse, zUse;  
       char skip;           
-      
-      
+            
       utl.checkRegionExtr  ( mod.x[i], mod.y[i], mod.z[i], mod.r[i],
                              testX, testY, testZ ); 
     
                              
-      utl.xyz2ColLonRadRad ( testX, testY, testZ, col, lon, rad );           
+      utl.xyz2ColLonRadRad ( testX, testY, testZ, col, lon, rad ); 
+      utl.fixTiny          ( testX, testY, testZ, col, lon, rad, skip, mod );          
       skip = 'p';
-      // utl.fixTiny          ( testX, testY, testZ, col, lon, rad, skip, mod );
-      // cout << mod.y[i] << " " << testY << endl;     
-    
-      if ( (rad <= msh.radMax) && 
-           (rad >= msh.radMin) &&
-           (lon <= msh.lonMax) &&
-           (lon >= msh.lonMin) &&
-           (col <= msh.colMax) &&
-           (col >= msh.colMin ) ) 
-      {            
+      
+      if ( internalFound[i] == false )
+      {
+        if ( (rad <= msh.radMax) && 
+             (rad >= msh.radMin) &&
+             (lon <= (msh.lonMax + con.oneDegRad)) &&
+             (lon >= (msh.lonMin - con.oneDegRad)) &&
+             (col <= (msh.colMax + con.oneDegRad)) &&
+             (col >= (msh.colMin - con.oneDegRad)) ) 
+        {            
                                                                                                                                                      
-        int pass = ipl.recover ( testX, testY, testZ, msh, c11, c12, c13, 
-        c14, c15, c16, c22, c23, c24, c25, c26, c33, c34, c35, c36, c44, 
-        c45, c46, c55, c56, c66, rho, skip ); 
-    
-        mod.c11[i]       = c11;
-        mod.c12[i]       = c12;
-        mod.c13[i]       = c13;
-        mod.c22[i]       = c22;
-        mod.c23[i]       = c23;
-        mod.c33[i]       = c33;
-        mod.c44[i]       = c44;
-        mod.c55[i]       = c55;
-        mod.c66[i]       = c66;            
-        mod.rhoUnwrap[i] = rho;
-        // std::cout << i << std::endl;
+          int pass = ipl.recover ( testX, testY, testZ, msh, c11, c12, c13, 
+          c14, c15, c16, c22, c23, c24, c25, c26, c33, c34, c35, c36, c44, 
+          c45, c46, c55, c56, c66, rho, skip, internalFound[i] ); 
+            
+          mod.c11[i]       = c11;
+          mod.c12[i]       = c12;
+          mod.c13[i]       = c13;
+          mod.c22[i]       = c22;
+          mod.c23[i]       = c23;
+          mod.c33[i]       = c33;
+          mod.c44[i]       = c44;
+          mod.c55[i]       = c55;
+          mod.c66[i]       = c66;            
+          mod.rhoUnwrap[i] = rho;
+          
         
-      }                          
+        }                          
+      }
     }        
 
     msh.deallocateMesh   ( mod );
     exoFile -> closeFile ( );                 
   }
+  
+  int l = 0;
+  for ( int i=0; i<mod.x.size(); i++ )
+  {
+    if ( internalFound[i] == false )
+    {
+      double col, lon, rad;
+      utl.xyz2ColLonRadDeg ( mod.x[i], mod.y[i], mod.z[i], col, lon, rad );
+      std::cout << i << " " << mod.x[i] << " " << mod.y[i] << " " 
+        << mod.z[i] << std::endl;
+      std::cout << col << " " << lon << " " << rad << std::endl;
+      l += 1;
+    }
+  }
+  std::cout << "This many not found: " << l << std::endl;
 
   mod.projectSubspaceSPECFEM ( );
 
-  std::cout << "Writing NetCDF" << std::endl;
-  
+  std::cout << "Writing NetCDF" << std::endl;  
   mod.writeNetCDF ( mod.rho, mod.specFileName+".rho");      
   mod.writeNetCDF ( mod.vpp, mod.specFileName+".vpp");
   mod.writeNetCDF ( mod.vsh, mod.specFileName+".vsh");
