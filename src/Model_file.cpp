@@ -607,6 +607,8 @@ int Model_file::writeNetCDF ( std::vector <std::vector<double>> &par,
     // Write to the data array.
     data.putVar ( dataOut );
     
+    delete [] dataOut;
+    
     return 0;    
     
   }

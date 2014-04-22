@@ -44,6 +44,8 @@ public:
   double toMB          = 9.5367e-7;
   double tiny          = 1;
   double bigtiny       = 3;
+  double tinytiny      = 1e-2;
+  double oneDegRad     = 2. * PI / o80;
   
   double innerCoreRad = 1221.0;
   double outerCoreRad = 3480.0;
@@ -258,7 +260,9 @@ public:
   void checkRegion      ( Mesh &msh, double &rad );
   void checkRegionExtr  ( double x, double y, double z, short r,
                           double &xUse, double &yUse, double &zUse );
-                          
+  void fixTiny          ( double &x, double &y, double &z, double &col, 
+                          double &lon, double &rad, char &mode, 
+                          Model_file &mod );
   int getFilesize       ( std::string fname );
 };
 

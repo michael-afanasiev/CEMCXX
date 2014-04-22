@@ -50,32 +50,27 @@ void Utilities::checkRegionExtr ( double x, double y, double z, short r,
 {
   
   Constants con;
+  Utilities utl;
   
-  double rad = sqrt ( x * x + y * y + z * z );
+  double col, lon, rad;
+  
+  utl.xyz2ColLonRadDeg ( x, y, z, col, lon, rad );
+
   bool fixed = false;
   
   if ( r == 1 )
   {
+    if ( rad >= con.R_EARTH )
+    {
+      rad = con.R_EARTH - 1;
+    }    
     if ( abs(rad-con.R020) <= con.tiny )
     {
-      xUse = x + con.bigtiny;
-      yUse = y + con.bigtiny;
-      zUse = z + con.bigtiny;       
-      fixed = true;     
+      rad = con.R020 + 1;    
     }
     if ( abs(rad-con.R_EARTH) <= con.tiny )
     {
-      xUse = x - con.bigtiny;
-      yUse = y - con.bigtiny;
-      zUse = z - con.bigtiny;            
-      fixed = true;           
-    }
-    if ( rad >= con.R_EARTH )
-    {
-      xUse = x - con.bigtiny;
-      yUse = y - con.bigtiny;
-      zUse = z - con.bigtiny;            
-      fixed = true;
+      rad = con.R_EARTH - 1;
     }
   }
    
@@ -83,17 +78,11 @@ void Utilities::checkRegionExtr ( double x, double y, double z, short r,
   {
     if ( abs(rad-con.R020) <= con.tiny )
     {
-      xUse = x - con.bigtiny;
-      yUse = y - con.bigtiny;
-      zUse = z - con.bigtiny;                    
-      fixed = true;     
+      rad = con.R020 - 1;
     }
     if ( abs(rad-con.R052) <= con.tiny )
     {
-      xUse = x + con.bigtiny;
-      yUse = y + con.bigtiny;
-      zUse = z + con.bigtiny;       
-      fixed = true;     
+      rad = con.R052 + 1;
     }
   }
   
@@ -101,17 +90,11 @@ void Utilities::checkRegionExtr ( double x, double y, double z, short r,
   {
     if ( abs(rad-con.R052) <= con.tiny )
     {
-      xUse = x - con.bigtiny;
-      yUse = y - con.bigtiny;
-      zUse = z - con.bigtiny;                    
-      fixed = true;     
+      rad = con.R052 - 1;
     }
     if ( abs(rad-con.R100) <= con.tiny )
     {
-      xUse = x + con.bigtiny;
-      yUse = y + con.bigtiny;
-      zUse = z + con.bigtiny;       
-      fixed = true;     
+      rad = con.R100 + 1;    
     }
   }
   
@@ -119,17 +102,11 @@ void Utilities::checkRegionExtr ( double x, double y, double z, short r,
   {
     if ( abs(rad-con.R100) <= con.tiny )
     {
-      xUse = x - con.bigtiny;
-      yUse = y - con.bigtiny;
-      zUse = z - con.bigtiny;                    
-      fixed = true;     
+      rad = con.R100 - 1;
     }
     if ( abs(rad-con.R400) <= con.tiny )
     {
-      xUse = x + con.bigtiny;
-      yUse = y + con.bigtiny;
-      zUse = z + con.bigtiny;       
-      fixed = true;     
+      rad = con.R400 + 1;
     }
   }
   
@@ -137,17 +114,11 @@ void Utilities::checkRegionExtr ( double x, double y, double z, short r,
   {
     if ( abs(rad-con.R400) <= con.tiny )
     {
-      xUse = x - con.bigtiny;
-      yUse = y - con.bigtiny;
-      zUse = z - con.bigtiny;                    
-      fixed = true;     
+      rad = con.R400 - 1;
     }
     if ( abs(rad-con.R670) <= con.tiny )
     {
-      xUse = x + con.bigtiny;
-      yUse = y + con.bigtiny;
-      zUse = z + con.bigtiny;       
-      fixed = true;     
+      rad = con.R670 + 1;
     }
   }
   
@@ -155,74 +126,66 @@ void Utilities::checkRegionExtr ( double x, double y, double z, short r,
   {
     if ( abs(rad-con.R670) <= con.tiny )
     {
-      xUse = x - con.bigtiny;
-      yUse = y - con.bigtiny;
-      zUse = z - con.bigtiny;                    
-      fixed = true;     
+      rad = con.R670 - 1;
     }
     if ( abs(rad-con.RTHO) <= con.tiny )
     {
-      xUse = x + con.bigtiny;
-      yUse = y + con.bigtiny;
-      zUse = z + con.bigtiny;       
-      fixed = true;     
+      rad = con.RTHO + 1;
     }
   }
   
   if ( r == 7 ) 
   {
+    if ( rad < con.outerCoreRad )
+    {
+      rad = con.outerCoreRad + 1;
+    }
+    
     if ( abs(rad-con.RTHO) <= con.tiny )
     {      
-      xUse = x - con.bigtiny;
-      yUse = y - con.bigtiny;
-      zUse = z - con.bigtiny;                    
-      fixed = true;    
+      rad = con.RTHO - 1;
     }
     if ( abs(rad-con.outerCoreRad) <= con.tiny )
     {
-      xUse = x + con.bigtiny;
-      yUse = y + con.bigtiny;
-      zUse = z + con.bigtiny;       
-      fixed = true;     
+      rad = con.outerCoreRad + 1;
     }
   }
   
   if ( r == 8 ) 
   {
+    if ( rad > con.outerCoreRad )
+    {
+      rad = con.outerCoreRad - 1;
+    }
+    if ( rad < con.innerCoreRad )
+    {
+      rad = con.innerCoreRad + 1;
+    }
     if ( abs(rad-con.outerCoreRad) <= con.tiny )
     {
-      xUse = x - con.bigtiny;
-      yUse = y - con.bigtiny;
-      zUse = z - con.bigtiny;                    
-      fixed = true;     
+      rad = con.outerCoreRad - 1;
     }
     if ( abs(rad-con.innerCoreRad) <= con.tiny )
     {
-      xUse = x + con.bigtiny;
-      yUse = y + con.bigtiny;
-      zUse = z + con.bigtiny;       
-      fixed = true;     
+      rad = con.innerCoreRad + 1;
     }
   }
   
   if ( r == 9 ) 
   {
+    if ( rad > con.innerCoreRad )
+    {
+      rad = con.innerCoreRad - 1;
+    }
     if ( abs(rad-con.innerCoreRad) <= con.tiny )
     {
-      xUse = x - con.big ftiny;
-      yUse = y - con.big ftiny;
-      zUse = z - con.big ftiny;                    
-      fixed = true;     
+      rad = con.innerCoreRad - 1;
     }
   }
   
-  if ( fixed == false )
-  {
-    xUse = x;
-    yUse = y;
-    zUse = z;
-  }
-          
+  utl.colLonRadDeg2xyz ( col, lon, rad, xUse, yUse, zUse );
+  
+  
 }
 
 double Utilities::col2Lat ( double &col, char flag ) 
@@ -296,8 +259,109 @@ void Utilities::colLonRadDeg2xyz ( double col,  double lon,  double rad,
   y = rad * sin (lon) * sin (col);
   z = rad * cos (col);  
   
+} 
+
+void Utilities::fixTiny ( double &x, double &y, double &z, double &col, 
+                          double &lon, double &rad, char &mode, 
+                          Model_file &mod )
+{
   
-}    
+  Constants con;
+  
+  mode = 'p';
+  
+ // cout << abs (lon) << " " << lon <<  endl;
+    
+  // if ( mod.colReg1 == true && col < con.oneDegRad )
+  // {
+  //   col = col + con.oneDegRad;
+  //   mode = 's';  
+  // }
+  // 
+  // if ( mod.colReg1 == true && abs (col - con.PIo2) < con.oneDegRad )
+  // {
+  //   col = col - con.oneDegRad;
+  //   mode = 's';  
+  // }
+  // 
+  // if ( mod.colReg2 == true && abs (col - con.PIo2) < con.oneDegRad )
+  // {
+  //   col = col + con.oneDegRad;
+  //   mode = 's';      
+  // }
+  // 
+  // if ( mod.colReg2 == true && abs (col - con.PI) < con.oneDegRad )
+  // {
+  //   col = col - con.oneDegRad;
+  //   mode = 's';      
+  // }
+  // 
+  // if ( mod.lonReg1 == true && lon < con.oneDegRad )
+  // {
+  //   lon = lon + con.oneDegRad;  
+  //   mode = 's';      
+  // }
+  // 
+  // if ( mod.lonReg1 == true && abs ( lon - con.PIo2) < con.oneDegRad )
+  // {
+  //   lon = lon - con.oneDegRad;       
+  //   mode = 's'; 
+  // }
+  // 
+  // if ( mod.lonReg2 == true && abs ( lon - con.PIo2) < con.oneDegRad )
+  // {
+  //   lon = lon + con.oneDegRad;   
+  //   mode = 's';     
+  // }
+  // 
+  // if ( mod.lonReg2 == true && abs ( lon - con.PI) < con.oneDegRad )
+  // {
+  //   lon = lon - con.oneDegRad;  
+  //   mode = 's';      
+  // }
+  // 
+  // if ( mod.lonReg3 == true && abs ( lon - con.PI) < con.oneDegRad )
+  // {
+  //   lon = lon + con.oneDegRad;    
+  //   mode = 's';    
+  // }
+  // 
+  // if ( mod.lonReg3 == true && abs ( lon - (con.PIo2)) < con.oneDegRad )
+  // {
+  //   lon = lon - con.oneDegRad;    
+  //   mode = 's';    
+  // }
+  // 
+  // if ( mod.lonReg4 == true && abs ( lon - (con.PIo2)) < con.oneDegRad )
+  // {
+  //   lon = lon + con.oneDegRad; 
+  //   mode = 's';       
+  //   cout << "HI" << endl;    
+  // }
+  // 
+  // if ( mod.lonReg4 == true &&  ( abs (lon) < con.oneDegRad ) )
+  // {
+  //   lon = lon - con.oneDegRad;    
+  //   mode = 's';
+  //   cout << "HI " << lon << " " << con.oneDegRad << endl;    
+  // }
+  // 
+  // if ( rad >= 6370 )
+  // {
+  //   mode = 's';
+  // }
+  
+  // colLonRadDeg2xyz ( col, lon, rad, x, y, z );
+  
+  if ( abs (x) < 100. || abs (y) < 100.|| abs (z) < 100. )
+  {
+    mode = 's';
+    // cout << x << " " << y << " " << z << endl;
+  }
+  
+  // cout << mode << endl;
+  
+}   
 
 void Utilities::colLonRadRad2xyz ( double col,  double lon,  double rad,
                                    double &x,   double &y,   double &z ) 

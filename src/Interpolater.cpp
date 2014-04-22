@@ -352,6 +352,8 @@ int Interpolator::recover ( double &testX, double &testY, double &testZ,
   Constants con;
   
   kdtree *tree = msh.tree;
+  kdres  *set;
+  void   *ind_p;
   
   /* orig* holds the originally requested points. The test* variables are used
   to recursively search in a random region around the selected point if we don't
@@ -371,6 +373,7 @@ int Interpolator::recover ( double &testX, double &testY, double &testZ,
   // repeater.reserve ( 100 );
   bool found  = false;  
   int  count  = 0;
+  int fallBack = 0;
   int  nodeNum;
   int  point;
   
@@ -379,10 +382,16 @@ int Interpolator::recover ( double &testX, double &testY, double &testZ,
   myfile.open ( "Bary.txt", ios::out );
 #endif
                 
+  // cout << mode << endl;
+  // if ( mode == 's' )
+  //   cout << "MODE" << endl;
+                
   // Find node closest to point.
-  kdres *set  = kd_nearest3 ( tree, testX, testY, testZ );
-  void *ind_p = kd_res_item_data ( set );
-  point       = * ( int * ) ind_p;
+  set   = kd_nearest3 ( tree, testX, testY, testZ );
+  ind_p = kd_res_item_data ( set );
+  point = * ( int * ) ind_p;
+  
+  kd_res_free ( set );
             
   // Find the originally requested col, lon, and rad.
   util.xyz2ColLonRadRad ( origX, origY, origZ, col, lon, rad );        
@@ -390,6 +399,8 @@ int Interpolator::recover ( double &testX, double &testY, double &testZ,
   // Find ColLonRad of original node.
   util.xyz2ColLonRadRad ( msh.xmsh[point], msh.ymsh[point], msh.zmsh[point], 
     colClose, lonClose, radClose );
+
+    // cout << c66.size() << endl;
 
   // Repeat until enclosing tet is found.
   while ( found == false ) {    
@@ -612,6 +623,7 @@ int Interpolator::recover ( double &testX, double &testY, double &testZ,
         radPoint );             
       
       count++;
+      // cout << count << endl;
       
       /* For col and lon, randomly choose which direction to look. This might
       be able to be switched to a more direction search (i.e. we look in the
@@ -639,7 +651,7 @@ int Interpolator::recover ( double &testX, double &testY, double &testZ,
       1 km. This also seems to work, although I think it's a bit sketchier. 
       Could add a parameter to the radius search to make this variable, 
       dependent on depth. It does work quite well now though */      
-      if ( count < 500 ) 
+      if ( count < 50 ) 
       {
         double colTest = col + ( signC * randC * dTheta );
         double lonTest = lon + ( signL * randL * dTheta );
@@ -648,20 +660,73 @@ int Interpolator::recover ( double &testX, double &testY, double &testZ,
         /* Create a new testX, Y, and Z, point for the recursive search. */
         util.colLonRadRad2xyz ( colTest, lonTest, radTest, testX, testY, 
           testZ );          
+          
+        // Extract point from KDTree.
+        set  = kd_nearest3 ( tree, testX, testY, testZ );
+        ind_p = kd_res_item_data ( set );
+        point       = * ( int * ) ind_p;  
+        
+        kd_res_free ( set );
+        
+        
       }
-      else
+      else if ( count < 100 )
       {
         testX = origX + ( signC * randC * 85 );
         testY = origY + ( signL * randL * 85 );
         testZ = origZ + ( signR * randR * 50 );
-      }
+        
+        // Extract point from KDTree.
+        set  = kd_nearest3 ( tree, testX, testY, testZ );
+        ind_p = kd_res_item_data ( set );
+        point       = * ( int * ) ind_p;  
+        
+        kd_res_free ( set );
                 
-      // Extract point from KDTree.
-      kdres *set  = kd_nearest3 ( tree, testX, testY, testZ );
-      void *ind_p = kd_res_item_data ( set );
-      point       = * ( int * ) ind_p;  
-          
-      if ( count > 1000000 ) 
+      }
+      
+      if ( mode == 's' || count >= 100 )
+      {
+        // cout << "Not in this file bru. Taking closest point." << endl;
+        // cout << "Col, lon, rad: " << col * con.o80 / con.PI << 
+        //   " " << lon * con.o80 / con.PI << " " << rad << endl;
+        // cout << origX << " " << origY << " " << origZ << endl;
+        
+        // Extract point from KDTree.
+        set  = kd_nearest3 ( tree, origX, origY, origZ );
+        ind_p = kd_res_item_data ( set );
+        point       = * ( int * ) ind_p;  
+        
+        kd_res_free ( set );        
+        
+        c11 = msh.c11[point];
+        c12 = msh.c12[point];
+        c13 = msh.c13[point];
+        c14 = msh.c14[point];
+        c15 = msh.c15[point];
+        c16 = msh.c16[point];
+        c22 = msh.c22[point];
+        c23 = msh.c23[point];
+        c24 = msh.c24[point];
+        c25 = msh.c25[point];
+        c26 = msh.c26[point];
+        c33 = msh.c33[point];
+        c34 = msh.c34[point];
+        c35 = msh.c35[point];
+        c36 = msh.c36[point];
+        c44 = msh.c44[point];
+        c45 = msh.c45[point];
+        c46 = msh.c46[point];
+        c55 = msh.c55[point];
+        c56 = msh.c56[point];
+        c66 = msh.c66[point];    
+        rho = msh.rho[point];    
+        
+        found = true;      
+        break;         
+      }
+                          
+      if ( count >= 100 ) 
       {
         cout << "Looping forever. And ever. " << 
           "Boring! I'm outta here." << endl;
@@ -669,8 +734,11 @@ int Interpolator::recover ( double &testX, double &testY, double &testZ,
         cout << "I suggest you look into 'Interpolater.cpp' and adjust the " <<
           "search limits." << endl;
         
+        cout.precision(15);
         cout << "Col, lon, rad: " << col * con.o80 / con.PI << 
           " " << lon * con.o80 / con.PI << " " << rad << endl;
+        cout << "Col, lon, rad: " << col << 
+          " " << lon  << " " << rad << endl;
         
 #ifdef VISUAL_DEBUG
         myfile.close();
@@ -691,7 +759,13 @@ int Interpolator::recover ( double &testX, double &testY, double &testZ,
   } 
   else 
   { 
+    // if ( count > 0 )
+    //   {
+    //   cout << count << endl;
+    // }
     return 0;
   }
+  
+  kd_res_free ( set );
   
 }  
