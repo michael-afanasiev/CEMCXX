@@ -303,6 +303,9 @@ void Utilities::fixTiny ( double &x, double &y, double &z, double &col,
     lon = con.PIo2 + tinytiny;
   
   if ( lon == con.PI )
+    lon = con.PI - tinytiny;
+  
+  if ( lon == -1 * con.PI )
     lon = con.PI + tinytiny;
   
   if ( lon == 3 * con.PIo2 )

@@ -247,7 +247,6 @@ void Interpolator::interpolate ( Mesh &msh, Model_file &mod, Discontinuity
       if ( (inCrust == false) || 
            ((mod.overwriteCrust == true) && (dis.inCrust == true)) ) 
       {
-        cout << "hi" << endl;
         msh.c11[i] = C;
         msh.c22[i] = A;
         msh.c33[i] = A;
@@ -661,8 +660,7 @@ int Interpolator::recover ( double &testX, double &testY, double &testZ,
         point       = * ( int * ) ind_p;  
         
         kd_res_free ( set );
-        
-        
+                
       }
       else if ( count < 100 )
       {
@@ -681,10 +679,6 @@ int Interpolator::recover ( double &testX, double &testY, double &testZ,
       
       if ( mode == 's' || count >= 100 )
       {
-        // cout << "Not in this file bru. Taking closest point." << endl;
-        // cout << "Col, lon, rad: " << col * con.o80 / con.PI << 
-        //   " " << lon * con.o80 / con.PI << " " << rad << endl;
-        // cout << origX << " " << origY << " " << origZ << endl;
         
         // Extract point from KDTree.
         set  = kd_nearest3 ( tree, origX, origY, origZ );
@@ -715,13 +709,7 @@ int Interpolator::recover ( double &testX, double &testY, double &testZ,
         c56 = msh.c56[point];
         c66 = msh.c66[point];    
         rho = msh.rho[point];    
-        
-        if ( rho < 1 )
-        {
-          cout << rho << " " << rad << endl;
-        }
-        
-        
+                
         found = true;      
         break;         
       }

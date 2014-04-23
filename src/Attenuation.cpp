@@ -1,5 +1,4 @@
 #include <cmath>
-
 #include "classes.hpp"
 
 double Attenuation::QL6 ( double &rad )

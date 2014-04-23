@@ -71,7 +71,9 @@ int main ( int argc, char *argv[] )
     
                              
       utl.xyz2ColLonRadRad ( testX, testY, testZ, col, lon, rad ); 
-      utl.fixTiny          ( testX, testY, testZ, col, lon, rad, skip, mod );          
+      utl.fixTiny          ( testX, testY, testZ, col, lon, rad, skip, mod );  
+      
+      // TODO get rid of the stupid skip parameter.
       skip = 'p';
       
       if ( internalFound[i] == false )
