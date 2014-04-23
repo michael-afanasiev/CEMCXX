@@ -10,7 +10,7 @@ void Discontinuity::read ()
   Model_file mod;
   
   std::string cmd = "./dat/discontinuities";
-  int dum1, dum2;
+  int dum1;
 
   // Read moho depth and crustal parameters.
   mod.populateSES3D ( cmd + "/crust_x_smooth",   dum1, crust_col_deg, 
@@ -20,7 +20,7 @@ void Discontinuity::read ()
   mod.populateSES3D ( cmd + "/crust_vs_smooth",  dum1, crust_vs, 'p' );
   mod.populateSES3D ( cmd + "/crust_dep_smooth", dum1, crust_dp, 'p' );  
 
-  for ( int i=0; i<crust_lon_deg[0].size(); i++ ) {
+  for ( size_t i=0; i<crust_lon_deg[0].size(); i++ ) {
     if ( crust_lon_deg[0][i] > 180. )
       crust_lon_deg[0][i] = crust_lon_deg[0][i] - 360.;      
   }
@@ -42,9 +42,9 @@ void Discontinuity::createKDTreePacked ()
   int l    = 0;
   KDdatCrust = new int [crust_col_rad[0].size()*crust_lon_rad[0].size()]();
     
-  for ( int r=0; r!=crust_col_rad.size(); r++ ) {
-    for ( int i=0; i!=crust_col_rad[r].size(); i++ ) {
-      for ( int j=0; j!=crust_lon_rad[r].size(); j++ ) {
+  for ( size_t r=0; r!=crust_col_rad.size(); r++ ) {
+    for ( size_t i=0; i!=crust_col_rad[r].size(); i++ ) {
+      for ( size_t j=0; j!=crust_lon_rad[r].size(); j++ ) {
     
         KDdatCrust[l] = l;
         kd_insert3 ( crustTree, crust_col_deg[r][i], crust_lon_deg[r][j], 
@@ -67,7 +67,7 @@ void Discontinuity::createKDTreeUnpacked ( )
   KDdatElv = new int [ lonElv.size() ];
 
 #pragma omp parallel for
-  for ( int i=0; i<lonElv.size(); i++ ) 
+  for ( size_t i=0; i<lonElv.size(); i++ ) 
   { 
     KDdatElv[i] = i;
     {   

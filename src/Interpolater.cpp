@@ -76,7 +76,6 @@ void Interpolator::findNodes ( Mesh &msh, Model_file &mod, ofstream &myfile )
       
       // Define local variables.
       double mshColRot, mshLonRot, mshRadRot; // Sph. Coord. in rotated domain.
-      double mshColPys, mshLonPys, mshRadPys; // Sph. Coord. in phsyical domain.
       double xRot,      yRot,      zRot;      // Cart. Coord in rotated domain.
   
       /* Rotate from physical domain ( in exodus file ) to simulation domain
@@ -272,7 +271,6 @@ double Interpolator::taper ( double &col, double &lon, double &rad,
   Constants con;
   Utilities util;
   
-  double tap;
   double dTaper    = 2000.;
   double dTaperRad = 50.;
   
@@ -374,21 +372,16 @@ int Interpolator::recover ( double &testX, double &testY, double &testZ,
   first try. Assume we haven't found it at first.*/
   // std::vector < int > repeater;
   // repeater.reserve ( 100 );
-  bool found  = false;  
-  int  count  = 0;
-  int fallBack = 0;
-  int  nodeNum;
+  bool found   = false;  
+  int  count   = 0;
+  int  nodeNum = 0;
   int  point;
   
 #ifdef VISUAL_DEBUG
   ofstream myfile;
   myfile.open ( "Bary.txt", ios::out );
 #endif
-                
-  // cout << mode << endl;
-  // if ( mode == 's' )
-  //   cout << "MODE" << endl;
-                
+                                
   // Find node closest to point.
   set   = kd_nearest3 ( tree, testX, testY, testZ );
   ind_p = kd_res_item_data ( set );
@@ -402,8 +395,6 @@ int Interpolator::recover ( double &testX, double &testY, double &testZ,
   // Find ColLonRad of original node.
   util.xyz2ColLonRadRad ( msh.xmsh[point], msh.ymsh[point], msh.zmsh[point], 
     colClose, lonClose, radClose );
-
-    // cout << c66.size() << endl;
 
   // Repeat until enclosing tet is found.
   while ( found == false ) {    
@@ -422,7 +413,6 @@ int Interpolator::recover ( double &testX, double &testY, double &testZ,
     }
     
     // Loop over connecting elements (node indices contained in iterator).
-    int nFound = 0;    
     double l1, l2, l3, l4;
     for ( multimap <int, vector <int> > :: iterator it=ext.first; 
       it!=ext.second; ++it ) 

@@ -39,11 +39,11 @@ int main ()
     std::cout << "Extracting." << std::endl;
     
 #pragma omp parallel for
-    for ( int i=0; i<mod.x.size(); i++ )               
+    for ( size_t i=0; i<mod.x.size(); i++ )               
     {
       double c11, c12, c13, c14, c15, c16,c22, c23, c24, c25, c26, c33, c34;
       double c35, c36, c44, c45, c46, c55, c56, c66, rho, testX, testY, testZ;
-      double col, lon, rad, xUse, yUse, zUse;                  
+      double col, lon, rad;
                        
       utl.rotateForward    ( mod.x[i], mod.y[i], mod.z[i], testX, 
                              testY, testZ, mod );

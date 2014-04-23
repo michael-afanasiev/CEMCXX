@@ -11,8 +11,6 @@ void Exodus_file::writeNew ( Mesh &msh )
 {
   
   cout << "creating file." << endl;
-  
-  int *elemConn = new int [msh.num_elem*msh.num_node_per_elem];
     
   int id = ex_create ( "./text.ex2", EX_CLOBBER, &comp_ws, &io_ws );
   
@@ -160,22 +158,12 @@ void Exodus_file::merge ( Region &reg, Model_file &mod )
       dir.append (*j);
       dir.append ("/");
       
-      DIR *dp = opendir ( dir.c_str() );
       vector <string> fnames;
       
       for ( vector <string>::iterator l=radReg.begin(); l!=radReg.end(); ++l )
       {
         fnames.push_back ( dir + *i + "." + *j + "." + *l + ".000.ex2" );
-      }
-      
-      // while ( struct dirent *dirp = readdir ( dp ) )
-      // {
-      //   string test = dirp->d_name;
-      //   if ( test.substr ( test.length() - 1 ) != "." )
-      //   {  
-      //     fnames.push_back ( dir + dirp->d_name );
-      //   }
-      // }
+      }      
                   
       for ( vector <string>::iterator k=fnames.begin(); k!=fnames.end(); ++k ) 
       {                                

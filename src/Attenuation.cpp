@@ -49,11 +49,16 @@ double Attenuation::correct ( std::string &model, double &rad )
   D[1]     = 2.48647256; 
   D[2]     = 0.07372733;
   
-  double Q;
+  double Q = 0;
   
   if ( model == "QL6" )
     Q = QL6 ( rad );
   
+  if ( Q == 0 )
+  {
+    std::cout << "Error in setting Q value." << std::endl;
+    exit (EXIT_FAILURE);
+  }
   freqRef = 1./30.;
   double freqMes = 1./18.;
   

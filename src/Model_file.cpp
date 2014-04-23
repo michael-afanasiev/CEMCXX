@@ -44,7 +44,7 @@ void Model_file::populateSES3D ( string name, int &num_regions,
   
   vector<double> sub;
 
-  int * region;  
+  int *region = 0;  
   int fix_stride;
 
   cout << "Reading: " << name << "\n";
@@ -72,7 +72,8 @@ void Model_file::populateSES3D ( string name, int &num_regions,
     }
     
     // Read number of parameters in 1st region.
-    if ( lineno == 1 ) {
+    if ( lineno == 1 ) 
+    {
       region[regno] = stoi (line);    
       regno++;
     }
@@ -132,18 +133,16 @@ void Model_file::createKDTreeUnpacked ( Mesh &msh )
 
 void Model_file::colLonRad2xyzSES3D ()
 {
-  
-  Utilities util;
       
   /* IMPORTANT NOTE :: the range of k goes to rad.size-1, and col_rad and
   lon_rad don't, because col_rad and lon_rad have already been fixed up for
   their extra coordinate down below in populate radians. Rad hasn't, so it's
   done here. */
   int l = 0; 
-  for ( int r=0; r<col_rad.size(); r++ ) {
-    for ( int i=0; i<col_rad[r].size(); i++ ) {
-      for ( int j=0; j<lon_rad[r].size(); j++ ) {
-        for ( int k=0; k<rad[r].size()-1;     k++ ) {
+  for ( size_t r=0; r<col_rad.size(); r++ ) {
+    for ( size_t i=0; i<col_rad[r].size(); i++ ) {
+      for ( size_t j=0; j<lon_rad[r].size(); j++ ) {
+        for ( size_t k=0; k<rad[r].size()-1;     k++ ) {
         
           x[l] = rad[r][k] * cos ( lon_rad[r][j] ) * sin ( col_rad[r][i] );
           y[l] = rad[r][k] * sin ( lon_rad[r][j] ) * sin ( col_rad[r][i] );
@@ -168,9 +167,9 @@ void Model_file::populateRadiansSES3D ()
   Constants con;
     
   // Compute box ceters and min/max on the fly.
-  for ( int r=0; r<col_deg.size(); r++ ) {
+  for ( size_t r=0; r<col_deg.size(); r++ ) {
   
-    for ( int i=0; i<col_deg[r].size()-1; i++ ) {
+    for ( size_t i=0; i<col_deg[r].size()-1; i++ ) {
       col_deg[r][i] = (col_deg[r][i] + col_deg[r][i+1]) / 2.;
       if ( col_deg[r][i] < colMin ) {
         colMin = col_deg[r][i];
@@ -179,7 +178,7 @@ void Model_file::populateRadiansSES3D ()
       }
     }
     
-    for ( int i=0; i<lon_deg[r].size()-1; i++ ) {
+    for ( size_t i=0; i<lon_deg[r].size()-1; i++ ) {
       
       lon_deg[r][i] = (lon_deg[r][i] + lon_deg[r][i+1]) / 2.;
       if ( lon_deg[r][i] < lonMin ) {
@@ -210,7 +209,7 @@ void Model_file::populateRadiansSES3D ()
                         
     }
      
-    for ( int i=0; i<rad[r].size()-1; i++ ) {
+    for ( size_t i=0; i<rad[r].size()-1; i++ ) {
       rad[r][i] = (rad[r][i] + rad[r][i+1]) / 2.;
       if ( rad[r][i] < radMin ) {
         radMin = rad[r][i];
@@ -223,9 +222,9 @@ void Model_file::populateRadiansSES3D ()
   }
     
 
-  for ( int r=0; r<col_deg.size(); r++ ) {
+  for ( size_t r=0; r<col_deg.size(); r++ ) {
     
-    for ( int i=0; i<col_deg[r].size()-1; i++ ) {
+    for ( size_t i=0; i<col_deg[r].size()-1; i++ ) {
       sub.push_back ( col_deg[r][i] * con.PI / con.o80 );
     }
     
@@ -234,9 +233,9 @@ void Model_file::populateRadiansSES3D ()
     
   }
   
-  for ( int r=0; r<lon_deg.size(); r++ ) {
+  for ( size_t r=0; r<lon_deg.size(); r++ ) {
   
-    for ( int i=0; i<lon_deg[r].size()-1; i++ ) {
+    for ( size_t i=0; i<lon_deg[r].size()-1; i++ ) {
       sub.push_back ( lon_deg[r][i] * con.PI / con.o80 );;
     }
     
@@ -255,9 +254,9 @@ void Model_file::populateRadians ( vector < vector <double> > &deg,
   
   vector <double> sub;
   
-  for ( int r=0; r<deg.size(); r++ ) {
+  for ( size_t r=0; r<deg.size(); r++ ) {
     
-    for ( int i=0; i<deg[r].size()-1; i++ ) {
+    for ( size_t i=0; i<deg[r].size()-1; i++ ) {
       sub.push_back ( deg[r][i] * con.PI / con.o80 );
     }
     
@@ -299,8 +298,8 @@ void Model_file::openUp ( )
     
   if ( intentions == "INTERPOLATE" ) {
     int l = 0;
-    for ( int r=0; r<vsh.size(); r++ ) {
-      for ( int i=0; i<vsh[r].size(); i++ ) {
+    for ( size_t r=0; r<vsh.size(); r++ ) {
+      for ( size_t i=0; i<vsh[r].size(); i++ ) {
       
         if ( input_model_physics == "TTI" ) {
                 
@@ -333,7 +332,7 @@ void Model_file::projectSubspaceSPECFEM ( )
   rho[0].resize(c66.size());
   
   int r = 0;
-  for ( int i=0; i<c66.size(); i++ )
+  for ( size_t i=0; i<c66.size(); i++ )
   {
     vsh[r][i] = sqrt ( c44[i] / rhoUnwrap[i] );
     vsv[r][i] = sqrt ( c55[i] / rhoUnwrap[i] );
@@ -347,12 +346,12 @@ void Model_file::projectSubspaceSES3D ( )
 {
   
   int ll = 0;
-  for ( int r=0; r<col_deg.size(); r++ ) {
+  for ( size_t r=0; r<col_deg.size(); r++ ) {
     
     int l  = 0;    
-    for ( int i=0; i<col_rad[r].size(); i++ ) {
-      for ( int j=0; j<lon_rad[r].size(); j++ ) {
-        for ( int k=0; k<(rad[r].size()-1); k++ ) {
+    for ( size_t i=0; i<col_rad[r].size(); i++ ) {
+      for ( size_t j=0; j<lon_rad[r].size(); j++ ) {
+        for ( size_t k=0; k<(rad[r].size()-1); k++ ) {
           
           if ( input_model_physics == "TTI" ) {
             vsh[r][l] = sqrt (c44[ll] / rhoUnwrap[ll]);
@@ -452,9 +451,9 @@ void Model_file::dePopulateSES3D ( string omf, vector < vector <double > > ou )
   ofstream myfile ( omf, ios::out );
   
   myfile << ou.size() << "\n";
-  for ( int r=0; r<ou.size(); r++ ) {
+  for ( size_t r=0; r<ou.size(); r++ ) {
     myfile << ou[r].size() << "\n";
-    for ( int i=0; i<ou[r].size(); i++ ) {
+    for ( size_t i=0; i<ou[r].size(); i++ ) {
       myfile << ou[r][i] << "\n";
     }
   }
@@ -472,8 +471,7 @@ void Model_file::readSPECFEM3D ()
   ifstream headerFile;
   string   line;
   
-  int      lineNo;
-  int      numCoord;
+  int numCoord = 0;
    
   try
   {
@@ -567,7 +565,7 @@ int Model_file::writeNetCDF ( std::vector <std::vector<double>> &par,
     // Create new 1D array to output data from. Copy from packed regional arrays.
     double *dataOut = new double [totSize];    
     int l = 0;
-    for ( int r=0; r<par.size(); r++ )
+    for ( size_t r=0; r<par.size(); r++ )
     {
       for ( vector <double> :: iterator p=par[r].begin(); p!=par[r].end(); 
         ++p )

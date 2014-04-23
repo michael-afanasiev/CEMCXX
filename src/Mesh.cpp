@@ -117,12 +117,37 @@ void Mesh::populateParams ( )
   
   ier = ex_get_var_names ( exoid, "n", numMshVar, var_names );
     
-  int c11i, c12i, c13i, c14i, c15i, c16i, c22i, c23i, c24i, c25i, c26i, c33i;
-  int c34i, c35i, c36i, c44i, c45i, c46i, c55i, c56i, c66i, rhoi, Q__i, elvi;
-  int du1i, du2i, du3i, sizi;
+  int c11i = 0; 
+  int c12i = 0; 
+  int c13i = 0; 
+  int c14i = 0; 
+  int c15i = 0; 
+  int c16i = 0; 
+  int c22i = 0; 
+  int c23i = 0; 
+  int c24i = 0; 
+  int c25i = 0; 
+  int c26i = 0; 
+  int c33i = 0;
+  int c34i = 0; 
+  int c35i = 0; 
+  int c36i = 0; 
+  int c44i = 0; 
+  int c45i = 0; 
+  int c46i = 0; 
+  int c55i = 0; 
+  int c56i = 0; 
+  int c66i = 0; 
+  int rhoi = 0; 
+  int Q__i = 0; 
+  int elvi = 0;
+  int du1i = 0; 
+  int du2i = 0; 
+  int du3i = 0; 
+  int sizi = 0;
   
-  for ( int i=0; i<numMshVar; i++ ) {
-    
+  for ( int i=0; i<numMshVar; i++ ) 
+  {  
     if (( strcmp ( var_names[i], "c11" ) ) == 0 )
       c11i = i + 1;
     if (( strcmp ( var_names[i], "c12" ) ) == 0 )
@@ -178,8 +203,7 @@ void Mesh::populateParams ( )
     if (( strcmp ( var_names[i], "du3" ) ) == 0 )
       du3i = i + 1;
     if (( strcmp ( var_names[i], "siz" ) ) == 0 )
-      sizi = i + 1;
-    
+      sizi = i + 1;    
   }  
   
   ier = ex_get_nodal_var ( exoid, 1, c11i, num_nodes, c11 );
@@ -334,7 +358,6 @@ void Mesh::getElementConnectivity ( int exoid, Model_file &mod )
 
       // Define local variables.
       double mshColRot, mshLonRot, mshRadRot; // Sph. Coord. in rotated domain.
-      double mshColPys, mshLonPys, mshRadPys; // Sph. Coord. in phsyical domain.
       double xRot,      yRot,      zRot;      // Cart. Coord in rotated domain.
       
       int ind = elemConn[j]-1;
@@ -347,8 +370,6 @@ void Mesh::getElementConnectivity ( int exoid, Model_file &mod )
       {
         mshLonRot += 360;   
       }
-    
-      double tiny = -0.5;
     
       outCount++;
       if ( (mshColRot >= mod.colMin && mshColRot <= mod.colMax) &&

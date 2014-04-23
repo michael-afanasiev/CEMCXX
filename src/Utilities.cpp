@@ -55,12 +55,6 @@ void Utilities::checkRegionExtr ( double x, double y, double z, short r,
   double col, lon, rad;
   
   utl.xyz2ColLonRadDeg ( x, y, z, col, lon, rad );
-  if ( x == 0 && y == 0 )
-  {
-    cout << col << " " << lon << " " << rad << endl;
-  }
-
-  bool fixed = false;
   
   if ( r == 1 )
   {
@@ -179,12 +173,21 @@ void Utilities::checkRegionExtr ( double x, double y, double z, short r,
   {
     if ( rad > con.innerCoreRad )
     {
-      rad = con.innerCoreRad - 1;
+      rad = con.innerCoreRad - 5;
     }
-    if ( abs(rad-con.innerCoreRad) <= con.tiny )
+    if ( rad < 0 )
     {
-      rad = con.innerCoreRad - 1;
+      rad = 5;
     }
+    if ( abs(rad-con.innerCoreRad) <= con.bigtiny )
+    {
+      rad = con.innerCoreRad - 5;
+    }
+    if ( abs (rad) <= con.bigtiny )
+    {
+      rad = 5;      
+    }
+    
   }
   
   utl.colLonRadDeg2xyz ( col, lon, rad, xUse, yUse, zUse );
@@ -225,6 +228,12 @@ void Utilities::xyz2ColLonRadDeg ( double &x,   double &y,   double &z,
   
   Constants con;
   
+  if ( rad == 0 )
+    rad = con.tiny;
+  if ( z == 0 )
+    z = con.tiny;
+  
+  
   rad = sqrt  ( x * x + y * y + z * z );
   col = acos  ( z / rad );
   lon = atan2 ( y, x );
@@ -242,6 +251,11 @@ void Utilities::xyz2ColLonRadRad ( double &x,   double &y,   double &z,
 {
   
   Constants con;
+  
+  if ( rad == 0 )
+    rad = con.tiny;
+  if ( z == 0 )
+    z = con.tiny;
   
   rad = sqrt  ( x * x + y * y + z * z );
   col = acos  ( z / rad );
@@ -278,6 +292,9 @@ void Utilities::fixTiny ( double &x, double &y, double &z, double &col,
     
   double tinytiny = con.oneDegRad / 10.;
   
+  if ( rad == 0 )
+    rad = 5;
+    
   if ( abs (lon) == 0. )
   {
     lon = tinytiny;
@@ -290,6 +307,13 @@ void Utilities::fixTiny ( double &x, double &y, double &z, double &col,
   
   if ( lon == 3 * con.PIo2 )
     lon = 3 * con.PIo2 + tinytiny;
+  
+  if ( col == 0 )
+    col = tinytiny;
+  if ( col == con.PIo2 )
+    col = con.PIo2 + tinytiny;
+  if ( col == con.PI )
+    col = con.PI - tinytiny;
   
   colLonRadRad2xyz ( col, lon, rad, x, y, z );
   
@@ -332,14 +356,7 @@ void Utilities::inquireRotate ( Model_file &mod )
     std::cout << "Rotation found. Rotating model " << mod.rotAng << 
       " degrees about ( " << x << ", " << y << ", " << z << " )." << std::endl;
   }
-  
-  double colMin = 180.;
-  double colMax = 0.;
-  double lonMin = 360.;
-  double lonMax = -360.;
-  double radMin = 6371.;
-  double radMax = 0.;
-  
+    
   double col, lon, rad;
   
   mod.forRot11 = cos(a) + (x * x) * (1 - cos(a));
@@ -355,7 +372,7 @@ void Utilities::inquireRotate ( Model_file &mod )
   mod.forRot23 = (-1) * mod.forRot23;
   mod.forRot31 = (-1) * mod.forRot31; 
   
-  for ( int i=0; i<mod.x.size(); i++ ) 
+  for ( size_t i=0; i<mod.x.size(); i++ ) 
   {
 
     double xNew = mod.forRot11 * mod.x[i] + mod.forRot21 * mod.y[i] + 
@@ -387,9 +404,9 @@ void Utilities::inquireRotate ( Model_file &mod )
     if ( (lon >=  -91.) && (lon <=   1.) )
       mod.lonReg4 = true;
     
-    if ( rad <= 1221. && rad >= 0.    )
+    if ( rad <= 1222. && rad >= 0.    )
       mod.radReg1 = true;
-    if ( rad <= 3480. && rad >= 1221. )
+    if ( rad <= 3480. && rad >= 1222  )
       mod.radReg2 = true;
     if ( rad <= 5371. && rad >= 3480. )
       mod.radReg3 = true;
