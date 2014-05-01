@@ -3,7 +3,6 @@
 
 #include "kdtree.h"
 #include "classes.hpp"
-
 void Discontinuity::read ()
 {
   
@@ -41,6 +40,12 @@ void Discontinuity::createKDTreePacked ()
 
   int l    = 0;
   KDdatCrust = new int [crust_col_rad[0].size()*crust_lon_rad[0].size()]();
+  crust_col_deg_unpack.reserve ( crust_col_rad[0].size()*
+    crust_lon_rad[0].size() );
+  crust_lon_deg_unpack.reserve ( crust_col_rad[0].size()*
+    crust_lon_rad[0].size() );
+  
+      
     
   for ( size_t r=0; r!=crust_col_rad.size(); r++ ) {
     for ( size_t i=0; i!=crust_col_rad[r].size(); i++ ) {
@@ -49,6 +54,8 @@ void Discontinuity::createKDTreePacked ()
         KDdatCrust[l] = l;
         kd_insert3 ( crustTree, crust_col_deg[r][i], crust_lon_deg[r][j], 
           con.R_EARTH, &KDdatCrust[l] );
+        crust_col_deg_unpack[l] = crust_col_deg[r][i];
+        crust_lon_deg_unpack[l] = crust_lon_deg[r][j];
         l++;
     
       }
@@ -84,11 +91,13 @@ void Discontinuity::lookCrust ( Mesh &msh, double &mshCol, double &mshLon,
   Constants con;
   double rho, vpv;
   
-  if ( mshRad > (con.R_EARTH - 100) ) {          
-
+  if ( mshRad > (con.R_EARTH - 100) ) 
+  {          
     kdres *set = kd_nearest3      ( crustTree, mshCol, mshLon, con.R_EARTH );         
     void *ind  = kd_res_item_data ( set );
     int  point = * ( int * ) ind;
+    
+    kd_res_free (set);
     
     /* The moho is defined in a weird way ( depth from sea level if in the 
     ocean, and depth from elevation if in the crust). First, convert crust 
@@ -104,10 +113,17 @@ void Discontinuity::lookCrust ( Mesh &msh, double &mshCol, double &mshLon,
       ref = con.R_EARTH + msh.elv[mshInd] / 1000.;
     }
     
-    if ( mshRad >= (ref - crust_dp[0][point]) ) 
+    // Do a bilinear interpolation on the Depth.
+    // TODO TEST THIS WITHOUT INTERPOLATION AND LOOK AT THE RESULTS IN VISIT.
+    double interpDep;
+    double interpVs;
+    getCrustDepth ( mshCol, mshLon, point, interpDep, "dep" );
+    getCrustDepth ( mshCol, mshLon, point, interpVs,  "vel" );
+    
+    if ( mshRad >= (ref - interpDep) ) 
     {
-      double crust_vsv = crust_vs[0][point] - con.aniCorrection;
-      double crust_vsh = crust_vs[0][point];
+      double crust_vsv = interpVs - con.aniCorrection;
+      double crust_vsh = interpVs;
       
       // Scaling from isotropic vs to rho (Fichtner, multiscale)
       rho = 0.2277 * crust_vsh + 2.016;
@@ -135,6 +151,178 @@ void Discontinuity::lookCrust ( Mesh &msh, double &mshCol, double &mshLon,
       msh.rho[mshInd] = rho;  
     }
   }    
+  
+}
+
+void Discontinuity::getCrustDepth ( double &mshCol, double &mshLon, int &point,
+                                    double &par, std::string mode )
+{
+  
+  Constants con;
+  
+  // Stride of one degree in crust07.
+  int degStri=2;
+  
+  // Initializations.
+  int lonDir = 0; 
+  int colDir = 0;
+  
+  // Create vector to hold 4 nodes of smoothing square.
+  std::vector <int> nodes;
+  nodes.reserve (4);
+    
+  // Determine on which side of the requested col. the closest point is.
+  if ( mshCol > crust_col_deg_unpack[point] )
+    colDir = 1;  
+  if ( mshCol <= crust_col_deg_unpack[point] )
+    colDir = -1;
+  
+  // Determine on which side of the requested lon. the closest point is.  
+  if ( mshLon > crust_lon_deg_unpack[point] )
+    lonDir = 1;
+  if ( mshLon <= crust_lon_deg_unpack[point] )
+    lonDir = -1;
+
+  // Create the KDTree requests for four points of the interpolating square.
+  double col1 = crust_col_deg_unpack[point];
+  double col2 = crust_col_deg_unpack[point] + colDir * degStri;
+  double lon1 = crust_lon_deg_unpack[point];
+  double lon2 = crust_lon_deg_unpack[point] + lonDir * degStri;
+  
+  // Fix col. wrapping.
+  if ( col2 > 180 )
+    col2 = 180 - ( col1 - 180 );
+  if ( col2 < 0 )
+    col2 = abs (col2);
+  
+  // Fix lon. wrapping.
+  if ( lon2 > 180 )
+    lon2 = lon2 - 360.;
+  if ( lon2 < -180 )
+    lon2 = lon2 + 360.;    
+  
+  // Find the four points of the rectangle in spherical space.
+  kdres *set1 = kd_nearest3 ( crustTree, col1, lon1, con.R_EARTH );
+  kdres *set2 = kd_nearest3 ( crustTree, col1, lon2, con.R_EARTH );
+  kdres *set3 = kd_nearest3 ( crustTree, col2, lon1, con.R_EARTH );
+  kdres *set4 = kd_nearest3 ( crustTree, col2, lon2, con.R_EARTH );
+  
+  // Extract the indices from the result structures.
+  void *ind1 = kd_res_item_data ( set1 ); 
+  void *ind2 = kd_res_item_data ( set2 );
+  void *ind3 = kd_res_item_data ( set3 );
+  void *ind4 = kd_res_item_data ( set4 );
+  
+  // Build the square based on the four possible quadrants.
+  if ( colDir == 1 && lonDir == (-1) )
+  {
+    nodes[0] = * ( int * ) ind2;
+    nodes[1] = * ( int * ) ind1;
+    nodes[2] = * ( int * ) ind3;
+    nodes[3] = * ( int * ) ind4;
+  } 
+  else if ( colDir == 1 && lonDir == 1 )
+  {
+    nodes[0] = * ( int * ) ind1;
+    nodes[1] = * ( int * ) ind2;
+    nodes[2] = * ( int * ) ind4;
+    nodes[3] = * ( int * ) ind3;  
+  }
+  else if ( colDir == (-1) && lonDir == 1 )
+  {
+    nodes[0] = * ( int * ) ind3;
+    nodes[1] = * ( int * ) ind4;
+    nodes[2] = * ( int * ) ind2;
+    nodes[3] = * ( int * ) ind1;
+  }
+  else if ( colDir == (-1) && lonDir == (-1) )
+  {
+    nodes[0] = * ( int * ) ind4;
+    nodes[1] = * ( int * ) ind3;
+    nodes[2] = * ( int * ) ind1;
+    nodes[3] = * ( int * ) ind2;
+  }            
+  
+  // Deallocate memory for results.
+  kd_res_free ( set1 );
+  kd_res_free ( set2 );
+  kd_res_free ( set3 );
+  kd_res_free ( set4 );
+  
+  // Conditionally build the weights depending on the quandrants selected above.
+  double t = 0;
+  double u = 0;
+  if ( colDir == 1 )
+    t = ( mshCol - col1 ) / ( col2 - col1 );
+  if ( colDir == (-1) )                   
+    t = ( mshCol - col2 ) / ( col1 - col2 );
+  if ( lonDir == 1 )
+    u = ( mshLon - lon1 ) / ( lon2 - lon1 );
+  if ( lonDir == (-1) )
+    u = ( mshLon - lon2 ) / ( lon1 - lon2 );
+    
+  /* Get the bilinearly interpolated value. Inspired by Numerical recipes,
+  but with a swwitched axis. */
+  if ( mode == "dep" )
+  {
+    par = (1 - t) * (1 - u) * crust_dp[0][nodes[0]] +
+      t * (1 - u) * crust_dp[0][nodes[3]] +
+      t * u * crust_dp[0][nodes[2]] +
+      (1 - t) * u * crust_dp[0][nodes[1]];  
+  }
+  
+  if ( mode == "vel" )
+  {
+    par = (1 - t) * (1 - u) * crust_vs[0][nodes[0]] +
+      t * (1 - u) * crust_vs[0][nodes[3]] +
+      t * u * crust_vs[0][nodes[2]] +
+      (1 - t) * u * crust_vs[0][nodes[1]];  
+  }
+  
+
+#ifdef VISUAL_DEBUG
+  std::ofstream myfile;
+  myfile.open ( "surfInterp.txt", std::ios::out );
+  
+  myfile << crust_col_deg_unpack[nodes[0]] << " " 
+    << crust_lon_deg_unpack[nodes[0]] << " " << crust_dp[0][nodes[0]] 
+    << std::endl;
+      
+  myfile << crust_col_deg_unpack[nodes[1]] << " " 
+    << crust_lon_deg_unpack[nodes[1]] << " " << crust_dp[0][nodes[1]] 
+    << std::endl;
+        
+  myfile << crust_col_deg_unpack[nodes[2]] << " " 
+    << crust_lon_deg_unpack[nodes[2]] << " " << crust_dp[0][nodes[2]] 
+    << std::endl;
+      
+  myfile << crust_col_deg_unpack[nodes[3]] << " " 
+    << crust_lon_deg_unpack[nodes[3]] << " " << crust_dp[0][nodes[3]] 
+    << std::endl;
+  
+  myfile << mshCol << " " 
+    << mshLon << " " << dep
+    << std::endl;
+  
+  std::cout << colDir << " " << lonDir << std::endl;
+  std::cout << mshCol << " " << col1 << " " << col2 << " " << std::endl;
+  std::cout << mshLon << " " << lon1 << " " << lon2 << " " << std::endl;  
+  std::cout << t << " " << u << std::endl;
+  std::cout << crust_dp[0][nodes[0]] << " " << crust_dp[0][nodes[1]] << " " 
+    << crust_dp[0][nodes[2]] << " " << crust_dp[0][nodes[3]] << std::endl;
+  std::cout << dep << std::endl;
+  
+  myfile.close();
+  std::cin.get();     
+  
+  std::cout << colDir << " " << lonDir << std::endl;
+  std::cout << mshCol << " " << col1 << " " << col2 << " " << std::endl;
+  std::cout << mshLon << " " << lon1 << " " << lon2 << " " << std::endl;  
+  std::cout << t << " " << u << std::endl;
+  std::cout << crust_dp[0][nodes[0]] << " " << crust_dp[0][nodes[1]] << " " 
+    << crust_dp[0][nodes[2]] << " " << crust_dp[0][nodes[3]] << std::endl;
+  std::cout << dep << std::endl;
+#endif
   
 }
 

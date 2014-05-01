@@ -11,7 +11,7 @@ int main ()
   Utilities     utl;
   Discontinuity dis;
   
-  std::cout << "Begin model building.\n";  
+  std::cout << "Begin model building." std::endl;  
       
   // Read parameter file.
   drv.initialize ( mod, dis, utl, exo, reg );  
@@ -20,7 +20,7 @@ int main ()
   std::cout << "\n----- Interpolating -----\n";
   std::cout << "\n";
   
-  dis.createKDTreePacked   ( );
+  dis.createKDTreePacked ( );
   
   for ( std::vector < Exodus_file > :: 
     iterator exoFile=reg.regionsExo.begin();

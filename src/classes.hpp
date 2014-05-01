@@ -220,6 +220,9 @@ public:
   std::vector <std::vector <double> > crust_vs;
   std::vector <std::vector <double> > crust_dp;
   
+  std::vector <double> crust_col_deg_unpack;
+  std::vector <double> crust_lon_deg_unpack;
+  
   std::vector <double> colElv;
   std::vector <double> lonElv;
   std::vector <double> elv;
@@ -239,6 +242,9 @@ public:
                             double &mshRad, int &mshInd, bool &checkCrust );
   void lookTopo             ( Mesh &msh, double &mshCol, double &mshLon, 
                               double &mshRad, int &mshInd );
+                              
+private:
+  void getCrustDepth ( double &, double &, int &, double &, std::string );
 
 };
 

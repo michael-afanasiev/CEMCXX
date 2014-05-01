@@ -53,8 +53,6 @@ void Exodus_file::writeNew ( Mesh &msh )
   if ( ier == 0 )
     cout << "New exodus file closed succesfully" << endl;
   
-  // exit ( EXIT_SUCCESS );
-  
 }
 
 void Exodus_file::openFile ( string fname ) 
@@ -102,6 +100,9 @@ void Exodus_file::merge ( Region &reg, Model_file &mod )
     if ( mod.intentions == "CRUST" )
     {
       mod.radMin = 6272;
+      mod.radReg9 = true;
+      mod.radReg8 = true;
+      mod.radReg7 = true;
     } 
     // else
     // {

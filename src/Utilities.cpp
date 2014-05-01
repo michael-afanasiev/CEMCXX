@@ -428,9 +428,16 @@ void Utilities::inquireRotate ( Model_file &mod )
   
   }
   
+  /* Allow for the special case of wrapping along the -180/180 on the lon. axis.
+  This is unnecessary if all 4 regions are selected. */
+  
   if ( mod.lonReg2 == true && mod.lonReg3 == true )
   {
     mod.wrapAround = true;
+  } else if  ( mod.lonReg1 == true && mod.lonReg2 == true 
+            && mod.lonReg3 == true && mod.lonReg4 == true )
+  {
+    mod.wrapAround = false;
   }
     
   a             = ( -1 ) * mod.rotRad;
