@@ -11,7 +11,7 @@ int main ()
   Utilities     utl;
   Discontinuity dis;
   
-  std::cout << "Begin model building." std::endl;  
+  std::cout << "Begin model building." << std::endl;  
       
   // Read parameter file.
   drv.initialize ( mod, dis, utl, exo, reg );  

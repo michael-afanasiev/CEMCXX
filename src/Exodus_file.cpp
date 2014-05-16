@@ -97,7 +97,7 @@ void Exodus_file::merge ( Region &reg, Model_file &mod )
     mod.lonReg3 = true;
     mod.lonReg4 = true;
     
-    if ( mod.intentions == "CRUST" )
+    if ( mod.intentions == "CRUST" || mod.intentions == "TOPOGRAPHY" )
     {
       mod.radMin = 6272;
       mod.radReg9 = true;

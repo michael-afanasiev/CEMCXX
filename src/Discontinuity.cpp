@@ -149,7 +149,12 @@ void Discontinuity::lookCrust ( Mesh &msh, double &mshCol, double &mshLon,
       msh.c55[mshInd] = L;
       msh.c66[mshInd] = L;                
       msh.rho[mshInd] = rho;  
+      std::cout << interpDep << " " << mshRad << " " << checkCrust << std::endl;
+      std::cin.get();
+      
     }
+    
+    
   }    
   
 }

@@ -166,7 +166,7 @@ void Model_file::populateRadiansSES3D ()
   
   Constants con;
     
-  // Compute box ceters and min/max on the fly.
+  // Compute box ceters and min/max on the fly.  
   for ( size_t r=0; r<col_deg.size(); r++ ) {
   
     for ( size_t i=0; i<col_deg[r].size()-1; i++ ) {
@@ -375,9 +375,9 @@ void Model_file::readSES3D ()
   string imd = input_model_directory;
       
   // Generic -- we of course always need 3D coordinates.
-  populateSES3D ( imd + "block_m_x", num_regions, col_deg, 'c' );
-  populateSES3D ( imd + "block_m_y", num_regions, lon_deg, 'c' );
-  populateSES3D ( imd + "block_m_z", num_regions, rad,     'c' );
+  populateSES3D ( imd + "block_x", num_regions, col_deg, 'c' );
+  populateSES3D ( imd + "block_y", num_regions, lon_deg, 'c' );
+  populateSES3D ( imd + "block_z", num_regions, rad,     'c' );
   
   // Options for specific physics systems.  
   if ( intentions == "INTERPOLATE" ) {
