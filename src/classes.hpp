@@ -238,8 +238,12 @@ public:
   void createKDTreeUnpacked ( );
   void deallocate           ( );
   void readTopography       ( );
+  void smoothCosine         ( double &crustThick, double &centerDep, 
+                              double &rad, double &downTap, double &upTap, 
+                              bool &smoothTrue );
   void lookCrust            ( Mesh &msh, double &mshCol, double &mshLon, 
-                            double &mshRad, int &mshInd, bool &checkCrust );
+                            double &mshRad, int &mshInd, bool &checkCrust,
+                            bool &smoothCrust, double &upTap, double &downTap );
   void lookTopo             ( Mesh &msh, double &mshCol, double &mshLon, 
                               double &mshRad, int &mshInd );
                               

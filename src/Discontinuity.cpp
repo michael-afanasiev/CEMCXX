@@ -85,7 +85,9 @@ void Discontinuity::createKDTreeUnpacked ( )
 }
 
 void Discontinuity::lookCrust ( Mesh &msh, double &mshCol, double &mshLon, 
-                                double &mshRad, int &mshInd, bool &checkCrust )
+                                double &mshRad, int &mshInd, bool &checkCrust,
+                                bool &smoothCrust, double &upTap, 
+                                double &downTap )
 {
   
   Constants con;
@@ -120,6 +122,23 @@ void Discontinuity::lookCrust ( Mesh &msh, double &mshCol, double &mshLon,
     getCrustDepth ( mshCol, mshLon, point, interpDep, "dep" );
     getCrustDepth ( mshCol, mshLon, point, interpVs,  "vel" );
     
+
+    /* Here get crustal thickness for tapering purposes (differs if we're in)
+    oceanic of continental crust. */
+    double crustThick = 0.;
+    if ( msh.elv[mshInd] <= 0. )
+    {
+      crustThick = interpDep + ( msh.elv[mshInd] );
+    }
+    else
+    {
+      crustThick = interpDep;
+    }
+    
+    smoothCrust = false;
+    smoothCosine ( crustThick, interpDep, mshRad, downTap, upTap, smoothCrust );
+    
+    
     if ( mshRad >= (ref - interpDep) ) 
     {
       double crust_vsv = interpVs - con.aniCorrection;
@@ -148,12 +167,8 @@ void Discontinuity::lookCrust ( Mesh &msh, double &mshCol, double &mshLon,
       msh.c44[mshInd] = N;
       msh.c55[mshInd] = L;
       msh.c66[mshInd] = L;                
-      msh.rho[mshInd] = rho;  
-      std::cout << interpDep << " " << mshRad << " " << checkCrust << std::endl;
-      std::cin.get();
-      
+      msh.rho[mshInd] = rho;        
     }
-    
     
   }    
   
@@ -198,7 +213,7 @@ void Discontinuity::getCrustDepth ( double &mshCol, double &mshLon, int &point,
   if ( col2 > 180 )
     col2 = 180 - ( col1 - 180 );
   if ( col2 < 0 )
-    col2 = abs (col2);
+    col2 = 0;
   
   // Fix lon. wrapping.
   if ( lon2 > 180 )
@@ -275,7 +290,7 @@ void Discontinuity::getCrustDepth ( double &mshCol, double &mshLon, int &point,
       t * u * crust_dp[0][nodes[2]] +
       (1 - t) * u * crust_dp[0][nodes[1]];  
   }
-  
+    
   if ( mode == "vel" )
   {
     par = (1 - t) * (1 - u) * crust_vs[0][nodes[0]] +
@@ -329,6 +344,52 @@ void Discontinuity::getCrustDepth ( double &mshCol, double &mshLon, int &point,
   std::cout << dep << std::endl;
 #endif
   
+}
+
+void Discontinuity::smoothCosine ( double &crustThick, double &centerDep, 
+                                   double &rad, double &downTap, 
+                                   double &upTap, bool &smoothTrue )
+{
+  
+  Constants con;
+  
+  smoothTrue           = false;
+  double maxSmooth     = 15.;
+  double minSmooth     = 3.;
+  double smoothPercent = 0.15;
+
+  /* Smooth at most over smoothPercent of the crust. If we're below the min
+  or above the max, don't smooth any more/less */
+  double smoothDist = smoothPercent * crustThick;
+  if ( smoothDist < minSmooth )
+    smoothDist = minSmooth;
+  if ( smoothDist > maxSmooth )
+    smoothDist = maxSmooth;
+  
+  double disconRad = con.R_EARTH - centerDep;
+  if ( rad <= disconRad + (smoothDist / 2.) &&
+       rad >= disconRad - (smoothDist / 2.) )
+  {
+    double length  = rad - (disconRad - (smoothDist / 2.));
+    double downTap = (1/2.) * (cos ( con.PI * length / smoothDist ) + 1);
+    double upTap   = 1 - downTap;
+    
+    smoothTrue = true;
+    // std::cout << upTap << " " << downTap << " " << "hi" << std::endl;
+    
+    if ( upTap < 0. || upTap > 1. )
+    {
+      std::cout << "Error in discontinuity smoothing" << std::endl;
+      exit (EXIT_FAILURE);
+    }
+    if ( downTap < 0. || downTap > 1. )
+    {
+      std::cout << "Error in discontinuity smoothing" << std::endl;
+      exit (EXIT_FAILURE);
+    }
+          
+  }
+    
 }
 
 void Discontinuity::lookTopo ( Mesh &msh, double &mshCol, double &mshLon, 
