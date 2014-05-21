@@ -123,7 +123,7 @@ void setupRefineFile ( std::ofstream &myfile, std::string exoName,
 {
   
   std::string fRefineName = "./dat/refine/Refine";
-  fRefineName.append ( std::to_string(numRefine) );
+  fRefineName.append ( std::to_string(static_cast<long long>(numRefine)) );
   fRefineName.append ( ".txt" );
   
   myfile.open ( fRefineName, std::ios::out );    

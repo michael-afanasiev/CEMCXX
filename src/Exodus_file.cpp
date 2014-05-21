@@ -161,9 +161,9 @@ void Exodus_file::merge ( Region &reg, Model_file &mod )
       
       vector <string> fnames;
       
-      for ( vector <string>::iterator l=radReg.begin(); l!=radReg.end(); ++l )
+      for ( vector <string>::iterator ll=radReg.begin(); ll!=radReg.end(); ++ll )
       {
-        fnames.push_back ( dir + *i + "." + *j + "." + *l + ".000.ex2" );
+        fnames.push_back ( dir + *i + "." + *j + "." + *ll + ".000.ex2" );
       }      
                   
       for ( vector <string>::iterator k=fnames.begin(); k!=fnames.end(); ++k ) 

@@ -617,8 +617,8 @@ void Model_file::getSpecFileName ( int &regC, int &iProc )
   ssReg << std::setw(2) << std::setfill('0');
   ssPrc << std::setw(4) << std::setfill('0');
         
-  ssReg << std::to_string (regC+1);
-  ssPrc << std::to_string (iProc);      
+  ssReg << std::to_string (static_cast<long long>(regC+1));
+  ssPrc << std::to_string (static_cast<long long>(iProc));      
         
   specFileName = "./cemRequest/xyz_reg";
   specFileName.append (ssReg.str());
