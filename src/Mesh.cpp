@@ -487,6 +487,7 @@ void Mesh::getConnectivity ( int exoid )
 void Mesh::deallocateMesh ( Model_file &mod )
 {
   
+  cout << "Debug 1" << endl;
   delete [] xmsh;
   delete [] ymsh;
   delete [] zmsh;
@@ -519,11 +520,14 @@ void Mesh::deallocateMesh ( Model_file &mod )
   delete [] du2;
   delete [] du3;
   delete [] siz;
-  
+ 
+  cout << "Debug 2" << endl;
+
   if ( mod.intentions == "EXTRACT" )
   {    
     delete [] KDdat;
     kd_free ( tree );  
   }
-    
+ 
+  cout << "Debug 3" << endl;
 }

@@ -58,7 +58,7 @@ void Exodus_file::writeNew ( Mesh &msh )
 void Exodus_file::openFile ( string fname ) 
 {
     
-  cout << "Opening exodus file: " << fname << "\n";
+  cout << "Opening exodus file: " << fname << "\n" << flush;
         
   idexo = ex_open ( fname.c_str(), EX_WRITE, &comp_ws, &io_ws, &vers ); 
   
@@ -74,6 +74,8 @@ void Exodus_file::closeFile ()
   
   ier = ex_close ( idexo );
   
+  std::cout << "DEBUG -- CLOSING" << std::endl;
+
   if (ier == 0) {
     std::cout << "File closed succesfully. \n";
   } else {
@@ -81,6 +83,7 @@ void Exodus_file::closeFile ()
     exit (EXIT_FAILURE);  
   }
   
+  std::cout << "DEBUG -- DONE_CLOSING " << ier << std::endl;
 }
 
 void Exodus_file::merge ( Region &reg, Model_file &mod ) 
@@ -137,12 +140,12 @@ void Exodus_file::merge ( Region &reg, Model_file &mod )
     radReg.push_back ( "rad5701-5971" );  
   if ( mod.radReg6 == true )
     radReg.push_back ( "rad5971-6271" );           
-  if ( mod.radReg7 == true )
-    radReg.push_back ( "rad6271-6319" );            
-  if ( mod.radReg8 == true )
-    radReg.push_back ( "rad6319-6351" );  
-  if ( mod.radReg9 == true )
-    radReg.push_back ( "rad6351-6371" );
+  if ( mod.radReg7 == true || mod.radReg8 == true || mod.radReg9 == true )
+    radReg.push_back ( "rad6271-6371" );            
+//  if ( mod.radReg8 == true )
+//    radReg.push_back ( "rad6271-6371" );  
+//  if ( mod.radReg9 == true )
+//    radReg.push_back ( "rad6271-6371" );
     
   int l = 0;
   Exodus_file currentExo;
@@ -154,10 +157,10 @@ void Exodus_file::merge ( Region &reg, Model_file &mod )
       string dir  = mod.mesh_directory;
       string call = mod.mesh_directory;
       
-      dir.append (*i);
-      dir.append (".");
-      dir.append (*j);
-      dir.append ("/");
+//      dir.append (*i);
+//      dir.append (".");
+//     dir.append (*j);
+//      dir.append ("/");
       
       vector <string> fnames;
       

@@ -23,7 +23,7 @@ int main ()
   dis.readTopography       ( );  
   dis.createKDTreeUnpacked ( );
       
-  std::cout << "\n----- Interpolating Crust -----\n";
+  std::cout << "\n----- Interpolating Topography -----\n";
   std::cout << "\n";
     
   for ( std::vector < Exodus_file > :: 

@@ -74,12 +74,14 @@ int main ()
         mod.c66[i]       = c66;            
         mod.rhoUnwrap[i] = rho;
       }                          
-    }        
+    }
+
+    std::cout << "Done with this file." << std::endl;
 
     msh.deallocateMesh   ( mod );
-    exoFile -> closeFile ( );                 
-  }
-  
+    exoFile -> closeFile ( );                
+
+  } 
   mod.projectSubspaceSES3D ( );
   mod.writeSES3D           ( );       
   
