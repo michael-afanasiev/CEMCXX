@@ -87,7 +87,7 @@ void Discontinuity::createKDTreeUnpacked ( )
 void Discontinuity::lookCrust ( Mesh &msh, double &mshCol, double &mshLon, 
                                 double &mshRad, int &mshInd, bool &checkCrust,
                                 bool &smoothCrust, double &upTap, 
-                                double &downTap )
+                                double &downTap, Model_file &mod )
 {
   
   Constants con;
@@ -104,7 +104,7 @@ void Discontinuity::lookCrust ( Mesh &msh, double &mshCol, double &mshLon,
     /* The moho is defined in a weird way ( depth from sea level if in the 
     ocean, and depth from elevation if in the crust). First, convert crust 
     elevation to km, and then decided whether we're taking the sea level or
-    or crust as reference */
+    or crustial surface as reference */
     double ref;
     if ( msh.elv[mshInd] <= 0. )
     {
@@ -116,7 +116,6 @@ void Discontinuity::lookCrust ( Mesh &msh, double &mshCol, double &mshLon,
     }
     
     // Do a bilinear interpolation on the Depth.
-    // TODO TEST THIS WITHOUT INTERPOLATION AND LOOK AT THE RESULTS IN VISIT.
     double interpDep;
     double interpVs;
     getCrustDepth ( mshCol, mshLon, point, interpDep, "dep" );
@@ -124,7 +123,8 @@ void Discontinuity::lookCrust ( Mesh &msh, double &mshCol, double &mshLon,
     
 
     /* Here get crustal thickness for tapering purposes (differs if we're in)
-    oceanic of continental crust. */
+    oceanic of continental crust. This is the thickness of the crust, minus an 
+    ocean layer. */
     double crustThick = 0.;
     if ( msh.elv[mshInd] <= 0. )
     {
@@ -135,11 +135,13 @@ void Discontinuity::lookCrust ( Mesh &msh, double &mshCol, double &mshLon,
       crustThick = interpDep;
     }
     
+    /* Figure out whether we need to smooth the crust */
     smoothCrust = false;
     smoothCosine ( crustThick, interpDep, mshRad, downTap, upTap, smoothCrust );
     
-    
-    if ( mshRad >= (ref - interpDep) ) 
+    /* If we're in the crust */
+    // This used to say if mshRad >= (ref - interpDep) as well.
+    if ( mod.intentions == "CRUST" ) 
     {
       double crust_vsv = interpVs - con.aniCorrection;
       double crust_vsh = interpVs;
@@ -158,18 +160,22 @@ void Discontinuity::lookCrust ( Mesh &msh, double &mshCol, double &mshLon,
       double F = A - 2 * L;
   
       checkCrust      = true;
-      msh.c11[mshInd] = A;
-      msh.c22[mshInd] = A;
-      msh.c33[mshInd] = A;        
-      msh.c12[mshInd] = F;
-      msh.c13[mshInd] = F;
-      msh.c23[mshInd] = S;
-      msh.c44[mshInd] = N;
-      msh.c55[mshInd] = L;
-      msh.c66[mshInd] = L;                
-      msh.rho[mshInd] = rho;        
+      msh.c11[mshInd] = upTap * A   * downTap * msh.c11[mshInd];
+      msh.c22[mshInd] = upTap * A   * downTap * msh.c22[mshInd];
+      msh.c33[mshInd] = upTap * A   * downTap * msh.c33[mshInd];        
+      msh.c12[mshInd] = upTap * F   * downTap * msh.c12[mshInd];
+      msh.c13[mshInd] = upTap * F   * downTap * msh.c13[mshInd];
+      msh.c23[mshInd] = upTap * S   * downTap * msh.c23[mshInd];
+      msh.c44[mshInd] = upTap * N   * downTap * msh.c44[mshInd];
+      msh.c55[mshInd] = upTap * L   * downTap * msh.c55[mshInd];
+      msh.c66[mshInd] = upTap * L   * downTap * msh.c66[mshInd];      
+      msh.rho[mshInd] = upTap;// * rho * downTap * msh.rho[mshInd];        
     }
     
+    if ( mshRad >= (ref - interpDep) )
+    {
+      checkCrust = true;
+    }
   }    
   
 }
@@ -366,16 +372,17 @@ void Discontinuity::smoothCosine ( double &crustThick, double &centerDep,
   if ( smoothDist > maxSmooth )
     smoothDist = maxSmooth;
   
+  /* If we're in the smoothing region, apply a cosine smoother. UpTap slowly moves
+   * to crustal values */
   double disconRad = con.R_EARTH - centerDep;
   if ( rad <= disconRad + (smoothDist / 2.) &&
        rad >= disconRad - (smoothDist / 2.) )
   {
     double length  = rad - (disconRad - (smoothDist / 2.));
-    double downTap = (1/2.) * (cos ( con.PI * length / smoothDist ) + 1);
-    double upTap   = 1 - downTap;
+    downTap = (1/2.) * (cos ( con.PI * length / smoothDist ) + 1);
+    upTap   = 1 - downTap;
     
     smoothTrue = true;
-    // std::cout << upTap << " " << downTap << " " << "hi" << std::endl;
     
     if ( upTap < 0. || upTap > 1. )
     {
@@ -388,6 +395,20 @@ void Discontinuity::smoothCosine ( double &crustThick, double &centerDep,
       exit (EXIT_FAILURE);
     }
           
+  }
+
+  /* If we're above the smoothing region, it's all crust baby */
+  if ( rad > disconRad + (smoothDist / 2.) )
+  {
+    upTap   = 1.;
+    downTap = 0.;
+  }
+
+  /* And if we're below, it's all S20 */
+  if ( rad < disconRad - (smoothDist / 2.) )
+  {
+    upTap   = 0.;
+    downTap = 1.;
   }
     
 }

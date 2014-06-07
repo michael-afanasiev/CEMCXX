@@ -1,4 +1,5 @@
 #include <iostream>
+
 #include <cmath>
 #include <assert.h>
 #include <ctype.h>
@@ -9,7 +10,7 @@
 
 using namespace std;
 
-void Interpolator::interpolateCrust ( Mesh &msh, Discontinuity &dis )
+void Interpolator::interpolateCrust ( Mesh &msh, Discontinuity &dis, Model_file &mod )
 {
   
   Utilities utl;
@@ -30,36 +31,36 @@ void Interpolator::interpolateCrust ( Mesh &msh, Discontinuity &dis )
         col, lon, rad);
       
       dis.lookCrust ( msh, col, lon, rad, i, inCrust, smoothCrust, upTap, 
-        downTap ); 
+        downTap, mod ); 
         
-      if (smoothCrust == true && inCrust == false )
-      {
-       
-      msh.c11[i] = C      * upTap + msh.c11[i] * downTap;
-      msh.c22[i] = A      * upTap + msh.c22[i] * downTap;
-      msh.c33[i] = A      * upTap + msh.c33[i] * downTap;
-      msh.c12[i] = F      * upTap + msh.c12[i] * downTap;
-      msh.c13[i] = F      * upTap + msh.c13[i] * downTap;
-      msh.c23[i] = S      * upTap + msh.c23[i] * downTap;
-      msh.c44[i] = N      * upTap + msh.c44[i] * downTap;
-      msh.c55[i] = L      * upTap + msh.c55[i] * downTap;
-      msh.c66[i] = L      * upTap + msh.c66[i] * downTap;
-      msh.rho[i] = rhoUse * upTap + msh.rho[i] * downTap;                                                  
-      }    
+ //     if (smoothCrust == true && inCrust == false )
+ //     {
+ //      
+ //     msh.c11[i] = C      * upTap + msh.c11[i] * downTap;
+ //     msh.c22[i] = A      * upTap + msh.c22[i] * downTap;
+ //     msh.c33[i] = A      * upTap + msh.c33[i] * downTap;
+ //     msh.c12[i] = F      * upTap + msh.c12[i] * downTap;
+ //     msh.c13[i] = F      * upTap + msh.c13[i] * downTap;
+ //     msh.c23[i] = S      * upTap + msh.c23[i] * downTap;
+ //     msh.c44[i] = N      * upTap + msh.c44[i] * downTap;
+ //     msh.c55[i] = L      * upTap + msh.c55[i] * downTap;
+ //     msh.c66[i] = L      * upTap + msh.c66[i] * downTap;
+ //     msh.rho[i] = rhoUse * upTap + msh.rho[i] * downTap;                                                  
+ //     }    
            
-      if (smoothCrust == true && inCrust == true )
-      {
-      msh.c11[i] = C      * downTap + msh.c11[i] * upTap;
-      msh.c22[i] = A      * downTap + msh.c22[i] * upTap;
-      msh.c33[i] = A      * downTap + msh.c33[i] * upTap;
-      msh.c12[i] = F      * downTap + msh.c12[i] * upTap;
-      msh.c13[i] = F      * downTap + msh.c13[i] * upTap;
-      msh.c23[i] = S      * downTap + msh.c23[i] * upTap;
-      msh.c44[i] = N      * downTap + msh.c44[i] * upTap;
-      msh.c55[i] = L      * downTap + msh.c55[i] * upTap;
-      msh.c66[i] = L      * downTap + msh.c66[i] * upTap;
-      msh.rho[i] = rhoUse * downTap + msh.rho[i] * upTap;                                                  
-      }    
+ //     if (smoothCrust == true && inCrust == true )
+ //     {
+//      msh.c11[i] = C      * downTap + msh.c11[i] * upTap;
+//      msh.c22[i] = A      * downTap + msh.c22[i] * upTap;
+//      msh.c33[i] = A      * downTap + msh.c33[i] * upTap;
+//      msh.c12[i] = F      * downTap + msh.c12[i] * upTap;
+//      msh.c13[i] = F      * downTap + msh.c13[i] * upTap;
+//      msh.c23[i] = S      * downTap + msh.c23[i] * upTap;
+//      msh.c44[i] = N      * downTap + msh.c44[i] * upTap;
+//      msh.c55[i] = L      * downTap + msh.c55[i] * upTap;
+//      msh.c66[i] = L      * downTap + msh.c66[i] * upTap;
+//      msh.rho[i] = rhoUse * downTap + msh.rho[i] * upTap;                                                  
+//      }    
 
     }
   }
@@ -207,8 +208,11 @@ void Interpolator::interpolate ( Mesh &msh, Model_file &mod, Discontinuity
     bool smoothCrust = false;
     utl.checkRegion ( msh, mshRadPys );
     dis.lookCrust   ( msh, mshColPys, mshLonPys, mshRadPys, i, inCrust, 
-                      smoothCrust, upTap, downTap );
+                      smoothCrust, upTap, downTap, mod );
 
+    //if ( smoothCrust == true ) {
+    //std::cout << "DEBUGGG " << upTap << " " << downTap << std::endl;
+   // }
     /* If the rotated coordinates are within the simulation domain, go ahead and
     interpolate. */
     if ( (mshColRot >= mod.colMin && mshColRot <= mod.colMax) &&
@@ -300,11 +304,10 @@ void Interpolator::interpolate ( Mesh &msh, Model_file &mod, Discontinuity
         msh.c66[i] = L;
         msh.rho[i] = rhoUse;                      
       }            
-      
-      
+     
       if (smoothCrust == true && inCrust == false && mod.overwriteCrust == false)
       { 
-        msh.c11[i] = C      * upTap + msh.c11[i] * downTap;
+        msh.c11[i] = upTap;//C      * upTap + msh.c11[i] * downTap;
         msh.c22[i] = A      * upTap + msh.c22[i] * downTap;
         msh.c33[i] = A      * upTap + msh.c33[i] * downTap;
         msh.c12[i] = F      * upTap + msh.c12[i] * downTap;
@@ -313,12 +316,12 @@ void Interpolator::interpolate ( Mesh &msh, Model_file &mod, Discontinuity
         msh.c44[i] = N      * upTap + msh.c44[i] * downTap;
         msh.c55[i] = L      * upTap + msh.c55[i] * downTap;
         msh.c66[i] = L      * upTap + msh.c66[i] * downTap;
-        msh.rho[i] = rhoUse * upTap + msh.rho[i] * downTap;                                                  
+        msh.rho[i] = upTap;// rhoUse * upTap + msh.rho[i] * downTap;                                                  
       }    
       
       if (smoothCrust == true && inCrust == true && mod.overwriteCrust == false)
       {
-        msh.c11[i] = C      * downTap + msh.c11[i] * upTap;
+        msh.c11[i] = upTap;//C      * downTap + msh.c11[i] * upTap;
         msh.c22[i] = A      * downTap + msh.c22[i] * upTap;
         msh.c33[i] = A      * downTap + msh.c33[i] * upTap;
         msh.c12[i] = F      * downTap + msh.c12[i] * upTap;
@@ -327,7 +330,7 @@ void Interpolator::interpolate ( Mesh &msh, Model_file &mod, Discontinuity
         msh.c44[i] = N      * downTap + msh.c44[i] * upTap;
         msh.c55[i] = L      * downTap + msh.c55[i] * upTap;
         msh.c66[i] = L      * downTap + msh.c66[i] * upTap;
-        msh.rho[i] = rhoUse * downTap + msh.rho[i] * upTap;                                                  
+        msh.rho[i] = upTap;//rhoUse * downTap + msh.rho[i] * upTap;                                                  
       }    
       
     }          

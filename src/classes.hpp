@@ -243,7 +243,7 @@ public:
                               bool &smoothTrue );
   void lookCrust            ( Mesh &msh, double &mshCol, double &mshLon, 
                             double &mshRad, int &mshInd, bool &checkCrust,
-                            bool &smoothCrust, double &upTap, double &downTap );
+                            bool &smoothCrust, double &upTap, double &downTap, Model_file &mod );
   void lookTopo             ( Mesh &msh, double &mshCol, double &mshLon, 
                               double &mshRad, int &mshInd );
                               
@@ -443,7 +443,7 @@ public:
   std::vector < std::vector <int> > elemWithin;
     
   void findNodes        ( Mesh &msh, Model_file &mod, std::ofstream &myfile );
-  void interpolateCrust ( Mesh &msh, Discontinuity &dis );
+  void interpolateCrust ( Mesh &msh, Discontinuity &dis, Model_file &mod );
   void interpolateTopo  ( Mesh &msh, Discontinuity &dis );
   void interpolate      ( Mesh &msh, Model_file &mod, Discontinuity &dis );  
   int  recover          ( double &testX, double &testY, double &testZ, 

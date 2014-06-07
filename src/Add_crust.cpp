@@ -52,7 +52,7 @@ int main ()
     
       exoFile -> openFile    ( exoFile -> fname );        
       msh.getInfo            ( exoFile -> idexo, 'p' );    
-      ipl.interpolateCrust   ( msh, dis );
+      ipl.interpolateCrust   ( msh, dis, mod );
       exoFile -> writeParams ( msh );
       msh.deallocateMesh     ( mod );
       exoFile -> closeFile   ( );      
