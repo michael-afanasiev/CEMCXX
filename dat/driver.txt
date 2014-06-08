@@ -1,6 +1,6 @@
 ## This is a par file for model building.
 
-INPUT_MESH_DIRECTORY  = /mnt/lnec/afanasm/cubitScratch/mesh/s20+_backup/
+INPUT_MESH_DIRECTORY  = /mnt/lnec/afanasm/cubitScratch/mesh/s20+/
 INPUT_MODEL_DIRECTORY = /mnt/lnec/afanasm/Japan/
 INPUT_MODEL_FILE_TYPE = SES3D
 INPUT_MODEL_PHYSICS   = TTI

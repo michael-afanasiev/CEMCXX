@@ -17,11 +17,11 @@ void Interpolator::interpolateCrust ( Mesh &msh, Discontinuity &dis, Model_file 
   
   cout << "Adding crust.\n";
   
-  if ( msh.radMin > 6271 )
+  if ( msh.radMin >= 6270 )
   {
+#pragma omp parallel for
     for ( int i=0; i<msh.num_nodes; i++ )
     {
-    
       double col, lon, rad, upTap, downTap;
       bool smoothCrust;
     
@@ -72,9 +72,11 @@ void Interpolator::interpolateTopo ( Mesh &msh, Discontinuity &dis )
   Utilities utl;
   Constants con;
   
-  cout << "Adding topography." << endl;
-  
-  if ( msh.radMin > (6271.) )
+  cout << "Adding topography. " << msh.radMin << endl;
+ 
+
+
+  if ( msh.radMin >= (6270.) )
   {
 #pragma omp parallel for
     for ( int i=0; i<msh.num_nodes; i++ )
@@ -83,7 +85,6 @@ void Interpolator::interpolateTopo ( Mesh &msh, Discontinuity &dis )
         
       utl.xyz2ColLonRadDeg ( msh.xmsh[i], msh.ymsh[i], msh.zmsh[i], 
         col, lon, rad);
-        
       dis.lookTopo ( msh, col, lon, rad, i );
     }
   }
@@ -291,7 +292,7 @@ void Interpolator::interpolate ( Mesh &msh, Model_file &mod, Discontinuity
         S = A - 2 * N;
       }
       
-      if ( (inCrust == false) || (mod.overwriteCrust == true) ) 
+      if ( mod.overwriteCrust == true ) 
       {
         msh.c11[i] = C;
         msh.c22[i] = A;
@@ -305,23 +306,9 @@ void Interpolator::interpolate ( Mesh &msh, Model_file &mod, Discontinuity
         msh.rho[i] = rhoUse;                      
       }            
      
-      if (smoothCrust == true && inCrust == false && mod.overwriteCrust == false)
+      if ( mod.overwriteCrust == false )
       { 
-        msh.c11[i] = upTap;//C      * upTap + msh.c11[i] * downTap;
-        msh.c22[i] = A      * upTap + msh.c22[i] * downTap;
-        msh.c33[i] = A      * upTap + msh.c33[i] * downTap;
-        msh.c12[i] = F      * upTap + msh.c12[i] * downTap;
-        msh.c13[i] = F      * upTap + msh.c13[i] * downTap;
-        msh.c23[i] = S      * upTap + msh.c23[i] * downTap;
-        msh.c44[i] = N      * upTap + msh.c44[i] * downTap;
-        msh.c55[i] = L      * upTap + msh.c55[i] * downTap;
-        msh.c66[i] = L      * upTap + msh.c66[i] * downTap;
-        msh.rho[i] = upTap;// rhoUse * upTap + msh.rho[i] * downTap;                                                  
-      }    
-      
-      if (smoothCrust == true && inCrust == true && mod.overwriteCrust == false)
-      {
-        msh.c11[i] = upTap;//C      * downTap + msh.c11[i] * upTap;
+        msh.c11[i] = C      * downTap + msh.c11[i] * upTap;
         msh.c22[i] = A      * downTap + msh.c22[i] * upTap;
         msh.c33[i] = A      * downTap + msh.c33[i] * upTap;
         msh.c12[i] = F      * downTap + msh.c12[i] * upTap;
@@ -330,7 +317,7 @@ void Interpolator::interpolate ( Mesh &msh, Model_file &mod, Discontinuity
         msh.c44[i] = N      * downTap + msh.c44[i] * upTap;
         msh.c55[i] = L      * downTap + msh.c55[i] * upTap;
         msh.c66[i] = L      * downTap + msh.c66[i] * upTap;
-        msh.rho[i] = upTap;//rhoUse * downTap + msh.rho[i] * upTap;                                                  
+        msh.rho[i] = rhoUse * downTap + msh.rho[i] * upTap;                                                  
       }    
       
     }          

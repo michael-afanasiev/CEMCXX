@@ -158,25 +158,37 @@ void Discontinuity::lookCrust ( Mesh &msh, double &mshCol, double &mshLon,
       double A = rho * vpv * vpv;
       double S = A - 2 * N;
       double F = A - 2 * L;
-  
+        
+//      std::cout << upTap << ' ' << downTap << ' ' << msh.c66[mshInd] << ' ' << msh.rho[mshInd] << " before" << std::endl;
+//      std::cin.get();
       checkCrust      = true;
-      msh.c11[mshInd] = upTap * A   * downTap * msh.c11[mshInd];
-      msh.c22[mshInd] = upTap * A   * downTap * msh.c22[mshInd];
-      msh.c33[mshInd] = upTap * A   * downTap * msh.c33[mshInd];        
-      msh.c12[mshInd] = upTap * F   * downTap * msh.c12[mshInd];
-      msh.c13[mshInd] = upTap * F   * downTap * msh.c13[mshInd];
-      msh.c23[mshInd] = upTap * S   * downTap * msh.c23[mshInd];
-      msh.c44[mshInd] = upTap * N   * downTap * msh.c44[mshInd];
-      msh.c55[mshInd] = upTap * L   * downTap * msh.c55[mshInd];
-      msh.c66[mshInd] = upTap * L   * downTap * msh.c66[mshInd];      
-      msh.rho[mshInd] = upTap;// * rho * downTap * msh.rho[mshInd];        
+      msh.c11[mshInd] = upTap * A   + downTap * msh.c11[mshInd];
+      msh.c22[mshInd] = upTap * A   + downTap * msh.c22[mshInd];
+      msh.c33[mshInd] = upTap * A   + downTap * msh.c33[mshInd];        
+      msh.c12[mshInd] = upTap * F   + downTap * msh.c12[mshInd];
+      msh.c13[mshInd] = upTap * F   + downTap * msh.c13[mshInd];
+      msh.c23[mshInd] = upTap * S   + downTap * msh.c23[mshInd];
+      msh.c44[mshInd] = upTap * N   + downTap * msh.c44[mshInd];
+      msh.c55[mshInd] = upTap * L   + downTap * msh.c55[mshInd];
+      msh.c66[mshInd] = upTap * L   + downTap * msh.c66[mshInd];      
+      msh.rho[mshInd] = upTap * rho + downTap * msh.rho[mshInd];       
+
+
+//      std::cout << upTap << ' ' << downTap << ' ' << msh.c66[mshInd] << ' ' << msh.rho[mshInd] << " after " << mshRad << std::endl;
+//      std::cin.get();
     }
     
     if ( mshRad >= (ref - interpDep) )
     {
       checkCrust = true;
     }
-  }    
+  }
+
+  if ( mshRad <= con.R_EARTH - 100 )
+  {
+    upTap   = 0.;
+    downTap = 1.;
+  }
   
 }
 
@@ -418,6 +430,7 @@ void Discontinuity::lookTopo ( Mesh &msh, double &mshCol, double &mshLon,
 {
   
   Constants con;
+
   
   if ( mshRad > ( con.R_EARTH - 100 ) )
   {

@@ -411,6 +411,7 @@ public:
   
   std::multimap <int, std::vector <int> > elemOrder;  
   std::vector < std::vector <int> > refineElemConn;
+
   
   char name;
   char title [MAX_LINE_LENGTH+1]; 
@@ -475,6 +476,5 @@ public:
   
   double QL6      ( double &rad );
   double correct ( std::string &model, double &rad );
-
 
 };
