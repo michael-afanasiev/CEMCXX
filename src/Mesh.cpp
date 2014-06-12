@@ -463,16 +463,17 @@ void Mesh::getConnectivity ( int exoid )
   }
     
   vector <int> node;
-  vector < vector <int> > elemOrderVec;
+  //vector < vector <int> > elemOrderVec;
   node.reserve ( num_node_per_elem );
 
   elemOrderVec.reserve ( num_elem*num_node_per_elem );
   for ( int isize=0; isize!=num_elem*num_node_per_elem-1; isize++ )
-  {
-    elemOrderVec[isize].reserve(20*num_node_per_elem);
+  { 
+//    std::cout << isize << ' ' << num_elem*num_node_per_elem << std::flush << std::endl;
+    elemOrderVec[isize].reserve(num_node_per_elem);
   }
   
-  cout << "Building connectivity array.\n"; 
+  cout << "Building connectivity array. Done allocating" << std::flush << std::endl; 
   
   for ( int i=0; i<num_elem*num_node_per_elem; i++ ) 
   {

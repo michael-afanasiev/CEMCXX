@@ -444,7 +444,7 @@ int Interpolator::recover ( double &testX, double &testY, double &testZ,
     // Loop over connecting elements (node indices contained in iterator).
     double l1, l2, l3, l4;
 
-    for ( std::vector<int>::iterator it = elemOrderVec[point].begin(); it!=elemOrderVec[point].end(); it += 4 )
+    for ( std::vector<int>::iterator it = msh.elemOrderVec[point].begin(); it!=msh.elemOrderVec[point].end(); it += 4 )
     {
     //for ( multimap <int, vector <int> > :: iterator it=ext.first; 
     //  it!=ext.second; ++it ) 
@@ -665,7 +665,7 @@ int Interpolator::recover ( double &testX, double &testY, double &testZ,
       
       /* The theta discretization is controlled by the average edge length of an
       element in the lat/lon direction */      
-      double dTheta = 50 / rad;
+      double dTheta = 85 / rad;
     
       /* Allow the search radius to range from 0 to 1 times some values */
       double randC = (rand () % 100) / 100.;

@@ -582,6 +582,9 @@ int Model_file::writeNetCDF ( std::vector <std::vector<double>> &par,
     NcDim dDim = output.addDim ( "param", totSize );
     
     // Create the parameter vector.
+  
+    
+    elemOrderVec.reserve ( num_elem*num_node_per_elem );
     vector <NcDim> dims;
     dims.push_back ( dDim );
     NcVar data = output.addVar ( "data", ncDouble, dims );
