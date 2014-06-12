@@ -115,7 +115,7 @@ void Discontinuity::lookCrust ( Mesh &msh, double &mshCol, double &mshLon,
       ref = con.R_EARTH + msh.elv[mshInd] / 1000.;
     }
     
-    // Do a bilinear interpolation on the Depth.
+    // Do a bilinear interpolation on the depth, along with velocity.
     double interpDep;
     double interpVs;
     getCrustDepth ( mshCol, mshLon, point, interpDep, "dep" );
@@ -135,7 +135,7 @@ void Discontinuity::lookCrust ( Mesh &msh, double &mshCol, double &mshLon,
       crustThick = interpDep;
     }
     
-    /* Figure out whether we need to smooth the crust */
+    /* Figure out whether we need to smooth the crust. Cosine smoother. */
     smoothCrust = false;
     smoothCosine ( crustThick, interpDep, mshRad, downTap, upTap, smoothCrust );
     
@@ -159,8 +159,6 @@ void Discontinuity::lookCrust ( Mesh &msh, double &mshCol, double &mshLon,
       double S = A - 2 * N;
       double F = A - 2 * L;
         
-//      std::cout << upTap << ' ' << downTap << ' ' << msh.c66[mshInd] << ' ' << msh.rho[mshInd] << " before" << std::endl;
-//      std::cin.get();
       checkCrust      = true;
       msh.c11[mshInd] = upTap * A   + downTap * msh.c11[mshInd];
       msh.c22[mshInd] = upTap * A   + downTap * msh.c22[mshInd];
@@ -173,9 +171,6 @@ void Discontinuity::lookCrust ( Mesh &msh, double &mshCol, double &mshLon,
       msh.c66[mshInd] = upTap * L   + downTap * msh.c66[mshInd];      
       msh.rho[mshInd] = upTap * rho + downTap * msh.rho[mshInd];       
 
-
-//      std::cout << upTap << ' ' << downTap << ' ' << msh.c66[mshInd] << ' ' << msh.rho[mshInd] << " after " << mshRad << std::endl;
-//      std::cin.get();
     }
     
     if ( mshRad >= (ref - interpDep) )
@@ -330,7 +325,7 @@ void Discontinuity::getCrustDepth ( double &mshCol, double &mshLon, int &point,
     << crust_lon_deg_unpack[nodes[1]] << " " << crust_dp[0][nodes[1]] 
     << std::endl;
         
-  myfile << crust_col_deg_unpack[nodes[2]] << " " 
+  myfile << crust_col_deg_unpack[nodes[2]] << 
     << crust_lon_deg_unpack[nodes[2]] << " " << crust_dp[0][nodes[2]] 
     << std::endl;
       

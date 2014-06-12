@@ -31,37 +31,7 @@ void Interpolator::interpolateCrust ( Mesh &msh, Discontinuity &dis, Model_file 
         col, lon, rad);
       
       dis.lookCrust ( msh, col, lon, rad, i, inCrust, smoothCrust, upTap, 
-        downTap, mod ); 
-        
- //     if (smoothCrust == true && inCrust == false )
- //     {
- //      
- //     msh.c11[i] = C      * upTap + msh.c11[i] * downTap;
- //     msh.c22[i] = A      * upTap + msh.c22[i] * downTap;
- //     msh.c33[i] = A      * upTap + msh.c33[i] * downTap;
- //     msh.c12[i] = F      * upTap + msh.c12[i] * downTap;
- //     msh.c13[i] = F      * upTap + msh.c13[i] * downTap;
- //     msh.c23[i] = S      * upTap + msh.c23[i] * downTap;
- //     msh.c44[i] = N      * upTap + msh.c44[i] * downTap;
- //     msh.c55[i] = L      * upTap + msh.c55[i] * downTap;
- //     msh.c66[i] = L      * upTap + msh.c66[i] * downTap;
- //     msh.rho[i] = rhoUse * upTap + msh.rho[i] * downTap;                                                  
- //     }    
-           
- //     if (smoothCrust == true && inCrust == true )
- //     {
-//      msh.c11[i] = C      * downTap + msh.c11[i] * upTap;
-//      msh.c22[i] = A      * downTap + msh.c22[i] * upTap;
-//      msh.c33[i] = A      * downTap + msh.c33[i] * upTap;
-//      msh.c12[i] = F      * downTap + msh.c12[i] * upTap;
-//      msh.c13[i] = F      * downTap + msh.c13[i] * upTap;
-//      msh.c23[i] = S      * downTap + msh.c23[i] * upTap;
-//      msh.c44[i] = N      * downTap + msh.c44[i] * upTap;
-//      msh.c55[i] = L      * downTap + msh.c55[i] * upTap;
-//      msh.c66[i] = L      * downTap + msh.c66[i] * upTap;
-//      msh.rho[i] = rhoUse * downTap + msh.rho[i] * upTap;                                                  
-//      }    
-
+        downTap, mod );  
     }
   }
 }
@@ -73,8 +43,6 @@ void Interpolator::interpolateTopo ( Mesh &msh, Discontinuity &dis )
   Constants con;
   
   cout << "Adding topography. " << msh.radMin << endl;
- 
-
 
   if ( msh.radMin >= (6270.) )
   {
@@ -432,9 +400,10 @@ int Interpolator::recover ( double &testX, double &testY, double &testZ,
   first try. Assume we haven't found it at first.*/
   // std::vector < int > repeater;
   // repeater.reserve ( 100 );
-  bool found   = false;  
-  int  count   = 0;
-  int  nodeNum = 0;
+  bool found     = false;  
+  int  count     = 0;
+  int  nodeNum   = 0;
+  bool firstPass = true;
   int  point;
   
 #ifdef VISUAL_DEBUG
@@ -693,19 +662,35 @@ int Interpolator::recover ( double &testX, double &testY, double &testZ,
       
       /* The theta discretization is controlled by the average edge length of an
       element in the lat/lon direction */      
-      double dTheta = 85 / rad;
+      double dTheta = 50 / rad;
     
       /* Allow the search radius to range from 0 to 1 times some values */
       double randC = (rand () % 100) / 100.;
       double randL = (rand () % 100) / 100.;      
-      double randR = (rand () % 100) / 100.;
+
+      double randR = 0.;
+      if ( msh.radMax <= 5372 ) 
+      { 
+        randR = (rand () % 5000) / 100.;
+      } 
+      else
+      {
+        randR = (rand () % 100) / 100.;
+      }
+
+      if ( firstPass == true && count == 9999 )
+      {
+          randR = (rand () % 500) / 100.;
+          firstPass = false;
+          std::cout << "Failing here" << std::endl;
+      }
 
       /* Col and Lon are allowed to vary between their original values (0) and
       one edge length away. This seems to work. Radius is allowed to vary by
       1 km. This also seems to work, although I think it's a bit sketchier. 
       Could add a parameter to the radius search to make this variable, 
       dependent on depth. It does work quite well now though */      
-      if ( count < 10000 ) 
+      if ( count < 1000000000000 ) 
       {
         double colTest = col + ( signC * randC * dTheta );
         double lonTest = lon + ( signL * randL * dTheta );
@@ -775,7 +760,7 @@ int Interpolator::recover ( double &testX, double &testY, double &testZ,
 //        break;         
 //      }
                           
-      if ( count >= 10000 ) 
+      if ( count >= 1000000000000 ) 
       {
         cout << "Looping forever. And ever. " << 
           "Boring! I'm outta here." << endl;
