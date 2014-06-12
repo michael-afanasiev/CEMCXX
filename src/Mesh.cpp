@@ -463,7 +463,14 @@ void Mesh::getConnectivity ( int exoid )
   }
     
   vector <int> node;
+  vector < vector <int> > elemOrderVec;
   node.reserve ( num_node_per_elem );
+
+  elemOrderVec.reserve ( num_elem*num_node_per_elem );
+  for ( int isize=0; isize!=num_elem*num_node_per_elem-1; isize++ )
+  {
+    elemOrderVec[isize].reserve(20*num_node_per_elem);
+  }
   
   cout << "Building connectivity array.\n"; 
   
@@ -473,10 +480,22 @@ void Mesh::getConnectivity ( int exoid )
     
     if ( (i+1) % num_node_per_elem == 0 ) 
     {            
-      elemOrder.insert ( pair <int, vector <int> > (node[0], node) );
-      elemOrder.insert ( pair <int, vector <int> > (node[1], node) );
-      elemOrder.insert ( pair <int, vector <int> > (node[2], node) );
-      elemOrder.insert ( pair <int, vector <int> > (node[3], node) );  
+      elemOrderVec[node[0]].push_back ( node[0] );
+      elemOrderVec[node[0]].push_back ( node[1] );
+      elemOrderVec[node[0]].push_back ( node[2] );
+      elemOrderVec[node[0]].push_back ( node[3] );
+      elemOrderVec[node[1]].push_back ( node[0] );
+      elemOrderVec[node[1]].push_back ( node[1] );
+      elemOrderVec[node[1]].push_back ( node[2] );
+      elemOrderVec[node[1]].push_back ( node[3] );
+      elemOrderVec[node[2]].push_back ( node[0] );
+      elemOrderVec[node[2]].push_back ( node[1] );
+      elemOrderVec[node[2]].push_back ( node[2] );
+      elemOrderVec[node[2]].push_back ( node[3] );
+      elemOrderVec[node[3]].push_back ( node[0] );  
+      elemOrderVec[node[3]].push_back ( node[1] );  
+      elemOrderVec[node[3]].push_back ( node[2] );  
+      elemOrderVec[node[3]].push_back ( node[3] );  
             
       node.clear ();
     }    

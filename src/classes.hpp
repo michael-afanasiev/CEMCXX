@@ -411,6 +411,7 @@ public:
   
   std::multimap <int, std::vector <int> > elemOrder;  
   std::vector < std::vector <int> > refineElemConn;
+  std::vector < std::vector <int> > elemOrderVec;
 
   
   char name;

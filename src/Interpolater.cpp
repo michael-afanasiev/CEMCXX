@@ -443,20 +443,23 @@ int Interpolator::recover ( double &testX, double &testY, double &testZ,
     
     // Loop over connecting elements (node indices contained in iterator).
     double l1, l2, l3, l4;
-    for ( multimap <int, vector <int> > :: iterator it=ext.first; 
-      it!=ext.second; ++it ) 
-      {                    
+
+    for ( std::vector<int>::iterator it = elemOrderVec[point].begin(); it!=elemOrderVec[point].end(); it += 4 )
+    {
+    //for ( multimap <int, vector <int> > :: iterator it=ext.first; 
+    //  it!=ext.second; ++it ) 
+    //  {                    
 
       /* Convert to barycentric coordinates (l*). The vector second contains 
         all the indices of the nodes belonging to a element (4 for a tet). So
         we need to extract 12 values, 4 for each dimension */
       util.convertBary ( origX, origY, origZ,
-        msh.xmsh[it->second[0]], msh.xmsh[it->second[1]], 
-        msh.xmsh[it->second[2]], msh.xmsh[it->second[3]],
-        msh.ymsh[it->second[0]], msh.ymsh[it->second[1]],
-        msh.ymsh[it->second[2]], msh.ymsh[it->second[3]],
-        msh.zmsh[it->second[0]], msh.zmsh[it->second[1]],
-        msh.zmsh[it->second[2]], msh.zmsh[it->second[3]],
+        msh.xmsh[*it], msh.xmsh[*it+1], 
+        msh.xmsh[*it+2], msh.xmsh[*it+3],
+        msh.ymsh[*it], msh.ymsh[*it+1],
+        msh.ymsh[*it+2], msh.ymsh[*it+3],
+        msh.zmsh[*it], msh.zmsh[*it+1],
+        msh.zmsh[*it+2], msh.zmsh[*it+3],
         l1, l2, l3, l4 ); 
           
 #ifdef VISUAL_DEBUG
