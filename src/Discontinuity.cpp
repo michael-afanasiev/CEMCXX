@@ -338,8 +338,7 @@ void Discontinuity::getCrustDepth ( double &mshCol, double &mshLon, int &point,
     << crust_lon_deg_unpack[nodes[3]] << " " << crust_dp[0][nodes[3]] 
     << std::endl;
   
-  myfile << mshCol << " " 
-    << mshLon << " " << dep
+  myfile << mshCol << " " << mshLon << " " << dep
     << std::endl;
   
   std::cout << colDir << " " << lonDir << std::endl;

@@ -723,6 +723,37 @@ int Interpolator::recover ( double &testX, double &testY, double &testZ,
         kd_res_free ( set );
                 
       }
+
+      if ( count == 9999 )
+      {
+
+        c11 = msh.c11[point];
+        c12 = msh.c12[point];
+        c13 = msh.c13[point];
+        c14 = msh.c14[point];
+        c15 = msh.c15[point];
+        c16 = msh.c16[point];
+        c22 = msh.c22[point];
+        c23 = msh.c23[point];
+        c24 = msh.c24[point];
+        c25 = msh.c25[point];
+        c26 = msh.c26[point];
+        c33 = msh.c33[point];
+        c34 = msh.c34[point];
+        c35 = msh.c35[point];
+        c36 = msh.c36[point];
+        c44 = msh.c44[point];
+        c45 = msh.c45[point];
+        c46 = msh.c46[point];
+        c55 = msh.c55[point];
+        c56 = msh.c56[point];
+        c66 = msh.c66[point];    
+        rho = msh.rho[point];    
+                
+        found = true;    
+        cout << "Bad" << flush << endl;
+        break;
+      }
 //      else if ( count < 1000 )
 //      {
 //        testX = origX + ( signC * randC * 85 );
