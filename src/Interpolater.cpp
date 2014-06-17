@@ -31,37 +31,7 @@ void Interpolator::interpolateCrust ( Mesh &msh, Discontinuity &dis, Model_file 
         col, lon, rad);
       
       dis.lookCrust ( msh, col, lon, rad, i, inCrust, smoothCrust, upTap, 
-        downTap, mod ); 
-        
- //     if (smoothCrust == true && inCrust == false )
- //     {
- //      
- //     msh.c11[i] = C      * upTap + msh.c11[i] * downTap;
- //     msh.c22[i] = A      * upTap + msh.c22[i] * downTap;
- //     msh.c33[i] = A      * upTap + msh.c33[i] * downTap;
- //     msh.c12[i] = F      * upTap + msh.c12[i] * downTap;
- //     msh.c13[i] = F      * upTap + msh.c13[i] * downTap;
- //     msh.c23[i] = S      * upTap + msh.c23[i] * downTap;
- //     msh.c44[i] = N      * upTap + msh.c44[i] * downTap;
- //     msh.c55[i] = L      * upTap + msh.c55[i] * downTap;
- //     msh.c66[i] = L      * upTap + msh.c66[i] * downTap;
- //     msh.rho[i] = rhoUse * upTap + msh.rho[i] * downTap;                                                  
- //     }    
-           
- //     if (smoothCrust == true && inCrust == true )
- //     {
-//      msh.c11[i] = C      * downTap + msh.c11[i] * upTap;
-//      msh.c22[i] = A      * downTap + msh.c22[i] * upTap;
-//      msh.c33[i] = A      * downTap + msh.c33[i] * upTap;
-//      msh.c12[i] = F      * downTap + msh.c12[i] * upTap;
-//      msh.c13[i] = F      * downTap + msh.c13[i] * upTap;
-//      msh.c23[i] = S      * downTap + msh.c23[i] * upTap;
-//      msh.c44[i] = N      * downTap + msh.c44[i] * upTap;
-//      msh.c55[i] = L      * downTap + msh.c55[i] * upTap;
-//      msh.c66[i] = L      * downTap + msh.c66[i] * upTap;
-//      msh.rho[i] = rhoUse * downTap + msh.rho[i] * upTap;                                                  
-//      }    
-
+        downTap, mod );     
     }
   }
 }
@@ -211,9 +181,6 @@ void Interpolator::interpolate ( Mesh &msh, Model_file &mod, Discontinuity
     dis.lookCrust   ( msh, mshColPys, mshLonPys, mshRadPys, i, inCrust, 
                       smoothCrust, upTap, downTap, mod );
 
-    //if ( smoothCrust == true ) {
-    //std::cout << "DEBUGGG " << upTap << " " << downTap << std::endl;
-   // }
     /* If the rotated coordinates are within the simulation domain, go ahead and
     interpolate. */
     if ( (mshColRot >= mod.colMin && mshColRot <= mod.colMax) &&
@@ -316,8 +283,8 @@ void Interpolator::interpolate ( Mesh &msh, Model_file &mod, Discontinuity
         msh.c23[i] = S      * downTap + msh.c23[i] * upTap;
         msh.c44[i] = N      * downTap + msh.c44[i] * upTap;
         msh.c55[i] = L      * downTap + msh.c55[i] * upTap;
-        msh.c66[i] = L      * downTap + msh.c66[i] * upTap;
-        msh.rho[i] = rhoUse * downTap + msh.rho[i] * upTap;                                                  
+        msh.c66[i] = mshColRot;//L      * downTap + msh.c66[i] * upTap;
+        msh.rho[i] = mshLonRot;//rhoUse * downTap + msh.rho[i] * upTap;                                                  
       }    
       
     }          
@@ -697,8 +664,14 @@ int Interpolator::recover ( double &testX, double &testY, double &testZ,
     
       /* Allow the search radius to range from 0 to 1 times some values */
       double randC = (rand () % 100) / 100.;
-      double randL = (rand () % 100) / 100.;      
+      double randL = (rand () % 100) / 100.;
       double randR = (rand () % 100) / 100.;
+
+      if ( rad <= 5371 )
+      {
+        randR = (rand () % 5000) / 100.;
+      }
+      
 
       /* Col and Lon are allowed to vary between their original values (0) and
       one edge length away. This seems to work. Radius is allowed to vary by
@@ -709,7 +682,7 @@ int Interpolator::recover ( double &testX, double &testY, double &testZ,
       {
         double colTest = col + ( signC * randC * dTheta );
         double lonTest = lon + ( signL * randL * dTheta );
-        double radTest = rad + ( signR * 3 * randR );
+        double radTest = rad + ( signR * 3     * randR );
         
         /* Create a new testX, Y, and Z, point for the recursive search. */
         util.colLonRadRad2xyz ( colTest, lonTest, radTest, testX, testY, 
@@ -748,10 +721,10 @@ int Interpolator::recover ( double &testX, double &testY, double &testZ,
         c55 = msh.c55[point];
         c56 = msh.c56[point];
         c66 = msh.c66[point];    
-        rho = msh.rho[point];    
+        rho = 100;//msh.rho[point];    
                 
         found = true;    
-        cout << "Bad" << flush << endl;
+        cout << "Bad " << rad << " " << radPoint << flush << endl;
         break;
       }
 //      else if ( count < 1000 )
