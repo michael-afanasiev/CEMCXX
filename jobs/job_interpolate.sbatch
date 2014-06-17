@@ -4,7 +4,7 @@
 #SBATCH --ntasks=1
 #SBATCH --time=04:00:00
 #SBATCH --cpus-per-task=20
-#SBATCH --partition=other_largemem
+#SBATCH --partition=fichtner_compute
 #SBATCH --output=jobs/job.interpolate.out
 #SBATCH --error=jobs/job.interpolate.err
 

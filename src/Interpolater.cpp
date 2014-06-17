@@ -298,7 +298,7 @@ double Interpolator::taper ( double &col, double &lon, double &rad,
   Constants con;
   Utilities util;
   
-  double dTaper    = 2000.;
+  double dTaper    = 500.;
   double dTaperRad = 50.;
   
   col = col * con.PI / con.o80;
