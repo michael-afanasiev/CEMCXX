@@ -261,10 +261,10 @@ void Interpolator::interpolate ( Mesh &msh, Model_file &mod, Discontinuity
       
       if ( mod.overwriteCrust == true ) 
       {
-        msh.c11[i] = C;
-        msh.c22[i] = A;
-        msh.c33[i] = A;
-        msh.c12[i] = F;
+        msh.c11[i] = tap;//C;
+        msh.c22[i] = qvCor;//A;
+        msh.c33[i] = upTap;//A;
+        msh.c12[i] = downTap;//F;
         msh.c13[i] = F;
         msh.c23[i] = S;
         msh.c44[i] = N;
