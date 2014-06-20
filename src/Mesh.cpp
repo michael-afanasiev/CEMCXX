@@ -465,8 +465,6 @@ void Mesh::getConnectivity ( int exoid )
   vector <int> node;
   node.reserve ( num_node_per_elem );
   
-  cout << "Building connectivity array.\n"; 
-  
   for ( int i=0; i<num_elem*num_node_per_elem; i++ ) 
   {
     node.push_back ( masterElemConn[i] - 1 );

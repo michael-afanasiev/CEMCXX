@@ -159,8 +159,6 @@ void Discontinuity::lookCrust ( Mesh &msh, double &mshCol, double &mshLon,
       double S = A - 2 * N;
       double F = A - 2 * L;
         
-//      std::cout << upTap << ' ' << downTap << ' ' << msh.c66[mshInd] << ' ' << msh.rho[mshInd] << " before" << std::endl;
-//      std::cin.get();
       checkCrust      = true;
       msh.c11[mshInd] = upTap * A   + downTap * msh.c11[mshInd];
       msh.c22[mshInd] = upTap * A   + downTap * msh.c22[mshInd];
@@ -173,9 +171,6 @@ void Discontinuity::lookCrust ( Mesh &msh, double &mshCol, double &mshLon,
       msh.c66[mshInd] = upTap * L   + downTap * msh.c66[mshInd];      
       msh.rho[mshInd] = upTap * rho + downTap * msh.rho[mshInd];       
 
-
-//      std::cout << upTap << ' ' << downTap << ' ' << msh.c66[mshInd] << ' ' << msh.rho[mshInd] << " after " << mshRad << std::endl;
-//      std::cin.get();
     }
     
     if ( mshRad >= (ref - interpDep) )

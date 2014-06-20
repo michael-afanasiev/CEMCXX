@@ -173,7 +173,16 @@ void Interpolator::interpolate ( Mesh &msh, Model_file &mod, Discontinuity
     //   mshLonPys += 360;        
     // if ( mod.wrapAround == true && mshLonRot < 0. )
     //   mshLonRot += 360;    
-      
+     
+    // This should solve the wrap around issue I think.
+    if ( mod.lonMax > 180. && mshLonPys <= 0. )
+      mshLonPys += 360;
+    if ( mod.lonMax > 180. && mshLonRot <= 0. )
+      mshLonRot += 360;
+    
+    if ( msh.lonMin < (-1 * con.PI / 2) && msh.lonMax > (con.PI / 2) )
+      msh.lonMax = -1 * con.PI / 2;
+
     // Check for discontinuity conditinos.
     double upTap, downTap;
     bool smoothCrust = false;
@@ -261,10 +270,10 @@ void Interpolator::interpolate ( Mesh &msh, Model_file &mod, Discontinuity
       
       if ( mod.overwriteCrust == true ) 
       {
-        msh.c11[i] = tap;//C;
-        msh.c22[i] = qvCor;//A;
-        msh.c33[i] = upTap;//A;
-        msh.c12[i] = downTap;//F;
+        msh.c11[i] = C;
+        msh.c22[i] = A;
+        msh.c33[i] = A;
+        msh.c12[i] = F;
         msh.c13[i] = F;
         msh.c23[i] = S;
         msh.c44[i] = N;
@@ -283,8 +292,8 @@ void Interpolator::interpolate ( Mesh &msh, Model_file &mod, Discontinuity
         msh.c23[i] = S      * downTap + msh.c23[i] * upTap;
         msh.c44[i] = N      * downTap + msh.c44[i] * upTap;
         msh.c55[i] = L      * downTap + msh.c55[i] * upTap;
-        msh.c66[i] = mshColRot;//L      * downTap + msh.c66[i] * upTap;
-        msh.rho[i] = mshLonRot;//rhoUse * downTap + msh.rho[i] * upTap;                                                  
+        msh.c66[i] = L      * downTap + msh.c66[i] * upTap;
+        msh.rho[i] = rhoUse * downTap + msh.rho[i] * upTap;                                                  
       }    
       
     }          
@@ -298,7 +307,7 @@ double Interpolator::taper ( double &col, double &lon, double &rad,
   Constants con;
   Utilities util;
   
-  double dTaper    = 500.;
+  double dTaper    = 1500.;
   double dTaperRad = 50.;
   
   col = col * con.PI / con.o80;
@@ -669,7 +678,7 @@ int Interpolator::recover ( double &testX, double &testY, double &testZ,
 
       if ( rad <= 5371 )
       {
-        randR = (rand () % 5000) / 100.;
+        randR = 3 * (rand () % 5000) / 100.;
       }
       
 
@@ -678,11 +687,11 @@ int Interpolator::recover ( double &testX, double &testY, double &testZ,
       1 km. This also seems to work, although I think it's a bit sketchier. 
       Could add a parameter to the radius search to make this variable, 
       dependent on depth. It does work quite well now though */      
-      if ( count < 10000 ) 
+      if ( count < 100000 ) 
       {
         double colTest = col + ( signC * randC * dTheta );
         double lonTest = lon + ( signL * randL * dTheta );
-        double radTest = rad + ( signR * 3     * randR );
+        double radTest = rad + ( signR * randR );
         
         /* Create a new testX, Y, and Z, point for the recursive search. */
         util.colLonRadRad2xyz ( colTest, lonTest, radTest, testX, testY, 
@@ -697,7 +706,7 @@ int Interpolator::recover ( double &testX, double &testY, double &testZ,
                 
       }
 
-      if ( count == 9999 )
+      if ( count == 99999 )
       {
 
         c11 = msh.c11[point];
@@ -721,7 +730,7 @@ int Interpolator::recover ( double &testX, double &testY, double &testZ,
         c55 = msh.c55[point];
         c56 = msh.c56[point];
         c66 = msh.c66[point];    
-        rho = 100;//msh.rho[point];    
+        rho = msh.rho[point];    
                 
         found = true;    
         cout << "Bad " << rad << " " << radPoint << flush << endl;
@@ -779,7 +788,7 @@ int Interpolator::recover ( double &testX, double &testY, double &testZ,
 //        break;         
 //      }
                           
-      if ( count >= 10000 ) 
+      if ( count >= 100000 ) 
       {
         cout << "Looping forever. And ever. " << 
           "Boring! I'm outta here." << endl;

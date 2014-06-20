@@ -51,7 +51,16 @@ int main ()
       utl.xyz2ColLonRadRad ( testX, testY, testZ, col, lon, rad ); 
       
       bool dum;
+
+      if ( msh.lonMin < (-1 * con.PI / 2) && msh.lonMax > (con.PI / 2) )
+	msh.lonMax = -1 * con.PI / 2;
       
+      if ( i == 0 ) {
+      std::cout << "rad, lon, col, [max]" << rad << ' ' << lon << ' ' << col << ' ' << std::endl;
+      std::cout << msh.radMin << ' ' << msh.radMax << std::endl;
+      std::cout << msh.lonMin << ' ' << msh.lonMax << std::endl;
+      std::cout << msh.colMin << ' ' << msh.colMax << std::endl;
+}
       if ( (rad <= msh.radMax) && 
            (rad >= msh.radMin) &&
            (lon <= msh.lonMax) &&
