@@ -37,7 +37,8 @@ int main ()
     mod.createKDTreeUnpacked ( msh );       
     ipl.interpolate          ( msh, mod, dis );
     exoFile -> writeParams   ( msh );
-    exoFile -> closeFile     ( );      
+    exoFile -> closeFile     ( );     
+    msh.deallocateMesh       ( mod );
     mod.deallocate           ( );
     
   }

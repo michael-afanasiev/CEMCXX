@@ -88,7 +88,9 @@ if option == '--commit' or option == '--ghost':
     slurm.write ( '#SBATCH --ntasks=1\n' )
     slurm.write ( '#SBATCH --time=04:00:00\n' )
     slurm.write ( '#SBATCH --cpus-per-task=20\n' )
-    slurm.write ( '#SBATCH --partition=other_hugemem\n' )
+    slurm.write ( '#SBATCH --mem=64GB\n' )
+    slurm.write ( '#SBATCH --exclusive\n' )
+    slurm.write ( '#SBATCH --partition=other_largemem\n' )
     slurm.write ( '#SBATCH --output=jobs/job.' + intent + '.out\n' )
     slurm.write ( '#SBATCH --error=jobs/job.' + intent + '.err\n\n' )
 
