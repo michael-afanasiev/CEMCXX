@@ -279,7 +279,7 @@ void Interpolator::interpolate ( Mesh &msh, Model_file &mod, Discontinuity
         msh.c44[i] = N;
         msh.c55[i] = L;
         msh.c66[i] = L;
-        msh.rho[i] = rhoUse;                      
+        msh.rho[i] = mshRadRot;//rhoUse;                      
       }            
      
       if ( mod.overwriteCrust == false )
