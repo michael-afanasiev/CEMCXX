@@ -127,21 +127,77 @@ void Exodus_file::merge ( Region &reg, Model_file &mod )
     lonReg.push_back ("lon180-270");
   if ( mod.lonReg4 == true )
     lonReg.push_back ("lon270-360");
-                    
-  if ( mod.radReg1 == true )
-    radReg.push_back ( "rad0000-1221" );    
-  if ( mod.radReg2 == true )
-    radReg.push_back ( "rad1221-3480" );  
-  if ( mod.radReg3 == true )
-    radReg.push_back ( "rad3480-5371" );  
-  if ( mod.radReg4 == true )
-    radReg.push_back ( "rad5371-5701" );
-  if ( mod.radReg5 == true )
-    radReg.push_back ( "rad5701-5971" );  
-  if ( mod.radReg6 == true )
-    radReg.push_back ( "rad5971-6271" );           
-  if ( mod.radReg7 == true || mod.radReg8 == true || mod.radReg9 == true )
-    radReg.push_back ( "rad6271-6371" );            
+       
+       
+  if ( mod.radReg1  == true )
+    radReg.push_back ( "rad0000-1221" );        
+  if ( mod.radReg2  == true )
+    radReg.push_back ( "rad1221-3480" );                
+  if ( mod.radReg3  == true )
+    radReg.push_back ( "rad3480-5371" );              
+  if ( mod.radReg4  == true )
+    radReg.push_back ( "rad5371-5426" );            
+  if ( mod.radReg5  == true )
+    radReg.push_back ( "rad5426-5481" );              
+  if ( mod.radReg6  == true )
+    radReg.push_back ( "rad5481-5536" );              
+  if ( mod.radReg7  == true )
+    radReg.push_back ( "rad5536-5591" );              
+  if ( mod.radReg8  == true )
+    radReg.push_back ( "rad5591-5646" );              
+  if ( mod.radReg9  == true )
+    radReg.push_back ( "rad5646-5701" );              
+  if ( mod.radReg10 == true )
+    radReg.push_back ( "rad5701-5746" );              
+  if ( mod.radReg11 == true )
+    radReg.push_back ( "rad5746-5791" );              
+  if ( mod.radReg12 == true )
+    radReg.push_back ( "rad5791-5836" );           
+  if ( mod.radReg13 == true )
+    radReg.push_back ( "rad5836-5881" );             
+  if ( mod.radReg14 == true )
+    radReg.push_back ( "rad5881-5926" );              
+  if ( mod.radReg15 == true )
+    radReg.push_back ( "rad5926-5971" );             
+  if ( mod.radReg16 == true )
+    radReg.push_back ( "rad5971-6021" );              
+  if ( mod.radReg17 == true )
+    radReg.push_back ( "rad6021-6071" );              
+  if ( mod.radReg18 == true )
+    radReg.push_back ( "rad6071-6121" );              
+  if ( mod.radReg19 == true )
+    radReg.push_back ( "rad6121-6171" );              
+  if ( mod.radReg20 == true )
+    radReg.push_back ( "rad6171-6221" );              
+  if ( mod.radReg21 == true )
+    radReg.push_back ( "rad6221-6271" );              
+  if ( mod.radReg22 == true )
+    radReg.push_back ( "rad6271-6291" );            
+  if ( mod.radReg23 == true )
+    radReg.push_back ( "rad6291-6311" );              
+  if ( mod.radReg24 == true )
+    radReg.push_back ( "rad6311-6331" );              
+  if ( mod.radReg25 == true )
+    radReg.push_back ( "rad6331-6351" );              
+  if ( mod.radReg26 == true )
+    radReg.push_back ( "rad6351-6361" );              
+  if ( mod.radReg27 == true )
+    radReg.push_back ( "rad6361-6371" );
+
+  // if ( mod.radReg1 == true )
+  //   radReg.push_back ( "rad0000-1221" );
+  // if ( mod.radReg2 == true )
+  //   radReg.push_back ( "rad1221-3480" );
+  // if ( mod.radReg3 == true )
+  //   radReg.push_back ( "rad3480-5371" );
+  // if ( mod.radReg4 == true )
+  //   radReg.push_back ( "rad5371-5701" );
+  // if ( mod.radReg5 == true )
+  //   radReg.push_back ( "rad5701-5971" );
+  // if ( mod.radReg6 == true )
+  //   radReg.push_back ( "rad5971-6271" );
+  // if ( mod.radReg7 == true || mod.radReg8 == true || mod.radReg9 == true )
+  //   radReg.push_back ( "rad6271-6371" );     
 //  if ( mod.radReg8 == true )
 //    radReg.push_back ( "rad6271-6371" );  
 //  if ( mod.radReg9 == true )
