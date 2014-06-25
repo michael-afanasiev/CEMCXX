@@ -407,6 +407,63 @@ void Utilities::inquireRotate ( Model_file &mod )
     if ( (lon >=  -91.) && (lon <=   1.) )
       mod.lonReg4 = true;
     
+    
+    if ( rad <= 1221. && rad >= 0.    )
+      mod.radReg1  = true;
+    if ( rad <= 3480. && rad >= 1221. )
+      mod.radReg2  = true;
+    if ( rad <= 5371. && rad >= 3480. )
+      mod.radReg3  = true;
+    if ( rad <= 5426. && rad >= 5371. )
+      mod.radReg4  = true;
+    if ( rad <= 5481. && rad >= 5426. )
+      mod.radReg5  = true;
+    if ( rad <= 5536. && rad >= 5481. )
+      mod.radReg6  = true;
+    if ( rad <= 5591. && rad >= 5536. )
+      mod.radReg7  = true;
+    if ( rad <= 5646. && rad >= 5591. )
+      mod.radReg8  = true;
+    if ( rad <= 5701. && rad >= 5646. )
+      mod.radReg9  = true;
+    if ( rad <= 5746. && rad >= 5701. )
+      mod.radReg10 = true;
+    if ( rad <= 5791. && rad >= 5746. )
+      mod.radReg11 = true;
+    if ( rad <= 5836. && rad >= 5791. )
+      mod.radReg12 = true;
+    if ( rad <= 5881. && rad >= 5836. )
+      mod.radReg13 = true;
+    if ( rad <= 5926. && rad >= 5881. )
+      mod.radReg14 = true;
+    if ( rad <= 5971. && rad >= 5926. )
+      mod.radReg15 = true;
+    if ( rad <= 6021. && rad >= 5971. )
+      mod.radReg16 = true;
+    if ( rad <= 6071. && rad >= 6021. )
+      mod.radReg17 = true;
+    if ( rad <= 6121. && rad >= 6071. )
+      mod.radReg18 = true;
+    if ( rad <= 6171. && rad >= 6121. )
+      mod.radReg19 = true;
+    if ( rad <= 6221. && rad >= 6171. )
+      mod.radReg20 = true;
+    if ( rad <= 6271. && rad >= 6221. )
+      mod.radReg21 = true;
+    if ( rad <= 6291. && rad >= 6271. )
+      mod.radReg22 = true;
+    if ( rad <= 6311. && rad >= 6291. )
+      mod.radReg23 = true;
+    if ( rad <= 6331. && rad >= 6311. )
+      mod.radReg24 = true;
+    if ( rad <= 6351. && rad >= 6331. )
+      mod.radReg25 = true;
+    if ( rad <= 6361. && rad >= 6351. )
+      mod.radReg26 = true;
+    if ( rad <= 6371. && rad >= 6361. )
+      mod.radReg27 = true;
+
+    
     if ( rad <= 1222. && rad >= 0.    )
       mod.radReg1 = true;
     if ( rad <= 3480. && rad >= 1222  )
