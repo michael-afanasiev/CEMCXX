@@ -114,21 +114,86 @@ void Model_file::populateSES3D ( string name, int &num_regions,
 
 void Model_file::createKDTreeUnpacked ( Mesh &msh )
 {
-  
-  cout << "Creating KDTree ( model ).\n";
+
+  std::cout << "Creating KDTree ( model )." << std::flush << std::endl;
+
+  std::vector <int> kdRegionsMin;
+  std::vector <int> kdRegionsMax;
+
   tree  = kd_create (3);
   KDdat = new int [num_p];
 
-#pragma omp parallel for
-  for ( int i=0; i<num_p; i++ ) 
-  { 
+  /* Determine if we're crossing regions. */
+  for ( size_t reg=0; reg<rad.size(); reg++ )
+  {
+    
+    if ( ( msh.radMin <= maxRadReg[reg] && msh.radMin >= minRadReg[reg] ) )
+      kdRegionsMin.push_back (reg);
+
+    if ( ( msh.radMax <= maxRadReg[reg] && msh.radMax >= minRadReg[reg] ) )
+      kdRegionsMax.push_back (reg);
+
+  }
+
+  bool diff = false;
+  for ( size_t reg=0; reg<kdRegionsMin.size(); reg++ )
+  {
+
+    if ( kdRegionsMin[reg] != kdRegionsMax[reg] )
+    {
+      kdRegions.push_back ( kdRegionsMin[reg] );
+      kdRegions.push_back ( kdRegionsMax[reg] );
+      diff = true;
+    } 
+
+  }
+
+  if ( diff == false && kdRegionsMin.size() != 0 )
+    kdRegions.push_back ( kdRegionsMin[0] );
+  else if ( diff == false && kdRegionsMax.size() != 0 )
+    kdRegions.push_back ( kdRegionsMax[0] );
+
+  if ( kdRegions.size() == 0 )
+    std::cout << "__FATAL__ __FATAL__ __FATAL__" << std::endl;
+
+  for ( vector <int> :: iterator it=kdRegions.begin(); it!=kdRegions.end(); ++it )
+  {
+    std::cout << *it << std::endl;
+  }
+
+  for ( int i=0; i<num_p; i++ )
+  {
     KDdat[i] = i;
-    if ( (radUnwrap[i] <= msh.radMax) && (radUnwrap[i] >= msh.radMin) )
-    {   
-      kd_insert3 ( tree, x[i], y[i], z[i], &KDdat[i] );
+  }
+
+  treeVec.resize ( kdRegions.size() );
+
+ for ( int i=0; i<kdRegions.size(); i++ )
+ {
+   treeVec[i] =  kd_create (3) ;
+
+#pragma omp parallel for
+    for ( int j=0; j<num_p; j++ ) 
+    { 
+      if ( (radUnwrap[j] <= msh.radMax) && (radUnwrap[j] >= msh.radMin) && 
+           (radUnwrap[j] <= maxRadReg[kdRegions[i]]) &&
+           (radUnwrap[j] >= minRadReg[kdRegions[i]]) )
+      {   
+        kd_insert3 ( treeVec[i], x[j], y[j], z[j], &KDdat[j] );
+      }
     }
   }
-  
+}
+
+void Model_file::getMinMaxRegionSES3D ( )
+{
+
+  for ( size_t r=0; r <rad.size(); r++ )
+  {
+    minRadReg.push_back ( *min_element (rad[r].begin(), rad[r].end()) );
+    maxRadReg.push_back ( *max_element (rad[r].begin(), rad[r].end()) );
+  }
+
 }
 
 void Model_file::colLonRad2xyzSES3D ()
@@ -143,12 +208,12 @@ void Model_file::colLonRad2xyzSES3D ()
     for ( size_t i=0; i<col_rad[r].size(); i++ ) {
       for ( size_t j=0; j<lon_rad[r].size(); j++ ) {
         for ( size_t k=0; k<rad[r].size()-1;     k++ ) {
-        
+       
           x[l] = rad[r][k] * cos ( lon_rad[r][j] ) * sin ( col_rad[r][i] );
           y[l] = rad[r][k] * sin ( lon_rad[r][j] ) * sin ( col_rad[r][i] );
           z[l] = rad[r][k] * cos ( col_rad[r][i] );  
           
-          radUnwrap[l] = rad[r][k];          
+          radUnwrap[l] = rad[r][k];         
           
           l++;
         
@@ -201,6 +266,7 @@ void Model_file::populateRadiansSES3D ()
         lonReg3 = true;
       if ( (lon_deg[r][i] >  -90.) && (lon_deg[r][i] <   0.) )
         lonReg4 = true;
+
       
       if ( lonReg2 == true && lonReg3 == true )
       {
@@ -378,6 +444,8 @@ void Model_file::readSES3D ()
   populateSES3D ( imd + "block_x", num_regions, col_deg, 'c' );
   populateSES3D ( imd + "block_y", num_regions, lon_deg, 'c' );
   populateSES3D ( imd + "block_z", num_regions, rad,     'c' );
+
+  getMinMaxRegionSES3D ();
   
   // Options for specific physics systems.  
   if ( intentions == "INTERPOLATE" ) {
@@ -629,8 +697,14 @@ void Model_file::getSpecFileName ( int &regC, int &iProc )
 
 void Model_file::deallocate ()
 {
-  
-  kd_free ( tree );
+
+  for ( int r=0; r<treeVec.size(); r++ )
+  {
+    kd_free ( treeVec[r] );
+  }
+
   delete [] KDdat;
+  treeVec.clear();
+  kdRegions.clear();
   
 }

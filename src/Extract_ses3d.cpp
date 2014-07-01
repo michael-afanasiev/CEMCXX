@@ -48,12 +48,24 @@ int main ()
       utl.rotateForward    ( mod.x[i], mod.y[i], mod.z[i], testX, 
                              testY, testZ, mod );
       
-      utl.xyz2ColLonRadRad ( testX, testY, testZ, col, lon, rad ); 
+      utl.xyz2ColLonRadRad ( testX, testY, testZ, col, lon, rad );
+
+      if ( abs (rad - msh.radMax) < 0.2 )
+      {
+          rad = rad - 0.2;
+          utl.colLonRadRad2xyz ( col, lon, rad, testX, testY, testZ );
+      }
+
+      if ( abs (rad - msh.radMin) < 0.2 )
+      {
+          rad = rad + 0.2;
+          utl.colLonRadRad2xyz ( col, lon, rad, testX, testY, testZ );
+      }
       
       bool dum;
 
       if ( msh.lonMin < (-1 * con.PI / 2) && msh.lonMax > (con.PI / 2) )
-	msh.lonMax = -1 * con.PI / 2;
+	    msh.lonMax = -1 * con.PI / 2;
       
       if ( i == 0 ) {
       std::cout << "rad, lon, col, [max]" << rad << ' ' << lon << ' ' << col << ' ' << std::endl;

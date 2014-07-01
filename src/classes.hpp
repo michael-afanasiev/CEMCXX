@@ -122,6 +122,8 @@ public:
   std::vector <double> vsvUnwrap;
   std::vector <double> vppUnwrap;
   std::vector <double> radUnwrap;
+  std::vector <double> lonUnwrap;
+  std::vector <double> colUnwrap;
   
   std::vector <short> r;
   
@@ -187,6 +189,9 @@ public:
   
   kdtree *tree;
 
+  std::vector<kdtree*> treeVec;
+  std::vector <int> kdRegions;
+
   std::vector <std::vector <double> > col_rad;
   std::vector <std::vector <double> > lon_rad;
   std::vector <std::vector <double> > col_deg;
@@ -197,6 +202,9 @@ public:
   std::vector <std::vector <double> > rho;
   std::vector <std::vector <double> > vpp;  
   
+  std::vector <double> minRadReg;
+  std::vector <double> maxRadReg;
+
   std::string input_model_directory;
   std::string input_model_file_type;
   std::string input_model_physics;
@@ -207,6 +215,7 @@ public:
   // Internal functions.  
   void read                   ( );
   void colLonRad2xyzSES3D     ( );
+  void getMinMaxRegionSES3D   ( );
   void populateRadiansSES3D   ( );
   void openUp                 ( );
   void projectSubspaceSES3D   ( );

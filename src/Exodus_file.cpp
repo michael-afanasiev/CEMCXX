@@ -74,16 +74,12 @@ void Exodus_file::closeFile ()
   
   ier = ex_close ( idexo );
   
-  std::cout << "DEBUG -- CLOSING" << std::endl;
-
   if (ier == 0) {
     std::cout << "File closed succesfully. \n";
   } else {
     cout << "***Fatal error closing exodus file. Exiting\n";
     exit (EXIT_FAILURE);  
   }
-  
-  std::cout << "DEBUG -- DONE_CLOSING " << ier << std::endl;
 }
 
 void Exodus_file::merge ( Region &reg, Model_file &mod ) 
@@ -102,16 +98,14 @@ void Exodus_file::merge ( Region &reg, Model_file &mod )
     
     if ( mod.intentions == "CRUST" || mod.intentions == "TOPOGRAPHY" )
     {
-      mod.radMin = 6272;
-      mod.radReg9 = true;
-      mod.radReg8 = true;
-      mod.radReg7 = true;
+      mod.radMin = 6271;
+      mod.radReg22 = true;
+      mod.radReg23 = true;
+      mod.radReg24 = true;
+      mod.radReg25 = true;
+      mod.radReg26 = true;
+      mod.radReg27 = true;
     } 
-    // else
-    // {
-    //   mod.radMin = 0;
-    // }
-    
   }
       
   if ( mod.colReg1 == true )

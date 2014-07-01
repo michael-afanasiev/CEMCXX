@@ -142,10 +142,14 @@ void Interpolator::interpolate ( Mesh &msh, Model_file &mod, Discontinuity
   Mod1d     bm;
     
   cout << "Interpolating.\n";
-    
+
   // Loop over every node point in the exodus file.
 #pragma omp parallel for
   for ( int i=0; i<msh.num_nodes; i++ ) {        
+
+    kdres  *set;
+    void   *ind_p;
+    int    point;
 
     // Define local variables.
     double mshColRot, mshLonRot, mshRadRot; // Sph. Coord. in rotated domain.
@@ -166,29 +170,29 @@ void Interpolator::interpolate ( Mesh &msh, Model_file &mod, Discontinuity
     utl.xyz2ColLonRadDeg ( msh.xmsh[i], msh.ymsh[i], msh.zmsh[i], 
       mshColPys, mshLonPys, mshRadPys );
     utl.xyz2ColLonRadDeg ( xRot, yRot, zRot, mshColRot, mshLonRot, mshRadRot );
-    
-    // TODO this is fucked up
-    // Handle special cases of longitude axis wrapping.
-    // if ( mod.wrapAround == true && mshLonPys < 0. )
-    //   mshLonPys += 360;        
-    // if ( mod.wrapAround == true && mshLonRot < 0. )
-    //   mshLonRot += 360;    
-     
+
+    bool cleanPull = false;
+    int  iRegMax   = 1;
+    int  iRegMin   = 1;
+      
+    utl.colLonRadDeg2xyz ( mshColRot, mshLonRot, mshRadRot, xRot, yRot, zRot );
+  
     // This should solve the wrap around issue I think.
     if ( mod.lonMax > 180. && mshLonPys <= 0. )
       mshLonPys += 360;
     if ( mod.lonMax > 180. && mshLonRot <= 0. )
-      mshLonRot += 360;
-    
+      mshLonRot += 360;    
     if ( msh.lonMin < (-1 * con.PI / 2) && msh.lonMax > (con.PI / 2) )
       msh.lonMax = -1 * con.PI / 2;
 
-    // Check for discontinuity conditinos.
+    // Check for discontinuity conditions.
     double upTap, downTap;
     bool smoothCrust = false;
     utl.checkRegion ( msh, mshRadPys );
     dis.lookCrust   ( msh, mshColPys, mshLonPys, mshRadPys, i, inCrust, 
                       smoothCrust, upTap, downTap, mod );
+
+    int reg = 0;
 
     /* If the rotated coordinates are within the simulation domain, go ahead and
     interpolate. */
@@ -199,16 +203,92 @@ void Interpolator::interpolate ( Mesh &msh, Model_file &mod, Discontinuity
                   
       /* Find the xyz values which are closest to the rotated point. Index of 
       the xyz values are stored in 'point'. */       
-      kdres *set   = kd_nearest3 ( mod.tree, xRot, yRot, zRot );    
-      void  *ind_p = kd_res_item_data ( set );    
-      int point    = * ( int * ) ind_p;
-                               
+
+      int kdRegionExtract = -1;
+
+      for ( int r=0; r<mod.treeVec.size(); r++ )
+      {
+
+        if ( mshRadRot >= mod.minRadReg[mod.kdRegions[r]] && 
+             mshRadRot <= mod.maxRadReg[mod.kdRegions[r]] )
+        {
+          kdRegionExtract = r;
+        }
+
+      }
+
+      if ( kdRegionExtract == -1 )
+        std::cout << "__FATAL__";
+
+      set   = kd_nearest3 ( mod.treeVec[kdRegionExtract], xRot, yRot, zRot );   
+      ind_p = kd_res_item_data ( set );   
+      point = * ( int * ) ind_p; 
+      kd_res_free ( set );
+
+      /* Necessary here to test for proper SES3D region inheritance. */
+      while ( mod.input_model_file_type == "SES3D" && not cleanPull )
+      {
+ 
+        // Adjust radius and ensure we don't grab from across boundaries.
+        utl.checkRegion ( msh, mshRadRot );
+      
+        for ( size_t r=0; r<mod.rad.size(); r++ )
+        {
+          if ( (mshRadRot > mod.minRadReg[r] && mshRadRot < mod.maxRadReg[r]) &&
+               (mod.radUnwrap[point] < mod.minRadReg[r] || 
+                mod.radUnwrap[point] > mod.maxRadReg[r]) )
+          {
+            std::cout << " DEBUG 1 " << i << std::endl;
+
+            if ( mshRadRot >= mod.minRadReg[r] && 
+                 mod.radUnwrap[point] <= mod.minRadReg[r] )
+            {
+              mshRadRot = mshRadRot + 1;
+              iRegMax  += iRegMax;
+            }
+
+            if ( mshRadRot <= mod.maxRadReg[r] &&
+                 mod.radUnwrap[point] >= mod.maxRadReg[r] )
+            {
+              mshRadRot = mshRadRot - 1;
+              iRegMin  += iRegMin;
+            }
+
+           std::cout << " BEFORE " << xRot << ' ' << yRot << ' ' << zRot << ' ' << i << std::endl;
+            /* Convert new coords to x, y, z. */
+            utl.colLonRadDeg2xyz ( mshColRot, mshLonRot, mshRadRot, xRot, yRot, zRot ); 
+            std::cout << " AFTER  " << xRot << ' ' << yRot << ' ' << zRot << std::endl;
+
+            kdres  *setNew;
+            void   *ind_pNew;
+
+            /* Find new set. */
+            set   = kd_nearest3 ( mod.tree, xRot, yRot, zRot );   
+            ind_p = kd_res_item_data ( set );   
+            point = * ( int * ) ind_p; 
+            kd_res_free ( set );
+
+            std::cout << " DEBUG " << point << ' ' << point << std::endl;
+            std::cout << " RADS  " << mod.radUnwrap[point] << ' ' << mshRadRot << std::endl;
+            std::cout << " MESH  " << msh.radMax << ' ' << msh.radMin << std::endl;
+            std::cin.get ();
+            //
+            reg = r;
+            
+            cleanPull = false;
+            break;
+
+          }
+          else
+          {
+            cleanPull = true;
+          }
+        }
+      }
+
       // Check taper condition based on distance from edge of rotated model.
       double tap = taper ( mshColRot, mshLonRot, mshRadRot, mod );
-      
-      // Adjust radius and ensure we don't grab from across boundaries.
-      utl.checkRegion ( msh, mshRadRot );
-      
+
       // Get 1d background values.
       double vs1d, vp1d, rho1d;
       bm.eumod                   ( mshRadRot, vs1d, vp1d, rho1d );     
@@ -275,10 +355,10 @@ void Interpolator::interpolate ( Mesh &msh, Model_file &mod, Discontinuity
         msh.c33[i] = A;
         msh.c12[i] = F;
         msh.c13[i] = F;
-        msh.c23[i] = S;
-        msh.c44[i] = N;
-        msh.c55[i] = L;
-        msh.c66[i] = L;
+        msh.c23[i] = reg;//S;
+        msh.c44[i] = 1;//mod.lonUnwrap[point];
+        msh.c55[i] = 1;//mod.colUnwrap[point];
+        msh.c66[i] = mod.radUnwrap[point];
         msh.rho[i] = mshRadRot;//rhoUse;                      
       }            
      
@@ -295,8 +375,11 @@ void Interpolator::interpolate ( Mesh &msh, Model_file &mod, Discontinuity
         msh.c66[i] = L      * downTap + msh.c66[i] * upTap;
         msh.rho[i] = rhoUse * downTap + msh.rho[i] * upTap;                                                  
       }    
-      
-    }          
+    }
+    else
+    {
+      cleanPull = true;
+    }
   }          
 }
 
@@ -307,7 +390,7 @@ double Interpolator::taper ( double &col, double &lon, double &rad,
   Constants con;
   Utilities util;
   
-  double dTaper    = 1500.;
+  double dTaper    = 500.;
   double dTaperRad = 50.;
   
   col = col * con.PI / con.o80;
@@ -424,6 +507,7 @@ int Interpolator::recover ( double &testX, double &testY, double &testZ,
   point = * ( int * ) ind_p;
   
   kd_res_free ( set );
+
             
   // Find the originally requested col, lon, and rad.
   util.xyz2ColLonRadRad ( origX, origY, origZ, col, lon, rad );        
