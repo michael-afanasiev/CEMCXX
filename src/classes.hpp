@@ -70,7 +70,8 @@ public:
     std::vector <std::vector <double> > &vec , char ftype );
       
   int *region;
-  int *KDdat;
+  int *KDdat1;
+  int *KDdat2;
   int num_regions;
   int num_x;
   int num_y;
@@ -187,7 +188,8 @@ public:
   bool overwriteCrust;
   bool kernel;
   
-  kdtree *tree;
+  kdtree *tree1;
+  kdtree *tree2;
 
   std::vector<kdtree*> treeVec;
   std::vector <int> kdRegions;

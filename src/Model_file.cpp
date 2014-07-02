@@ -120,8 +120,7 @@ void Model_file::createKDTreeUnpacked ( Mesh &msh )
   std::vector <int> kdRegionsMin;
   std::vector <int> kdRegionsMax;
 
-  tree  = kd_create (3);
-  KDdat = new int [num_p];
+  //tree  = kd_create (3);
 
   /* Determine if we're crossing regions. */
   for ( size_t reg=0; reg<rad.size(); reg++ )
@@ -161,28 +160,69 @@ void Model_file::createKDTreeUnpacked ( Mesh &msh )
     std::cout << *it << std::endl;
   }
 
-  for ( int i=0; i<num_p; i++ )
-  {
-    KDdat[i] = i;
-  }
+  KDdat1 = new int [num_p];
+  for ( int j=0; j<num_p; j++ )
+    KDdat1[j] = j;
+   
+  KDdat2 = new int [num_p];
+  for ( int j=0; j<num_p; j++ )
+    KDdat2[j] = j;
 
-  treeVec.resize ( kdRegions.size() );
+  if ( kdRegions.size() <= 1 )
+    tree1 = kd_create (3);
+  if ( kdRegions.size() >= 2 )
+    tree2 = kd_create (3);
+  //treeVec.resize ( kdRegions.size() );
+  //
+  bool tree1Alive = false;
+  bool tree2Alive = false;
 
  for ( int i=0; i<kdRegions.size(); i++ )
  {
-   treeVec[i] =  kd_create (3) ;
+//   kdtree *tree = kd_create (3) ;
+   std::cout << "HI " << flush << endl;
 
+
+    cout << "HERE " << maxRadReg[kdRegions[i]] << ' ' << minRadReg[kdRegions[i]] << flush << endl;
 #pragma omp parallel for
     for ( int j=0; j<num_p; j++ ) 
-    { 
+    {
+
       if ( (radUnwrap[j] <= msh.radMax) && (radUnwrap[j] >= msh.radMin) && 
            (radUnwrap[j] <= maxRadReg[kdRegions[i]]) &&
-           (radUnwrap[j] >= minRadReg[kdRegions[i]]) )
+           (radUnwrap[j] >= minRadReg[kdRegions[i]]) &&
+           (i == 0) )
       {   
-        kd_insert3 ( treeVec[i], x[j], y[j], z[j], &KDdat[j] );
+        kd_insert3 ( tree1, x[j], y[j], z[j], &KDdat1[j] );
+        tree1Alive = true;
+      }
+      if ( (radUnwrap[j] <= msh.radMax) && (radUnwrap[j] >= msh.radMin) && 
+           (radUnwrap[j] <= maxRadReg[kdRegions[i]]) &&
+           (radUnwrap[j] >= minRadReg[kdRegions[i]]) &&
+           (i == 1) )
+      {   
+
+        kd_insert3 ( tree2, x[j], y[j], z[j], &KDdat2[j] );
+        tree2Alive = true;
       }
     }
+
+   std::cout << "BYE " << flush << endl;
+//  treeVec.push_back ( tree );
   }
+
+ if ( kdRegions.size () > 1 )
+ {
+   if ( tree1Alive == false )
+     kdRegions.erase (kdRegions.begin());
+   if ( tree2Alive == false )
+   {
+     kdRegions.erase (kdRegions.begin()+1);
+     cout << "DESTROYED" << endl;
+   }
+ }
+//  delete [] KDdat;
+  //kd_free (tree);
 }
 
 void Model_file::getMinMaxRegionSES3D ( )
@@ -703,7 +743,8 @@ void Model_file::deallocate ()
     kd_free ( treeVec[r] );
   }
 
-  delete [] KDdat;
+  delete [] KDdat1;
+  delete [] KDdat2;
   treeVec.clear();
   kdRegions.clear();
   

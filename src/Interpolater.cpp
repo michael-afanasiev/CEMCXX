@@ -141,13 +141,14 @@ void Interpolator::interpolate ( Mesh &msh, Model_file &mod, Discontinuity
   Constants con;
   Mod1d     bm;
     
-  cout << "Interpolating.\n";
+  cout << "Interpolating.\n" << flush;
 
   // Loop over every node point in the exodus file.
 #pragma omp parallel for
   for ( int i=0; i<msh.num_nodes; i++ ) {        
 
-    kdres  *set;
+    kdres  *set1;
+    kdres  *set2;
     void   *ind_p;
     int    point;
 
@@ -204,13 +205,16 @@ void Interpolator::interpolate ( Mesh &msh, Model_file &mod, Discontinuity
       /* Find the xyz values which are closest to the rotated point. Index of 
       the xyz values are stored in 'point'. */       
 
+      // Adjust radius and ensure we don't grab from across boundaries.
+      utl.checkRegion ( msh, mshRadRot );
+
       int kdRegionExtract = -1;
 
-      for ( int r=0; r<mod.treeVec.size(); r++ )
+      for ( int r=0; r<mod.kdRegions.size(); r++ )
       {
 
-        if ( mshRadRot >= mod.minRadReg[mod.kdRegions[r]] && 
-             mshRadRot <= mod.maxRadReg[mod.kdRegions[r]] )
+        if ( mshRadRot >= ( mod.minRadReg[mod.kdRegions[r]] - 1 ) && 
+             mshRadRot <= ( mod.maxRadReg[mod.kdRegions[r]] + 1 ) )
         {
           kdRegionExtract = r;
         }
@@ -218,72 +222,25 @@ void Interpolator::interpolate ( Mesh &msh, Model_file &mod, Discontinuity
       }
 
       if ( kdRegionExtract == -1 )
-        std::cout << "__FATAL__";
-
-      set   = kd_nearest3 ( mod.treeVec[kdRegionExtract], xRot, yRot, zRot );   
-      ind_p = kd_res_item_data ( set );   
-      point = * ( int * ) ind_p; 
-      kd_res_free ( set );
-
-      /* Necessary here to test for proper SES3D region inheritance. */
-      while ( mod.input_model_file_type == "SES3D" && not cleanPull )
       {
- 
-        // Adjust radius and ensure we don't grab from across boundaries.
-        utl.checkRegion ( msh, mshRadRot );
-      
-        for ( size_t r=0; r<mod.rad.size(); r++ )
-        {
-          if ( (mshRadRot > mod.minRadReg[r] && mshRadRot < mod.maxRadReg[r]) &&
-               (mod.radUnwrap[point] < mod.minRadReg[r] || 
-                mod.radUnwrap[point] > mod.maxRadReg[r]) )
-          {
-            std::cout << " DEBUG 1 " << i << std::endl;
+        std::cout << "__FATAL__" << std::flush << std::endl;
+        exit ( EXIT_FAILURE );
+      }
 
-            if ( mshRadRot >= mod.minRadReg[r] && 
-                 mod.radUnwrap[point] <= mod.minRadReg[r] )
-            {
-              mshRadRot = mshRadRot + 1;
-              iRegMax  += iRegMax;
-            }
+      if ( kdRegionExtract == 0 )
+      {
+        set1  = kd_nearest3 ( mod.tree1, xRot, yRot, zRot );   
+        ind_p = kd_res_item_data ( set1 );   
+        point = * ( int * ) ind_p; 
+        kd_res_free ( set1 );
+      }
 
-            if ( mshRadRot <= mod.maxRadReg[r] &&
-                 mod.radUnwrap[point] >= mod.maxRadReg[r] )
-            {
-              mshRadRot = mshRadRot - 1;
-              iRegMin  += iRegMin;
-            }
-
-           std::cout << " BEFORE " << xRot << ' ' << yRot << ' ' << zRot << ' ' << i << std::endl;
-            /* Convert new coords to x, y, z. */
-            utl.colLonRadDeg2xyz ( mshColRot, mshLonRot, mshRadRot, xRot, yRot, zRot ); 
-            std::cout << " AFTER  " << xRot << ' ' << yRot << ' ' << zRot << std::endl;
-
-            kdres  *setNew;
-            void   *ind_pNew;
-
-            /* Find new set. */
-            set   = kd_nearest3 ( mod.tree, xRot, yRot, zRot );   
-            ind_p = kd_res_item_data ( set );   
-            point = * ( int * ) ind_p; 
-            kd_res_free ( set );
-
-            std::cout << " DEBUG " << point << ' ' << point << std::endl;
-            std::cout << " RADS  " << mod.radUnwrap[point] << ' ' << mshRadRot << std::endl;
-            std::cout << " MESH  " << msh.radMax << ' ' << msh.radMin << std::endl;
-            std::cin.get ();
-            //
-            reg = r;
-            
-            cleanPull = false;
-            break;
-
-          }
-          else
-          {
-            cleanPull = true;
-          }
-        }
+      if ( kdRegionExtract == 1 )
+      {
+        set2  = kd_nearest3 ( mod.tree2, xRot, yRot, zRot );   
+        ind_p = kd_res_item_data ( set2 );   
+        point = * ( int * ) ind_p; 
+        kd_res_free ( set2 );
       }
 
       // Check taper condition based on distance from edge of rotated model.
@@ -355,11 +312,11 @@ void Interpolator::interpolate ( Mesh &msh, Model_file &mod, Discontinuity
         msh.c33[i] = A;
         msh.c12[i] = F;
         msh.c13[i] = F;
-        msh.c23[i] = reg;//S;
-        msh.c44[i] = 1;//mod.lonUnwrap[point];
-        msh.c55[i] = 1;//mod.colUnwrap[point];
-        msh.c66[i] = mod.radUnwrap[point];
-        msh.rho[i] = mshRadRot;//rhoUse;                      
+        msh.c23[i] = S;
+        msh.c44[i] = N;
+        msh.c55[i] = L;
+        msh.c66[i] = L;
+        msh.rho[i] = rhoUse;                      
       }            
      
       if ( mod.overwriteCrust == false )
@@ -390,7 +347,7 @@ double Interpolator::taper ( double &col, double &lon, double &rad,
   Constants con;
   Utilities util;
   
-  double dTaper    = 500.;
+  double dTaper    = 2000.;
   double dTaperRad = 50.;
   
   col = col * con.PI / con.o80;
