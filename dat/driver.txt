@@ -1,14 +1,14 @@
 ## This is a par file for model building.
 
 INPUT_MESH_DIRECTORY  = /mnt/lnec/afanasm/cubitScratch/mesh/s20+topo+crust/
-INPUT_MODEL_DIRECTORY = /mnt/lnec/afanasm/models/chile/
+INPUT_MODEL_DIRECTORY = /mnt/lnec/afanasm/models/europe/
 INPUT_MODEL_FILE_TYPE = SES3D
 INPUT_MODEL_PHYSICS   = TTI
-ROTATION_ANGLE        = 0
+ROTATION_ANGLE        = 57.5
 ROTATION_VECTOR_X     = 0
-ROTATION_VECTOR_Y     = 0
+ROTATION_VECTOR_Y     = 1
 ROTATION_VECTOR_Z     = 0
 INTENTIONS            = EXTRACT
 OUTPUT_MODEL_PHYSICS  = TTI
-OVERWRITE_CRUST       = FALSE
-KERNEL                = TRUE
+OVERWRITE_CRUST       = TRUE
+KERNEL                = FALSE

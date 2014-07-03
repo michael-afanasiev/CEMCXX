@@ -441,7 +441,7 @@ public:
   std::multimap <int, std::vector <int> > elemOrder;  
   std::vector < std::vector <int> > refineElemConn;
 
-  
+  std::vector <int> masterElemConn;  
   char name;
   char title [MAX_LINE_LENGTH+1]; 
   char elem_type [MAX_LINE_LENGTH+1];

@@ -37,8 +37,8 @@ int main ()
     msh.createKDTreeUnpacked ( );            
     
     std::cout << "Extracting." << std::endl;
-    
-#pragma omp parallel for
+    std::cout << msh.masterElemConn.size() << std::endl;
+#pragma omp parallel for schedule(dynamic)
     for ( size_t i=0; i<mod.x.size(); i++ )               
     {
       double c11, c12, c13, c14, c15, c16,c22, c23, c24, c25, c26, c33, c34;
@@ -67,12 +67,6 @@ int main ()
       if ( msh.lonMin < (-1 * con.PI / 2) && msh.lonMax > (con.PI / 2) )
 	    msh.lonMax = -1 * con.PI / 2;
       
-      if ( i == 0 ) {
-      std::cout << "rad, lon, col, [max]" << rad << ' ' << lon << ' ' << col << ' ' << std::endl;
-      std::cout << msh.radMin << ' ' << msh.radMax << std::endl;
-      std::cout << msh.lonMin << ' ' << msh.lonMax << std::endl;
-      std::cout << msh.colMin << ' ' << msh.colMax << std::endl;
-}
       if ( (rad <= msh.radMax) && 
            (rad >= msh.radMin) &&
            (lon <= msh.lonMax) &&

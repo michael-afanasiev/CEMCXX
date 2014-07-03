@@ -182,11 +182,12 @@ void Model_file::createKDTreeUnpacked ( Mesh &msh )
 //   kdtree *tree = kd_create (3) ;
    std::cout << "HI " << flush << endl;
 
-
+// TODO :: This is where we loose the unWrap.
     cout << "HERE " << maxRadReg[kdRegions[i]] << ' ' << minRadReg[kdRegions[i]] << flush << endl;
 #pragma omp parallel for
     for ( int j=0; j<num_p; j++ ) 
-    {
+    { 
+
 
       if ( (radUnwrap[j] <= msh.radMax) && (radUnwrap[j] >= msh.radMin) && 
            (radUnwrap[j] <= maxRadReg[kdRegions[i]]) &&
@@ -204,6 +205,11 @@ void Model_file::createKDTreeUnpacked ( Mesh &msh )
 
         kd_insert3 ( tree2, x[j], y[j], z[j], &KDdat2[j] );
         tree2Alive = true;
+      //if ( radUnwrap[j] > 5650 )
+     // {
+     //   cout << maxRadReg[kdRegions[i]] << ' ' << radUnwrap[j] << endl;
+     //   cin.get();
+     // }
       }
     }
 
@@ -214,13 +220,24 @@ void Model_file::createKDTreeUnpacked ( Mesh &msh )
  if ( kdRegions.size () > 1 )
  {
    if ( tree1Alive == false )
+   {
      kdRegions.erase (kdRegions.begin());
+     cout << "DESTROYED 1" << endl;
+     tree1 = tree2;
+   }
    if ( tree2Alive == false )
    {
      kdRegions.erase (kdRegions.begin()+1);
      cout << "DESTROYED" << endl;
    }
  }
+
+
+  for ( vector <int> :: iterator it=kdRegions.begin(); it!=kdRegions.end(); ++it )
+  {
+    std::cout << *it << std::endl;
+  }
+
 //  delete [] KDdat;
   //kd_free (tree);
 }

@@ -430,7 +430,6 @@ void Mesh::getConnectivity ( int exoid )
     exit ( EXIT_FAILURE );
   }
   
-  vector <int> masterElemConn;
   for ( int i=0; i!=num_elem_blk; i++ ) {
     
     ier = ex_get_elem_block ( exoid, ids[i], elem_type, &num_elem_in_blk, 
@@ -459,6 +458,7 @@ void Mesh::getConnectivity ( int exoid )
     delete [] elemConn;
     
   }
+
     
   vector <int> node;
   node.reserve ( num_node_per_elem );
@@ -519,6 +519,7 @@ void Mesh::deallocateMesh ( Model_file &mod )
   if ( mod.intentions == "EXTRACT" )
   {    
     delete [] KDdat;
-    kd_free ( tree );  
+    kd_free ( tree ); 
+    masterElemConn.clear ();
   }
 }
