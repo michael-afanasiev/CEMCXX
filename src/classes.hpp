@@ -185,8 +185,10 @@ public:
   bool radReg27   = false;
   bool wrapAround = false;
   bool doRotate   = false;
+  bool kernel1d   = false;
+  bool kernel3d   = false;
   bool overwriteCrust;
-  bool kernel;
+
   
   kdtree *tree1;
   kdtree *tree2;
@@ -213,7 +215,8 @@ public:
   std::string intentions;
   std::string output_model_physics;
   std::string mesh_directory;
-  
+  std::string subset;
+
   // Internal functions.  
   void read                   ( );
   void colLonRad2xyzSES3D     ( );
@@ -467,8 +470,10 @@ public:
 class Interpolator
 {
   
-public: 
-  
+public:
+ 
+  int fallBackCount = 10000;
+
   std::vector <int> refineArr;
   std::vector < std::vector <int> > elemWithin;
     

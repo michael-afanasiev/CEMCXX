@@ -80,7 +80,29 @@ if ( params[8] == 'TOPOGRAPHY' ):
 
 
 # Write sbatch submission.
-if option == '--commit' or option == '--ghost':
+if ( (option == '--commit' or option == '--ghost') and params[8] == 'EXTRACT' ):
+
+    slurm = open ( './jobs/job_' + intent + '.sbatch', 'w' )
+    slurm.write ( '#!/bin/bash -l\n\n' )
+    slurm.write ( '#SBATCH --nodes=1\n' )
+    slurm.write ( '#SBATCH --ntasks=1\n' )
+    slurm.write ( '#SBATCH --time=04:00:00\n' )
+    slurm.write ( '#SBATCH --cpus-per-task=20\n' )
+    slurm.write ( '#SBATCH --mem=32GB\n' )
+    slurm.write ( '#SBATCH --exclusive\n' )
+    slurm.write ( '#SBATCH --partition=fichtner_compute\n' )
+    slurm.write ( '#SBATCH --output=jobs/job.' + intent + '.%j.out\n' )
+    slurm.write ( '#SBATCH --error=jobs/job.' + intent + '.%j.err\n\n' )
+
+    slurm.write ( 'module load intel netcdf\n' )
+
+    slurm.write ( 'export OMP_NUM_THREADS=20\n' )
+    slurm.write ( 'srun ' + os.environ['CEMHOME'] + '/bin/' + intent + '\n' )
+    slurm.close ()
+
+    print 'Created ./jobs/job_' + intent + '.sbatch. Submit that bad boy.\n'
+
+if ( (option == '--commit' or option == '--ghost') and params[8] == 'INTERPOLATE' ):
 
     slurm = open ( './jobs/job_' + intent + '.sbatch', 'w' )
     slurm.write ( '#!/bin/bash -l\n\n' )
@@ -91,8 +113,8 @@ if option == '--commit' or option == '--ghost':
     slurm.write ( '#SBATCH --mem=32GB\n' )
     slurm.write ( '#SBATCH --exclusive\n' )
     slurm.write ( '#SBATCH --partition=fichtner_compute\n' )
-    slurm.write ( '#SBATCH --output=jobs/job.' + intent + '.out\n' )
-    slurm.write ( '#SBATCH --error=jobs/job.' + intent + '.err\n\n' )
+    slurm.write ( '#SBATCH --output=jobs/job.' + intent + '.%j.out\n' )
+    slurm.write ( '#SBATCH --error=jobs/job.' + intent + '.%j.err\n\n' )
 
     slurm.write ( 'module load intel netcdf\n' )
 
@@ -100,4 +122,4 @@ if option == '--commit' or option == '--ghost':
     slurm.write ( 'srun ' + os.environ['CEMHOME'] + '/bin/' + intent + '\n' )
     slurm.close ()
 
-    print 'Created ./jobs/job_' + intent + '.sbatch. Submit that bad boy.\n'
+

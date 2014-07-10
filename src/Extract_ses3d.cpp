@@ -36,9 +36,8 @@ int main ()
     msh.getConnectivity      ( exoFile -> idexo );
     msh.createKDTreeUnpacked ( );            
     
-    std::cout << "Extracting." << std::endl;
-    std::cout << msh.masterElemConn.size() << std::endl;
-#pragma omp parallel for schedule(dynamic)
+    std::cout << "Extracting." << std::flush << std::endl;
+#pragma omp parallel for schedule (guided)
     for ( size_t i=0; i<mod.x.size(); i++ )               
     {
       double c11, c12, c13, c14, c15, c16,c22, c23, c24, c25, c26, c33, c34;

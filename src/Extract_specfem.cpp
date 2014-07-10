@@ -4,11 +4,10 @@
 #include <iomanip>
 #include <string>
 
-using namespace std;
-
 int main ( int argc, char *argv[] ) 
 {
-    
+
+  bool dum;
   int regC  = atoi (argv[1]);
   int iProc = atoi (argv[2]);
   
@@ -36,12 +35,6 @@ int main ( int argc, char *argv[] )
 
   std::cout << "\n----- Extracting -----\n";
   
-  bool *internalFound = new bool [mod.x.size()];   
-  for ( size_t i=0; i<mod.x.size(); i++ )
-  {
-    internalFound[i] = false;
-  }
-    
   for ( std::vector < Exodus_file > :: 
     iterator exoFile=reg.regionsExo.begin();
     exoFile!=reg.regionsExo.end(); ++exoFile ) 
@@ -58,7 +51,7 @@ int main ( int argc, char *argv[] )
   
     std::cout << "Extracting." << std::endl;
   
-#pragma omp parallel for        
+#pragma omp parallel for schedule (guided)        
     for ( size_t i=0; i<mod.x.size(); i++ )               
     {
       double c11, c12, c13, c14, c15, c16,c22, c23, c24, c25, c26, c33, c34;
@@ -75,86 +68,82 @@ int main ( int argc, char *argv[] )
       
       // TODO get rid of the stupid skip parameter.
       skip = 'p';
-      
-      if ( internalFound[i] == false )
+
+      if ( abs (rad - msh.radMax) < 0.2 )
       {
-        if ( (rad <= msh.radMax) && 
-             (rad >= msh.radMin) &&
-             (lon <= (msh.lonMax + con.oneDegRad)) &&
-             (lon >= (msh.lonMin - con.oneDegRad)) &&
-             (col <= (msh.colMax + con.oneDegRad)) &&
-             (col >= (msh.colMin - con.oneDegRad)) &&
-              mod.r[i] != 9 ) 
-        {            
-                                                                                                                                                     
-          int pass = ipl.recover ( testX, testY, testZ, msh, c11, c12, c13, 
-          c14, c15, c16, c22, c23, c24, c25, c26, c33, c34, c35, c36, c44, 
-          c45, c46, c55, c56, c66, rho, skip, internalFound[i] ); 
-            
-          mod.c11[i]       = c11;
-          mod.c12[i]       = c12;
-          mod.c13[i]       = c13;
-          mod.c22[i]       = c22;
-          mod.c23[i]       = c23;
-          mod.c33[i]       = c33;
-          mod.c44[i]       = c44;
-          mod.c55[i]       = c55;
-          mod.c66[i]       = c66;            
-          mod.rhoUnwrap[i] = rho;
-                  
-        }
-        if ( mod.r[i] == 9 )
-        {
-          
-          double vshUse, vppUse, rhoUse;
-          
-          Mod1d bm;
-          bm.eumod ( rad, vshUse, vppUse, rhoUse);
-            
-          double vsvUse = vshUse;
-          
-          double N = rhoUse * vshUse * vshUse;
-          double L = rhoUse * vsvUse * vsvUse;
-          double A = rhoUse * vppUse * vppUse;
-          
-          double C = A;
-          double F = A - 2 * L;
-          double S = A - 2 * N;
-          
-          mod.c11[i] = C;
-          mod.c22[i] = A;
-          mod.c33[i] = A;
-          mod.c12[i] = F;
-          mod.c13[i] = F;
-          mod.c23[i] = S;
-          mod.c44[i] = N;
-          mod.c55[i] = L;
-          mod.c66[i] = L;
-          mod.rhoUnwrap[i] = rhoUse;  
-          
-        }                          
+          rad = rad - 0.2;
+          utl.colLonRadRad2xyz ( col, lon, rad, testX, testY, testZ );
       }
+
+      if ( abs (rad - msh.radMin) < 0.2 )
+      {
+          rad = rad + 0.2;
+          utl.colLonRadRad2xyz ( col, lon, rad, testX, testY, testZ );
+      }
+
+      if ( msh.lonMin < (-1 * con.PI / 2) && msh.lonMax > (con.PI / 2) )
+	      msh.lonMax = -1 * con.PI / 2;
+
+      if ( (rad <= msh.radMax) && 
+           (rad >= msh.radMin) &&
+           (lon <= (msh.lonMax + con.oneDegRad)) &&
+           (lon >= (msh.lonMin - con.oneDegRad)) &&
+           (col <= (msh.colMax + con.oneDegRad)) &&
+           (col >= (msh.colMin - con.oneDegRad)) &&
+            mod.r[i] != 9 ) 
+      {            
+    
+        int pass = ipl.recover ( testX, testY, testZ, msh, c11, c12, c13, 
+        c14, c15, c16, c22, c23, c24, c25, c26, c33, c34, c35, c36, c44, 
+        c45, c46, c55, c56, c66, rho, skip, dum ); 
+          
+        mod.c11[i]       = c11;
+        mod.c12[i]       = c12;
+        mod.c13[i]       = c13;
+        mod.c22[i]       = c22;
+        mod.c23[i]       = c23;
+        mod.c33[i]       = c33;
+        mod.c44[i]       = c44;
+        mod.c55[i]       = c55;
+        mod.c66[i]       = c66;            
+        mod.rhoUnwrap[i] = rho;
+                
+      }
+      if ( mod.r[i] == 9 )
+      {
+        
+        double vshUse, vppUse, rhoUse;
+        
+        Mod1d bm;
+        bm.eumod ( rad, vshUse, vppUse, rhoUse);
+          
+        double vsvUse = vshUse;
+        
+        double N = rhoUse * vshUse * vshUse;
+        double L = rhoUse * vsvUse * vsvUse;
+        double A = rhoUse * vppUse * vppUse;
+        
+        double C = A;
+        double F = A - 2 * L;
+        double S = A - 2 * N;
+        
+        mod.c11[i] = C;
+        mod.c22[i] = A;
+        mod.c33[i] = A;
+        mod.c12[i] = F;
+        mod.c13[i] = F;
+        mod.c23[i] = S;
+        mod.c44[i] = N;
+        mod.c55[i] = L;
+        mod.c66[i] = L;
+        mod.rhoUnwrap[i] = rhoUse;          
+      }                          
     }        
 
     msh.deallocateMesh   ( mod );
     exoFile -> closeFile ( );                 
   }
   
-  // int l = 0;
-  // for ( int i=0; i<mod.x.size(); i++ )
-  // {
-  //   if ( internalFound[i] == false )
-  //   {
-  //     double col, lon, rad;
-  //     utl.xyz2ColLonRadDeg ( mod.x[i], mod.y[i], mod.z[i], col, lon, rad );
-  //     std::cout << i << " " << mod.x[i] << " " << mod.y[i] << " " 
-  //       << mod.z[i] << std::endl;
-  //     std::cout << col << " " << lon << " " << rad << std::endl;
-  //     l += 1;
-  //   }
-  // }
-  // std::cout << "This many not found: " << l << std::endl;
-
   mod.projectSubspaceSPECFEM ( );
 
   std::cout << "Writing NetCDF" << std::endl;  

@@ -47,7 +47,7 @@ void Model_file::populateSES3D ( string name, int &num_regions,
   int *region = 0;  
   int fix_stride;
 
-  cout << "Reading: " << name << "\n";
+  std::cout << "Reading: " << name << std::flush << std::endl;
     
   myfile.open ( name, ios::in );
   
@@ -155,10 +155,6 @@ void Model_file::createKDTreeUnpacked ( Mesh &msh )
   if ( kdRegions.size() == 0 )
     std::cout << "__FATAL__ __FATAL__ __FATAL__" << std::endl;
 
-  for ( vector <int> :: iterator it=kdRegions.begin(); it!=kdRegions.end(); ++it )
-  {
-    std::cout << *it << std::endl;
-  }
 
   KDdat1 = new int [num_p];
   for ( int j=0; j<num_p; j++ )
@@ -172,18 +168,13 @@ void Model_file::createKDTreeUnpacked ( Mesh &msh )
     tree1 = kd_create (3);
   if ( kdRegions.size() >= 2 )
     tree2 = kd_create (3);
-  //treeVec.resize ( kdRegions.size() );
-  //
+  
   bool tree1Alive = false;
   bool tree2Alive = false;
 
  for ( int i=0; i<kdRegions.size(); i++ )
  {
-//   kdtree *tree = kd_create (3) ;
-   std::cout << "HI " << flush << endl;
 
-// TODO :: This is where we loose the unWrap.
-    cout << "HERE " << maxRadReg[kdRegions[i]] << ' ' << minRadReg[kdRegions[i]] << flush << endl;
 #pragma omp parallel for
     for ( int j=0; j<num_p; j++ ) 
     { 
@@ -202,45 +193,28 @@ void Model_file::createKDTreeUnpacked ( Mesh &msh )
            (radUnwrap[j] >= minRadReg[kdRegions[i]]) &&
            (i == 1) )
       {   
-
         kd_insert3 ( tree2, x[j], y[j], z[j], &KDdat2[j] );
         tree2Alive = true;
-      //if ( radUnwrap[j] > 5650 )
-     // {
-     //   cout << maxRadReg[kdRegions[i]] << ' ' << radUnwrap[j] << endl;
-     //   cin.get();
-     // }
       }
     }
 
-   std::cout << "BYE " << flush << endl;
-//  treeVec.push_back ( tree );
   }
 
- if ( kdRegions.size () > 1 )
- {
-   if ( tree1Alive == false )
-   {
-     kdRegions.erase (kdRegions.begin());
-     cout << "DESTROYED 1" << endl;
-     tree1 = tree2;
-   }
-   if ( tree2Alive == false )
-   {
-     kdRegions.erase (kdRegions.begin()+1);
-     cout << "DESTROYED" << endl;
-   }
- }
-
-
-  for ( vector <int> :: iterator it=kdRegions.begin(); it!=kdRegions.end(); ++it )
+  if ( kdRegions.size () > 1 )
   {
-    std::cout << *it << std::endl;
+    if ( tree1Alive == false )
+    {
+      kdRegions.erase (kdRegions.begin());
+      tree1 = tree2;
+    }
+    if ( tree2Alive == false )
+    {
+      kdRegions.erase (kdRegions.begin()+1);
+    }
   }
 
-//  delete [] KDdat;
-  //kd_free (tree);
 }
+
 
 void Model_file::getMinMaxRegionSES3D ( )
 {
@@ -506,12 +480,15 @@ void Model_file::readSES3D ()
   
   // Options for specific physics systems.  
   if ( intentions == "INTERPOLATE" ) {
-    if ( input_model_physics == "TTI" ) {      
+    
+    if ( input_model_physics == "TTI" ) 
+    {      
       populateSES3D ( imd + "dRHO", num_regions, rho, 'p' );
       populateSES3D ( imd + "dVSV", num_regions, vsv, 'p' );
       populateSES3D ( imd + "dVSH", num_regions, vsh, 'p' );
       populateSES3D ( imd + "dVPP", num_regions, vpp, 'p' );
     }
+
   } else if ( intentions == "EXTRACT" || intentions == "REFINE" ) {
     rho.resize ( num_regions );
     vsv.resize ( num_regions );
@@ -572,7 +549,7 @@ void Model_file::writeSES3D ()
 void Model_file::dePopulateSES3D ( string omf, vector < vector <double > > ou )
 {
   
-  cout << "Writing: " << omf << "\n";
+  std::cout << "Writing: " << omf << std::flush << std::endl;
   ofstream myfile ( omf, ios::out );
   
   myfile << ou.size() << "\n";
@@ -695,10 +672,6 @@ int Model_file::writeNetCDF ( std::vector <std::vector<double>> &par,
       for ( vector <double> :: iterator p=par[r].begin(); p!=par[r].end(); 
         ++p )
       {
-        // if ( *p < 1 )
-        // {
-        //   cout << "BAD " << l << endl;
-        // }
         dataOut[l] = *p;
         l++;
       }
@@ -749,6 +722,7 @@ void Model_file::getSpecFileName ( int &regC, int &iProc )
   specFileName.append (ssReg.str());
   specFileName.append ("_proc");
   specFileName.append (ssPrc.str());
+
   
 }
 

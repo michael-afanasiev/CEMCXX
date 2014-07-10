@@ -464,25 +464,25 @@ void Utilities::inquireRotate ( Model_file &mod )
       mod.radReg27 = true;
 
     
-    if ( rad <= 1222. && rad >= 0.    )
-      mod.radReg1 = true;
-    if ( rad <= 3480. && rad >= 1222  )
-      mod.radReg2 = true;
-    if ( rad <= 5371. && rad >= 3480. )
-      mod.radReg3 = true;
-    if ( rad <= 5701. && rad >= 5371. )
-      mod.radReg4 = true;
-    if ( rad <= 5971. && rad >= 5701. )
-      mod.radReg5 = true;
-    if ( rad <= 6271. && rad >= 5971. )
-      mod.radReg6 = true;
-    if ( rad <= 6319. && rad >= 6271. )
-      mod.radReg7 = true;
-    if ( rad <= 6351. && rad >= 6319. )
-      mod.radReg8 = true;
-    if ( rad <= 6371. && rad >= 6351. )
-      mod.radReg9 = true;
-  
+//    if ( rad <= 1222. && rad >= 0.    )
+//      mod.radReg1 = true;
+//    if ( rad <= 3480. && rad >= 1222  )
+//      mod.radReg2 = true;
+//    if ( rad <= 5371. && rad >= 3480. )
+//      mod.radReg3 = true;
+//    if ( rad <= 5701. && rad >= 5371. )
+//      mod.radReg4 = true;
+//    if ( rad <= 5971. && rad >= 5701. )
+//      mod.radReg5 = true;
+//    if ( rad <= 6271. && rad >= 5971. )
+//      mod.radReg6 = true;
+//    if ( rad <= 6319. && rad >= 6271. )
+//      mod.radReg7 = true;
+//    if ( rad <= 6351. && rad >= 6319. )
+//      mod.radReg8 = true;
+//    if ( rad <= 6371. && rad >= 6351. )
+//      mod.radReg9 = true;
+ 
   }
   
   /* Allow for the special case of wrapping along the -180/180 on the lon. axis.

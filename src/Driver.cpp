@@ -69,6 +69,7 @@ void Driver::populateParams ( Model_file &mod )
   mod.rotVecZ               = stod ( params[7] );
   mod.intentions            = params[8];
   mod.output_model_physics  = params[9];
+  mod.subset                = params[10];
   
   if ( params[10] == "TRUE" )
   {
@@ -79,13 +80,17 @@ void Driver::populateParams ( Model_file &mod )
     mod.overwriteCrust = false;
   }
 
-  if ( params[11] == "TRUE" )
+  if ( params[11] == "KERNEL1D" )
   {
-    mod.kernel = true;
+    mod.kernel1d = true;
+  }
+  else if ( params[11] == "KERNEL3D" )
+  {
+    mod.kernel3d = true;
   }
   else
   {
-    mod.kernel = false;
+    std::cout << "__OVERWRITING__" << std::flush << std::endl;
   }
   
   mod.rotRad = mod.rotAng * con.PI / con.o80;  

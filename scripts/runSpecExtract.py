@@ -1,8 +1,15 @@
-#! /usr/local/bin/python
+#! /usr/bin/python
 
+import collections
 import os
 import sys
 import subprocess
+
+from mpi4py import MPI
+
+comm = MPI.COMM_WORLD
+rank = comm.rank
+size = comm.size
 
 if ( len (sys.argv) < 5 or sys.argv[1] == '--help' ):
   print "Usage: \nNum Proc \n1st Proc \n1stReg \nlastReg"
@@ -15,14 +22,16 @@ endReg  = int (sys.argv[4])
 
 pwd = os.getcwd()
 
-# numProc = input ('Enter number of processors: ')
-# num1st  = input ('Enter first processor: ')
-# begReg, endReg = input ('Enter first, last region: ')
+job_dict = collections.defaultdict(list)
 
+cur_proc = 0
+for i in range (num1st, numProc):
+  job_dict[cur_proc].append(i)
+  cur_proc += 1
+  cur_proc %= size
 
-for r in range (begReg-1, endReg):
-  for i in range (num1st, numProc):
-    
+for i in job_dict[rank]:
+  for r in range (begReg-1, endReg):
+
     subprocess.call (pwd + '/bin/extract_spec ' + str (r) + ' ' + str (i),
-    shell=True, stdout=None)
-  
+    shell=True, stdout=None)  
