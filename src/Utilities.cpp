@@ -232,8 +232,7 @@ void Utilities::xyz2ColLonRadDeg ( double &x,   double &y,   double &z,
     rad = con.tiny;
   if ( z == 0 )
     z = con.tiny;
-  
-  
+    
   rad = sqrt  ( x * x + y * y + z * z );
   col = acos  ( z / rad );
   lon = atan2 ( y, x );
@@ -500,18 +499,17 @@ void Utilities::rotateForward ( double &xOld, double &yOld, double &zOld,
   
   Constants con;
   
-  if ( mod.doRotate == true ) {
-    
+  if ( mod.doRotate == true ) 
+  {  
     xNew = mod.forRot11 * xOld + mod.forRot21 * yOld + mod.forRot31 * zOld;
     yNew = mod.forRot12 * xOld + mod.forRot22 * yOld + mod.forRot32 * zOld;
-    zNew = mod.forRot13 * xOld + mod.forRot23 * yOld + mod.forRot33 * zOld; 
-      
-  } else {
-    
+    zNew = mod.forRot13 * xOld + mod.forRot23 * yOld + mod.forRot33 * zOld;    
+  } 
+  else 
+  {  
     xNew = xOld;
     yNew = yOld;
-    zNew = zOld;
-    
+    zNew = zOld; 
   }  
       
 }
@@ -523,18 +521,17 @@ void Utilities::rotateBackward ( double &xOld, double &yOld, double &zOld,
   
   Constants con;
   
-  if ( mod.doRotate == true ) {
-    
+  if ( mod.doRotate == true ) 
+  {  
     xNew = mod.backRot11 * xOld + mod.backRot21 * yOld + mod.backRot31 * zOld;
     yNew = mod.backRot12 * xOld + mod.backRot22 * yOld + mod.backRot32 * zOld;
-    zNew = mod.backRot13 * xOld + mod.backRot23 * yOld + mod.backRot33 * zOld; 
-      
-  } else {
-    
+    zNew = mod.backRot13 * xOld + mod.backRot23 * yOld + mod.backRot33 * zOld;    
+  } 
+  else 
+  {    
     xNew = xOld;
     yNew = yOld;
     zNew = zOld;
-    
   }  
       
 }
@@ -580,15 +577,45 @@ void Utilities::convertBary ( double &xp, double &yp, double &zp,
   
 }
 
-int Utilities::getFilesize ( std::string fname )
+void Utilities::checkMeshEdge ( double &col, double &lon, Mesh msh )
 {
+   
+  if ( (colOrig < 1)    && (msh.colReg000_090 == true) )
+    colOrig = 1;
+  if ( (colOrig > 89 )  && (msh.colReg000_090 == true) )
+    colOrig = 89;
 
-  FILE          *pFile;
-    
-  pFile = fopen ( fname.c_str(), "rb" );
-  fseek ( pFile, 0, SEEK_END );
-  int size = ftell ( pFile );
-  fclose ( pFile );   
+  if ( (colOrig < 91 )  && (msh.colReg090_180 == true) )
+    colOrig = 91;
+  if ( (colOrig > 179)  && (msh.colReg090_180 == true) )
+    colOrig = 179;
+
+  if ( (lonOrig > 89)   && (msh.lonReg000_090 == true) )
+    lonOrig = 89;
+  if ( (lonOrig < 1 )   && (msh.lonReg000_090 == true) )
+    lonOrig = 1;
   
-  return size;  
+  if ( (lonOrig < 91)   && (msh.lonReg090_180 == true) )
+    lonOrig = 91;
+  if ( (lonOrig > 179)  && (msh.lonReg090_180 == true) )
+    lonOrig = 179;
+  if ( (lonOrig < 0)    && (msh.lonReg090_180 == true) )
+    lonOrig = 179;
+
+  if ( (lonOrig > -1)   && (msh.lonReg270_360 == true) )
+    lonOrig = -1;
+  if ( (lonOrig < -89)  && (msh.lonReg270_360 == true) )
+    
+    lonOrig = -89;
+  if ( (lonOrig > -91)  && (msh.lonReg180_270 == true) )
+    lonOrig = -91;
+  if ( (lonOrig < -179) && (msh.lonReg180_270 == true) )
+    lonOrig = -179;
+  if ( (lonOrig > 0)    && (msh.lonReg180_270 == true) )
+    lonOrig = -179;
+  
 }
+  
+  
+  
+  

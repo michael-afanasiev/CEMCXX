@@ -43,7 +43,7 @@ int main ( )
   
     // Initialize the exodus file.
     exoFile -> openFile ( exoFile -> fname );        
-    msh.getInfo         ( exoFile -> idexo, 'p' );
+    msh.getInfo         ( exoFile -> idexo );
     
     // Get current file size.
     int size = utl.getFilesize ( exoFile -> fname );

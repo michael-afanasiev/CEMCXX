@@ -7,86 +7,61 @@
 
 using namespace std;
 
-void Exodus_file::writeNew ( Mesh &msh )
-{
-  
-  cout << "creating file." << endl;
-    
-  int id = ex_create ( "./text.ex2", EX_CLOBBER, &comp_ws, &io_ws );
-  
-  ier = ex_put_init ( id, "TEST", 3, msh.num_nodes, msh.num_elem, 
-    msh.refineElemConn.size(), 0, 0 );
-  
-  ier = ex_put_coord        ( id, msh.xmsh, msh.ymsh, msh.zmsh );
-  
-  ier = ex_put_node_num_map ( id, msh.node_num_map );
-  ier = ex_put_elem_num_map ( id, msh.elem_num_map );
-  ier = ex_put_map          ( id, msh.elem_num_map );
-  
-  int blkNum = 0;
-  for ( vector < vector <int> > :: iterator out=msh.refineElemConn.begin(); 
-    out!=msh.refineElemConn.end(); ++out )
-  {
-    
-    blkNum++;
-    int numElemInBlk = out->size() / double (msh.num_node_per_elem);
-    int *blkElemConn = new int 
-      [out->size()*msh.num_node_per_elem];
-
-    int connInd = 0;
-    for ( vector <int> :: iterator in=out->begin(); in!=out->end(); ++in )
-    {
-      
-      blkElemConn[connInd] = *in;
-      connInd++;
-      
-    }        
-    
-    ier = ex_put_elem_block   ( id, blkNum, "TETRA", numElemInBlk, 4, 0 );
-    ier = ex_put_elem_conn    ( id, blkNum, blkElemConn );
-    delete [] blkElemConn;
-    
-  }
-
-  ier = ex_close ( id );
-  
-  if ( ier == 0 )
-    cout << "New exodus file closed succesfully" << endl;
-  
-}
-
 void Exodus_file::openFile ( string fname ) 
 {
+  /**
+   * Opens an exodus file and populates the idexo field in the exodus 
+   * object.
+   */
     
-  cout << "Opening exodus file: " << fname << "\n" << flush;
-        
+  std::cout << "Opening exodus file: " << fname << std::flush << std::endl;
+    
   idexo = ex_open ( fname.c_str(), EX_WRITE, &comp_ws, &io_ws, &vers ); 
   
-  if (idexo < 0) {
-    std::cout << "***Fatal error opening exodus file. Exiting.\n";  
+  if (idexo < 0) 
+  {
+    std::cout << "***Fatal error opening exodus file. Exiting." << std::endl;  
     exit (EXIT_FAILURE);  
   } 
   
 } 
 
-void Exodus_file::closeFile () 
+void Exodus_file::closeFile ( ) 
 {
+  /**
+   * Closes the exodus file associated with the object.
+   */
   
   ier = ex_close ( idexo );
   
-  if (ier == 0) {
-    std::cout << "File closed succesfully. \n";
-  } else {
-    cout << "***Fatal error closing exodus file. Exiting\n";
+  if (ier == 0) 
+  {
+    std::cout << "File closed succesfully." << std::flush << std::endl;
+  } 
+  else 
+  {
+    std::cout << "***Fatal error closing exodus file. Exiting" << std::endl;
     exit (EXIT_FAILURE);  
   }
 }
 
 void Exodus_file::merge ( Region &reg, Model_file &mod ) 
 {
+  /**
+   * This function helps decide which parts of the cem to open, given
+   * a model request. The actual mod.---Reg fields are populated in the
+   * utilites. rotate function. That could probably be made cleaner. We 
+   * basically get 'regionsExo' out of this, which is the master vector of
+   * all exodus files are needed in this particular run.
+   */
+    
+  std::cout << "Merging model." << std::flush << std::endl;
   
-  cout << "Merging model.\n";
-  
+  /* An option to include the entire globe. This is useful for things that
+   * don't necessary have a minimum radius or lat/lon bounds (like the crust,
+   * or topography). I chose 100 km as where to stop the crust and topography
+   * interpolation, because there's no deeper crust than 100 km. Allfiles is
+   * automatically set if you choose crust or topography. */ 
   if ( allFiles == true )
   {
     mod.colReg1 = true;
@@ -96,9 +71,10 @@ void Exodus_file::merge ( Region &reg, Model_file &mod )
     mod.lonReg3 = true;
     mod.lonReg4 = true;
     
+    // These files define the top 100 km.
     if ( mod.intentions == "CRUST" || mod.intentions == "TOPOGRAPHY" )
     {
-      mod.radMin = 6271;
+      mod.radMin   = 6271.;
       mod.radReg22 = true;
       mod.radReg23 = true;
       mod.radReg24 = true;
@@ -106,8 +82,12 @@ void Exodus_file::merge ( Region &reg, Model_file &mod )
       mod.radReg26 = true;
       mod.radReg27 = true;
     } 
+        
   }
-      
+   
+  /* Decide which regions to add to a normal interpolation / extraction. These
+   * values are set in utilities.rotate, and are pulled from the maximum and 
+   * minimum xyz values read in from the model. */   
   if ( mod.colReg1 == true )
     colReg.push_back ("col000-090");
   if ( mod.colReg2 == true )
@@ -121,7 +101,6 @@ void Exodus_file::merge ( Region &reg, Model_file &mod )
     lonReg.push_back ("lon180-270");
   if ( mod.lonReg4 == true )
     lonReg.push_back ("lon270-360");
-       
        
   if ( mod.radReg1  == true )
     radReg.push_back ( "rad0000-1221" );        
@@ -177,53 +156,37 @@ void Exodus_file::merge ( Region &reg, Model_file &mod )
     radReg.push_back ( "rad6351-6361" );              
   if ( mod.radReg27 == true )
     radReg.push_back ( "rad6361-6371" );
-
-  // if ( mod.radReg1 == true )
-  //   radReg.push_back ( "rad0000-1221" );
-  // if ( mod.radReg2 == true )
-  //   radReg.push_back ( "rad1221-3480" );
-  // if ( mod.radReg3 == true )
-  //   radReg.push_back ( "rad3480-5371" );
-  // if ( mod.radReg4 == true )
-  //   radReg.push_back ( "rad5371-5701" );
-  // if ( mod.radReg5 == true )
-  //   radReg.push_back ( "rad5701-5971" );
-  // if ( mod.radReg6 == true )
-  //   radReg.push_back ( "rad5971-6271" );
-  // if ( mod.radReg7 == true || mod.radReg8 == true || mod.radReg9 == true )
-  //   radReg.push_back ( "rad6271-6371" );     
-//  if ( mod.radReg8 == true )
-//    radReg.push_back ( "rad6271-6371" );  
-//  if ( mod.radReg9 == true )
-//    radReg.push_back ( "rad6271-6371" );
     
-  int l = 0;
+  int l      = 0;  
+  string dir = mod.mesh_directory;
   Exodus_file currentExo;
+  /* Loop over col/lon regions. Within each region we will build radially. */
   for ( vector <string>::iterator i=colReg.begin(); i!=colReg.end(); ++i ) 
   {
     for ( vector <string>::iterator j=lonReg.begin(); j!=lonReg.end(); ++j ) 
     {
-      
-      string dir  = mod.mesh_directory;
-      string call = mod.mesh_directory;
-      
+                  
+      /* We build up a vector of appropriate radial regions for each col/lon
+       * chunk. */
       vector <string> fnames;
-      
-      for ( vector <string>::iterator ll=radReg.begin(); ll!=radReg.end(); ++ll )
+      for ( vector <string>::iterator ll=radReg.begin(); ll!=radReg.end(); 
+        ++ll )
       {
         fnames.push_back ( dir + *i + "." + *j + "." + *ll + ".000.ex2" );
         reg.colReg.push_back ( *i );
         reg.lonReg.push_back ( *j );
       }      
                   
+      /* Push back the details of the exodus file in currentExo. As we do this,
+       * put the name of the file in the region object as well. In the end we
+       * have the file details and filename stored in the Exodus_file object. */
       for ( vector <string>::iterator k=fnames.begin(); k!=fnames.end(); ++k ) 
-      {                                
-                        
+      {                                                        
         reg.regionsExo.push_back ( currentExo );
         reg.regionsExo[l].fname = *k;
-        l++;
-                        
+        l++;                        
       }
+      
     }
   }  
              
@@ -231,6 +194,12 @@ void Exodus_file::merge ( Region &reg, Model_file &mod )
 
 void Exodus_file::writeParams ( Mesh &msh )
 {
+  
+ /**
+   * This guy writes parameters back to the exodus files, for an interpolation
+   * step.
+   */
+  
 
   char *cstr = new char [MAX_LINE_LENGTH];
   const char *varnames[28];
@@ -242,35 +211,39 @@ void Exodus_file::writeParams ( Mesh &msh )
   int numnps;
   int numess;
   
-  varnames [0]  = "c11";
-  varnames [1]  = "c12";
-  varnames [2]  = "c13";
-  varnames [3]  = "c14";
-  varnames [4]  = "c15";
-  varnames [5]  = "c16";
-  varnames [6]  = "c22";
-  varnames [7]  = "c23";
-  varnames [8]  = "c24";
-  varnames [9]  = "c25";
-  varnames [10] = "c26";
-  varnames [11] = "c33";
-  varnames [12] = "c34";
-  varnames [13] = "c35";
-  varnames [14] = "c36";
-  varnames [15] = "c44";
-  varnames [16] = "c45";
-  varnames [17] = "c46";
-  varnames [18] = "c55";
-  varnames [19] = "c56";
-  varnames [20] = "c66";
-  varnames [21] = "rho";
-  varnames [22] = "Q__";
-  varnames [23] = "elv";
-  varnames [24] = "siz";
-  varnames [25] = "du1";
-  varnames [26] = "du2";
-  varnames [27] = "du3";
+  // Parameter names.
+  varnames[0]  = "c11";
+  varnames[1]  = "c12";
+  varnames[2]  = "c13";
+  varnames[3]  = "c14";
+  varnames[4]  = "c15";
+  varnames[5]  = "c16";
+  varnames[6]  = "c22";
+  varnames[7]  = "c23";
+  varnames[8]  = "c24";
+  varnames[9]  = "c25";
+  varnames[10] = "c26";
+  varnames[11] = "c33";
+  varnames[12] = "c34";
+  varnames[13] = "c35";
+  varnames[14] = "c36";
+  varnames[15] = "c44";
+  varnames[16] = "c45";
+  varnames[17] = "c46";
+  varnames[18] = "c55";
+  varnames[19] = "c56";
+  varnames[20] = "c66";
+  varnames[21] = "rho";
+  varnames[22] = "Q__";
+  varnames[23] = "elv";
+  varnames[24] = "siz";
+  varnames[25] = "du1";
+  varnames[26] = "du2";
+  varnames[27] = "du3";
   
+  /* Get the current parameters from the open file. We will basically re-write
+   * the same parameters back to the original file, with updated tensor 
+   * components */
   ier = ex_get_init ( idexo, cstr, &ndim, &nump, &numel, &numelblk, &numnps, 
     &numess );
 
@@ -278,8 +251,6 @@ void Exodus_file::writeParams ( Mesh &msh )
     numnps, numess);
           
   ier = ex_put_var_param ( idexo, "n", 28 );
-  
-  // TODO Figure out why ier gives (-1) on ex_put_init.  
   
   ier = ex_put_var_names ( idexo, "n", 28, 
     const_cast <char**> ( varnames ));

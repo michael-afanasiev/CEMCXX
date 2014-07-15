@@ -32,11 +32,12 @@ int main ()
     Interpolator ipl;
   
     exoFile -> openFile      ( exoFile -> fname );
-    msh.getInfo              ( exoFile -> idexo, 'p' );
+    msh.getInfo              ( exoFile -> idexo );
     msh.getConnectivity      ( exoFile -> idexo );
     msh.createKDTreeUnpacked ( );            
     
     std::cout << "Extracting." << std::flush << std::endl;
+    
 #pragma omp parallel for schedule (guided)
     for ( size_t i=0; i<mod.x.size(); i++ )               
     {
@@ -60,8 +61,6 @@ int main ()
           rad = rad + 0.2;
           utl.colLonRadRad2xyz ( col, lon, rad, testX, testY, testZ );
       }
-      
-      bool dum;
 
       if ( msh.lonMin < (-1 * con.PI / 2) && msh.lonMax > (con.PI / 2) )
 	    msh.lonMax = -1 * con.PI / 2;
@@ -75,7 +74,7 @@ int main ()
       {                                                                                         
         int pass = ipl.recover ( testX, testY, testZ, msh, c11, c12, c13, c14, 
         c15, c16, c22, c23, c24, c25, c26, c33, c34, c35, c36, c44, c45, c46, 
-        c55, c56, c66, rho, 'p', dum ); 
+        c55, c56, c66, rho, 'p' ); 
       
         mod.c11[i]       = c11;
         mod.c12[i]       = c12;
@@ -90,7 +89,7 @@ int main ()
       }                          
     }
 
-    std::cout << "Done with this file." << std::endl;
+    std::cout << "Done with this file." << std::flush << std::endl;
 
     msh.deallocateMesh   ( mod );
     exoFile -> closeFile ( );                

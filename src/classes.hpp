@@ -29,7 +29,7 @@ class Mod1d
   
 public:
   
-  void eumod ( double &, double &, double &, double & );
+  eumod ( double &, double &, double &, double & );
   
 };
 
@@ -317,6 +317,8 @@ public:
   void fixTiny          ( double &x, double &y, double &z, double &col, 
                           double &lon, double &rad, char &mode, 
                           Model_file &mod );
+                          
+  void checkMeshEdge    ( double &col, double *lon, Mesh &msh );  
   int getFilesize       ( std::string fname );
 };
 
@@ -371,8 +373,6 @@ public:
   std::vector < int > totalBlocks;
   
   // Internal functions.
-  
-  void writeNew    ( Mesh &msh );
   void merge       ( Region &reg, Model_file &mod );
   void openFile    ( std::string fname );
   void writeParams ( Mesh &msh );
@@ -461,19 +461,17 @@ public:
   
   std::string regString;
   
-  // Internal functions.
-    
-  void getInfo                ( int exoid, char mode );
+  // Internal functions.    
   void populateCoord          ( );
   void populateParams         ( );
   void allocateMesh           ( );
-  void getConnectivity        ( int exoid );
-  void deallocateMesh         ( Model_file &mod );
   void createKDTreeUnpacked   ( );
   void getMinMaxRad           ( );
+  void getInfo                ( int exoid );
+  void getConnectivity        ( int exoid );
   void getNodeNumMap          ( int exoid );
   void getElemNumMap          ( int exoid );
-  void getElementConnectivity ( int exoid, Model_file &mod );  
+  void deallocateMesh         ( Model_file &mod );
            
 };
 
@@ -487,7 +485,6 @@ public:
   std::vector <int> refineArr;
   std::vector < std::vector <int> > elemWithin;
     
-  void findNodes        ( Mesh &msh, Model_file &mod, std::ofstream &myfile );
   void interpolateCrust ( Mesh &msh, Discontinuity &dis, Model_file &mod );
   void interpolateTopo  ( Mesh &msh, Discontinuity &dis );
   void interpolate      ( Mesh &msh, Model_file &mod, Discontinuity &dis );  
@@ -498,7 +495,7 @@ public:
                           double &c24, double &c25, double &c26, double &c33, 
                           double &c34, double &c35, double &c36, double &c44, 
                           double &c45, double &c46, double &c55, double &c56, 
-                          double &c66, double &rho, char mode, bool & ); 
+                          double &c66, double &rho, char mode ); 
                       
 private:
   double taper      ( double &x, double &y, double &z, Model_file &mod );

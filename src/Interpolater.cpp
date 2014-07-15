@@ -10,29 +10,27 @@
 
 using namespace std;
 
-void Interpolator::interpolateCrust ( Mesh &msh, Discontinuity &dis, Model_file &mod )
+void Interpolator::interpolateCrust ( Mesh &msh, Discontinuity &dis, 
+  Model_file &mod )
 {
   
   Utilities utl;
   
-  cout << "Adding crust.\n";
+  std::cout << "Adding crust." << std::flush << std::endl;
   
-  if ( msh.radMin >= 6270 )
-  {
 #pragma omp parallel for
-    for ( int i=0; i<msh.num_nodes; i++ )
-    {
-      double col, lon, rad, upTap, downTap;
-      bool smoothCrust;
+  for ( int i=0; i<msh.num_nodes; i++ )
+  {
+    double col, lon, rad, upTap, downTap;
+    bool smoothCrust;
+  
+    bool inCrust = false;
+  
+    utl.xyz2ColLonRadDeg ( msh.xmsh[i], msh.ymsh[i], msh.zmsh[i], 
+      col, lon, rad);
     
-      bool inCrust = false;
-    
-      utl.xyz2ColLonRadDeg ( msh.xmsh[i], msh.ymsh[i], msh.zmsh[i], 
-        col, lon, rad);
-      
-      dis.lookCrust ( msh, col, lon, rad, i, inCrust, smoothCrust, upTap, 
-        downTap, mod );     
-    }
+    dis.lookCrust ( msh, col, lon, rad, i, inCrust, smoothCrust, upTap, 
+      downTap, mod );     
   }
 }
 
@@ -40,96 +38,18 @@ void Interpolator::interpolateTopo ( Mesh &msh, Discontinuity &dis )
 {
   
   Utilities utl;
-  Constants con;
   
-  cout << "Adding topography. " << msh.radMin << endl;
- 
+  std::cout << "Adding topography. " << std::flush << std::endl;
 
-
-  if ( msh.radMin >= (6270.) )
-  {
 #pragma omp parallel for
-    for ( int i=0; i<msh.num_nodes; i++ )
-    {
-      double col, lon, rad;
-        
-      utl.xyz2ColLonRadDeg ( msh.xmsh[i], msh.ymsh[i], msh.zmsh[i], 
-        col, lon, rad);
-      dis.lookTopo ( msh, col, lon, rad, i );
-    }
-  }
-}
-
-void Interpolator::findNodes ( Mesh &msh, Model_file &mod, ofstream &myfile )
-{
-  
-  Utilities utl;
-  Constants con;
-  
-  cout << "Finding nodes to refine." << endl;
-  
-  int outCount = 0; 
-  int inCount  = 0;
-  
-  std::vector <int> node;
-  for ( std::vector < vector <int> > :: iterator out=msh.refineElemConn.begin();
-    out!=msh.refineElemConn.end(); ++out )       
+  for ( int i=0; i<msh.num_nodes; i++ )
   {
-    
-    for ( std::vector <int> :: iterator in=out->begin(); in!=out->end(); ++in )
-    {
+    double col, lon, rad;
       
-      // Define local variables.
-      double mshColRot, mshLonRot, mshRadRot; // Sph. Coord. in rotated domain.
-      double xRot,      yRot,      zRot;      // Cart. Coord in rotated domain.
-  
-      /* Rotate from physical domain ( in exodus file ) to simulation domain
-      ( in SES3D file ). Grab points in simulation domain */
-      utl.rotateBackward ( msh.xmsh[*in-1], msh.ymsh[*in-1], msh.zmsh[*in-1], 
-        xRot, yRot, zRot, mod );
-        
-      utl.xyz2ColLonRadDeg ( xRot, yRot, zRot, mshColRot, mshLonRot, 
-        mshRadRot );
-    
-      // Handle special cases of longitude axis wrapping.
-      if ( mod.wrapAround == true && mshLonRot < 0. )
-      {
-        mshLonRot += 360;   
-      }
-      
-      outCount++;
-      if ( (mshColRot >= mod.colMin && mshColRot <= mod.colMax) &&
-           (mshLonRot >= mod.lonMin && mshLonRot <= mod.lonMax) &&
-           (mshRadRot >= mod.radMin) ) 
-      {       
-        inCount++;
-      
-        if ( inCount == msh.num_node_per_elem )
-        {
-          node.push_back ( *(in-3) );
-          node.push_back ( *(in-2) );
-          node.push_back ( *(in-1) );
-          node.push_back ( *(in-0) );  
-        }
-
-      }          
-      
-      if ( (outCount % msh.num_node_per_elem) == 0 )
-      {
-        inCount = 0;
-      }
-            
-    }                        
-    
+    utl.xyz2ColLonRadDeg ( msh.xmsh[i], msh.ymsh[i], msh.zmsh[i], 
+      col, lon, rad);
+    dis.lookTopo ( msh, col, lon, rad, i );
   }
-  
-
-  if ( node.size() != 0 )
-  {
-    msh.refineElemConn.push_back (node);
-    cout << "Pushed" << endl;
-  }
-  
 }
 
 void Interpolator::interpolate ( Mesh &msh, Model_file &mod, Discontinuity 
@@ -141,16 +61,16 @@ void Interpolator::interpolate ( Mesh &msh, Model_file &mod, Discontinuity
   Constants con;
   Mod1d     bm;
     
-  cout << "Interpolating.\n" << flush;
+  std::cout << "Interpolating." << std::flush << std::endl; 
 
   // Loop over every node point in the exodus file.
 #pragma omp parallel for
   for ( int i=0; i<msh.num_nodes; i++ ) {        
 
-    kdres  *set1;
-    kdres  *set2;
-    void   *ind_p;
-    int    point;
+    kdres *set1;
+    kdres *set2;
+    void  *ind_p;
+    int   point;
 
     // Define local variables.
     double mshColRot, mshLonRot, mshRadRot; // Sph. Coord. in rotated domain.
@@ -161,22 +81,17 @@ void Interpolator::interpolate ( Mesh &msh, Model_file &mod, Discontinuity
     bool inCrust = false;
     
     /* Rotate from physical domain ( in exodus file ) to simulation domain
-    ( in SES3D file ). Grab points in simulation domain */
+     * ( in SES3D file ). Grab points in simulation domain. Does not rotate if
+     * we don't need to. */
     utl.rotateBackward ( msh.xmsh[i], msh.ymsh[i], msh.zmsh[i], xRot, 
       yRot, zRot, mod );
     
     /* Get sph. coord. for both physical domain ( for discontinutiy search )
-      and rotated domain ( to ensure we are only interpolating points onto the 
-      mesh which are coincident to the interpolated file ). */
+     * and rotated domain ( to ensure we are only interpolating points onto the 
+     * mesh which are coincident to the interpolated file ). */
     utl.xyz2ColLonRadDeg ( msh.xmsh[i], msh.ymsh[i], msh.zmsh[i], 
       mshColPys, mshLonPys, mshRadPys );
     utl.xyz2ColLonRadDeg ( xRot, yRot, zRot, mshColRot, mshLonRot, mshRadRot );
-
-    bool cleanPull = false;
-    int  iRegMax   = 1;
-    int  iRegMin   = 1;
-      
-    utl.colLonRadDeg2xyz ( mshColRot, mshLonRot, mshRadRot, xRot, yRot, zRot );
   
     // This should solve the wrap around issue I think.
     if ( mod.lonMax > 180. && mshLonPys <= 0. )
@@ -193,8 +108,6 @@ void Interpolator::interpolate ( Mesh &msh, Model_file &mod, Discontinuity
     dis.lookCrust   ( msh, mshColPys, mshLonPys, mshRadPys, i, inCrust, 
                       smoothCrust, upTap, downTap, mod );
 
-    int reg = 0;
-
     /* If the rotated coordinates are within the simulation domain, go ahead and
     interpolate. */
     if ( (mshColRot >= mod.colMin && mshColRot <= mod.colMax) &&
@@ -207,26 +120,39 @@ void Interpolator::interpolate ( Mesh &msh, Model_file &mod, Discontinuity
 
       // Adjust radius and ensure we don't grab from across boundaries.
       utl.checkRegion ( msh, mshRadRot );
-
+      
+      /* This section is necessary due to the possibility of crossing region 
+       * boundaries (specifically in a ses3d file). If we do cross boundaries
+       * with a mesh file, two trees are automatically generated. Here we 
+       * decide which one to extract from. */
+      
+      /* This parameter selects one of the two kdtrees, based on the actual
+       * values of the mesh radius. It's set to -1 first as a failsafe. */
       int kdRegionExtract = -1;
-
       for ( int r=0; r<mod.kdRegions.size(); r++ )
       {
 
-        if ( mshRadRot >= ( mod.minRadReg[mod.kdRegions[r]] - 1 ) && 
-             mshRadRot <= ( mod.maxRadReg[mod.kdRegions[r]] + 1 ) )
+        /* Check which model region we are in by looping through them all
+         * and seeing which radial chunk we're in. KDregions maps the actual
+         * region number to the right kdTree. */
+        // IF WE GET DIAMONDING, ADD THE -1 & +1 BACK HERE. 
+        if ( mshRadRot >= ( mod.minRadReg[mod.kdRegions[r]] ) && 
+             mshRadRot <= ( mod.maxRadReg[mod.kdRegions[r]] ) )
         {
           kdRegionExtract = r;
         }
 
       }
 
+      /* If we're in 'no' region, that's obviously a problem. Exit. */
       if ( kdRegionExtract == -1 )
       {
         std::cout << "__FATAL__" << std::flush << std::endl;
         exit ( EXIT_FAILURE );
       }
 
+      /* Extract from the proper kdtree, depending on the value extracted from
+       * kdRegions above. */
       if ( kdRegionExtract == 0 )
       {
         set1  = kd_nearest3 ( mod.tree1, xRot, yRot, zRot );   
@@ -249,6 +175,8 @@ void Interpolator::interpolate ( Mesh &msh, Model_file &mod, Discontinuity
       // Get 1d background values.
       double vs1d, vp1d, rho1d;
       bm.eumod                   ( mshRadRot, vs1d, vp1d, rho1d );     
+      
+      // Fix attenuation.
       double qvCor = atn.correct ( atn.qModelName, mshRadRot );
       
       /* Project to different symmetry systems here */
@@ -261,26 +189,33 @@ void Interpolator::interpolate ( Mesh &msh, Model_file &mod, Discontinuity
       double rhoUse = 0;                   
       if ( mod.input_model_physics == "TTI" )
       {  
+        // Build according to symmetry system.
         double vshExo = sqrt ( msh.c44[i] / msh.rho[i] );
         double vsvExo = sqrt ( msh.c55[i] / msh.rho[i] );
         double vppExo = sqrt ( msh.c22[i] / msh.rho[i] );
         double rhoExo = msh.rho[i];
                     
+        // These guys hold the model perturbations at a point.
         double vshMod = mod.vshUnwrap[point];
         double vsvMod = mod.vsvUnwrap[point];
         double vppMod = mod.vppUnwrap[point];
         double rhoMod = mod.rhoUnwrap[point]; 
         
+        // These parameters hold values after correction to 1s for attenuation.
         double rhoModCor;
         double vshModCor;
         double vsvModCor;
         double vppModCor;
-
-        if ( i == 0 )
-        {
-          std::cout << mod.kernel1d << ' ' << mod.kernel3d << std::flush << std::endl;
-        }
         
+        /* Here we either a) replace the model, b) add the model as a 
+         * perturbation to a 1d background, or c) add the model to the 3d mesh.
+         * There's a small complication: attenuation. For the first two cases, 
+         * it's fine. In the 3rd case, I add the model to a 1d background, 
+         * compute the corrected value at 1s, and then subtract the 1d 
+         * background. */
+        /* TODO Check to see if we can add attenuation directly to the 3d model.
+         * for instance, could probably multiple vshExo by 1/qvCor, add the
+         * perturbation, and then multiply again */        
         if ( mod.kernel1d == false && mod.kernel3d == false )
         {        
           rhoModCor = rhoMod;
@@ -308,28 +243,23 @@ void Interpolator::interpolate ( Mesh &msh, Model_file &mod, Discontinuity
           vppModCor = vppModAtn - vp1d  + vppExo;
         }
               
+        // Edge tapering.
         double vshUse = ( 1 - tap ) * vshExo + tap * vshModCor;
         double vsvUse = ( 1 - tap ) * vsvExo + tap * vsvModCor;
         double vppUse = ( 1 - tap ) * vppExo + tap * vppModCor;
         rhoUse        = ( 1 - tap ) * rhoExo + tap * rhoModCor;
          
-        /* Reset values to original ones if we're not going to be updating them */
-        if ( mod.subset == "VSH" )
-        {
-          vsvUse = vsvExo;
-          vppUse = vppExo;
-          rhoUse = rhoExo;
-        }
-
+        // TTI parameters to add.
         N = rhoUse * vshUse * vshUse;
         L = rhoUse * vsvUse * vsvUse;
-        A = rhoUse * vppUse * vppUse;
-        
-        C = A;
+        A = rhoUse * vppUse * vppUse;        
         F = A - 2 * L;
         S = A - 2 * N;
+        C = A;
+        
       }
 
+      // In this case, we don't care where we are.
       if ( mod.overwriteCrust == true ) 
       {
         msh.c11[i] = C;
@@ -344,6 +274,7 @@ void Interpolator::interpolate ( Mesh &msh, Model_file &mod, Discontinuity
         msh.rho[i] = rhoUse; 
       }            
      
+      // Here, we do. Multiply by the taper in depth.
       if ( mod.overwriteCrust == false )
       { 
         msh.c11[i] = C      * downTap + msh.c11[i] * upTap;
@@ -357,10 +288,6 @@ void Interpolator::interpolate ( Mesh &msh, Model_file &mod, Discontinuity
         msh.c66[i] = L      * downTap + msh.c66[i] * upTap;
         msh.rho[i] = rhoUse * downTap + msh.rho[i] * upTap;                                                  
       }    
-    }
-    else
-    {
-      cleanPull = true;
     }
   }          
 }
@@ -443,14 +370,11 @@ int Interpolator::recover ( double &testX, double &testY, double &testZ,
                double &c15, double &c16, double &c22, double &c23, double &c24, 
                double &c25, double &c26, double &c33, double &c34, double &c35, 
                double &c36, double &c44, double &c45, double &c46, double &c55, 
-               double &c56, double &c66, double &rho, char mode, 
-               bool &internalFound )
+               double &c56, double &c66, double &rho, char mode )
 {
   
   Utilities util;
   Constants con;
-  
-  internalFound = false;
  
   // Local trees.
   kdtree *tree = msh.tree;
@@ -482,11 +406,6 @@ int Interpolator::recover ( double &testX, double &testY, double &testZ,
   /* These things iterate over the full mesh search */
   int xx0, xx1, xx2, xx3;
   int allIter = 0;
-  
-#ifdef VISUAL_DEBUG
-  ofstream myfile;
-  myfile.open ( "Bary.txt", ios::out );
-#endif
 
   // Find node closest to point.
   set   = kd_nearest3 ( tree, testX, testY, testZ );
@@ -518,15 +437,11 @@ int Interpolator::recover ( double &testX, double &testY, double &testZ,
     // Extract iterator for current point.
     ext = msh.elemOrder.equal_range (point);
     
-    // Extract node number if looking for it.
-    if ( mode == 'e' )
-    {
-      nodeNum = msh.node_num_map[point];
-    }
-    
-    /* mode 'a' for 'allMesh' */
+    /* Mode 'a' for 'allMesh' */
     if ( mode == 'a' )
-    {
+    {      
+      
+      // Convert to barycentric coordinates, and test the l values.
       util.convertBary ( origX, origY, origZ,
         msh.xmsh[xx0], msh.xmsh[xx1], 
         msh.xmsh[xx2], msh.xmsh[xx3],
@@ -539,8 +454,7 @@ int Interpolator::recover ( double &testX, double &testY, double &testZ,
       if ( l1 >= 0 && l2 >= 0 && l3 >= 0 && l4 >= 0 ) 
       {
 
-        found         = true;
-        internalFound = true;
+        found = true;
 
         double c11p0 = msh.c11[xx0];
         double c12p0 = msh.c12[xx0];
@@ -674,67 +588,19 @@ int Interpolator::recover ( double &testX, double &testY, double &testZ,
           we need to extract 12 values, 4 for each dimension */
 
          util.convertBary ( origX, origY, origZ,
-         msh.xmsh[it->second[0]], msh.xmsh[it->second[1]], 
-         msh.xmsh[it->second[2]], msh.xmsh[it->second[3]],
-         msh.ymsh[it->second[0]], msh.ymsh[it->second[1]],
-         msh.ymsh[it->second[2]], msh.ymsh[it->second[3]],
-         msh.zmsh[it->second[0]], msh.zmsh[it->second[1]],
-         msh.zmsh[it->second[2]], msh.zmsh[it->second[3]],
-         l1, l2, l3, l4 ); 
-
-#ifdef VISUAL_DEBUG
-         double col1, lon1, rad1;
-         double col2, lon2, rad2;
-         double col3, lon3, rad3;
-         double col4, lon4, rad4;
-                
-         cout << l1 << " " << l2 << " " << l3 << " " << l4 << endl;
-         
-         util.xyz2ColLonRadDeg ( msh.xmsh[it->second[0]],  
-                                 msh.ymsh[it->second[0]],
-                                 msh.zmsh[it->second[0]],
-                                 col1, lon1, rad1 );
-         util.xyz2ColLonRadDeg ( msh.xmsh[it->second[1]],  
-                                 msh.ymsh[it->second[1]],
-                                 msh.zmsh[it->second[1]],
-                                 col2, lon2, rad2 ); 
-         util.xyz2ColLonRadDeg ( msh.xmsh[it->second[2]],  
-                                 msh.ymsh[it->second[2]],
-                                 msh.zmsh[it->second[2]],
-                                 col3, lon3, rad3 );
-         util.xyz2ColLonRadDeg ( msh.xmsh[it->second[3]],  
-                                 msh.ymsh[it->second[3]],
-                                 msh.zmsh[it->second[3]],
-                                 col4, lon4, rad4 );
-                                                                
-         cout << col1 << " " << lon1 << " " << rad1 << endl;                      
-         cout << col2 << " " << lon2 << " " << rad2 << endl;                      
-         cout << col3 << " " << lon3 << " " << rad3 << endl;                      
-         cout << col4 << " " << lon4 << " " << rad4 << endl;                      
-         cout << col * con.o80 / con.PI  << " " << lon * con.o80 / con.PI << 
-         " " << rad  << endl;
-                                                
-         myfile << 0 << " " << 0 << " " << origX << " " << origY << " " 
-           << origZ << endl;
-         myfile << 0 << " " << 0 << " " << msh.xmsh[it->second[0]] << " " << 
-           msh.ymsh[it->second[0]] << " " << msh.zmsh[it->second[0]] << endl;
-          
-         myfile << 0 << " " << 0 << " " << msh.xmsh[it->second[1]] << " " << 
-           msh.ymsh[it->second[1]] << " " << msh.zmsh[it->second[1]] << endl;
-          
-         myfile << 0 << " " << 0 << " " << msh.xmsh[it->second[2]] << " " << 
-           msh.ymsh[it->second[2]] << " " << msh.zmsh[it->second[2]] << endl;
-          
-         myfile << 0 << " " << 0 << " " << msh.xmsh[it->second[3]] << " " << 
-           msh.ymsh[it->second[3]] << " " << msh.zmsh[it->second[3]] << endl;
-#endif
+          msh.xmsh[it->second[0]], msh.xmsh[it->second[1]], 
+          msh.xmsh[it->second[2]], msh.xmsh[it->second[3]],
+          msh.ymsh[it->second[0]], msh.ymsh[it->second[1]],
+          msh.ymsh[it->second[2]], msh.ymsh[it->second[3]],
+          msh.zmsh[it->second[0]], msh.zmsh[it->second[1]],
+          msh.zmsh[it->second[2]], msh.zmsh[it->second[3]],
+          l1, l2, l3, l4 ); 
           
         // If barycentric coordinates are all >= 0.
         if ( l1 >= 0 && l2 >= 0 && l3 >= 0 && l4 >= 0 ) 
         {
         
-          found         = true;
-          internalFound = true;
+          found = true;
 
           double c11p0 = msh.c11[it->second[0]];
           double c12p0 = msh.c12[it->second[0]];
@@ -858,55 +724,28 @@ int Interpolator::recover ( double &testX, double &testY, double &testZ,
     }
     
     /* If we haven't found the point on the first try, need to do some magical
-    stuff */
+     * stuff */
     if ( found == false ) 
     {   
       
-      double colOrig, lonOrig, radOrig;
-
+      /* First, iterate the count parameter, which keeps track of all the false
+       * hits we get. */
+      count++;
+      
+      /* Take the test value, and get the col, lon, and rad of that
+       * point */
       util.xyz2ColLonRadRad ( testX, testY, testZ, colPoint, lonPoint, 
         radPoint );            
 
+      /* As an added thing, this checks if we're in some floating underflow
+       * off the mesh type thing. It adjusts the originally requested point 
+       * to trick the interpolater that the point is inside the mesh 
+       * by perturbing its position sligtly). */
+      double colOrig, lonOrig, radOrig;      
       util.xyz2ColLonRadDeg ( origX, origY, origZ, colOrig, lonOrig, 
-        radOrig );
-
-      if ( (colOrig < 1)    && (msh.colReg000_090 == true) )
-        colOrig = 1;
-      if ( (colOrig > 89 )  && (msh.colReg000_090 == true) )
-        colOrig = 89;
-
-      if ( (colOrig < 91 )  && (msh.colReg090_180 == true) )
-        colOrig = 91;
-      if ( (colOrig > 179)  && (msh.colReg090_180 == true) )
-        colOrig = 179;
-
-      if ( (lonOrig > 89)   && (msh.lonReg000_090 == true) )
-        lonOrig = 89;
-      if ( (lonOrig < 1 )   && (msh.lonReg000_090 == true) )
-        lonOrig = 1;
-      
-      if ( (lonOrig < 91)   && (msh.lonReg090_180 == true) )
-        lonOrig = 91;
-      if ( (lonOrig > 179)  && (msh.lonReg090_180 == true) )
-        lonOrig = 179;
-      if ( (lonOrig < 0)    && (msh.lonReg090_180 == true) )
-        lonOrig = 179;
-
-      if ( (lonOrig > -1)   && (msh.lonReg270_360 == true) )
-        lonOrig = -1;
-      if ( (lonOrig < -89)  && (msh.lonReg270_360 == true) )
-        lonOrig = -89;
-      if ( (lonOrig > -91)  && (msh.lonReg180_270 == true) )
-        lonOrig = -91;
-      if ( (lonOrig < -179) && (msh.lonReg180_270 == true) )
-        lonOrig = -179;
-      if ( (lonOrig > 0)    && (msh.lonReg180_270 == true) )
-        lonOrig = -179;
-
-
+        radOrig );              
+      utl.checkMeshEdge     ( colOrig, lonOrig, msh );        
       util.colLonRadDeg2xyz ( colOrig, lonOrig, radOrig, origX, origY, origZ );
- 
-      count++;
       
       /* For col and lon, randomly choose which direction to look. This might
       be able to be switched to a more direction search (i.e. we look in the
@@ -924,8 +763,8 @@ int Interpolator::recover ( double &testX, double &testY, double &testZ,
       double dTheta = ( 100 / rad );
 
       /* Since the size of a lon degree depends so much on the latitude, make
-       * this parameter dependent on the latitude. Should change this to some sort
-       * of linear scaling */
+       * this parameter dependent on the latitude. Should change this to some 
+       * sort of linear scaling */
       if ( col < 10 )
       {
         dTheta = 170 / rad;
@@ -936,24 +775,24 @@ int Interpolator::recover ( double &testX, double &testY, double &testZ,
         dTheta = 500 / rad;
       }
     
-      /* Allow the search radius to range from 0 to 1 times some values */
+      /* Col and Lon are allowed to vary between their original values (0) and
+       * one edge length away. This seems to work. Radius is allowed to vary by
+       * 1 km. This also seems to work, although I think it's a bit sketchier. 
+       * Could add a parameter to the radius search to make this variable, 
+       * dependent on depth. It does work quite well now though. */
       double randC = (rand () % 100) / 100.;
       double randL = (rand () % 100) / 100.;
       double randR = (rand () % 100) / 100.;
 
-      /* Deep mesh is big. This parameter can be changed. Brute force safety allows
-       * a lot of games to be played. */
+      /* Deep mesh is big. This parameter can be changed. Brute force safety 
+       * allows a lot of games to be played. */
       if ( rad <= 5371 )
       {
-        randR = 3 * (rand () % 5000) / 100.;
+        randR = (rand () % 5000) / 100.;
       }
-
-      /* Col and Lon are allowed to vary between their original values (0) and
-      one edge length away. This seems to work. Radius is allowed to vary by
-      1 km. This also seems to work, although I think it's a bit sketchier. 
-      Could add a parameter to the radius search to make this variable, 
-      dependent on depth. It does work quite well now though. Do *count* iterations
-      of a 'smart' search. */      
+      
+      /* Do *count* iterations of a 'smart' search. Keep looking through the 
+       * KDtree with a new, randomly chosen point. */      
       if ( count <= fallBackCount ) 
       {
         double colTest = col + ( signC * randC * dTheta );
@@ -972,12 +811,12 @@ int Interpolator::recover ( double &testX, double &testY, double &testZ,
         kd_res_free ( set );
       }
 
-      /* Give the random algorithm *count* times to find the enclosing tet. This is
-       * relatively arbitrary. Performance may increase/decrease by adjusting this
-       * parameter */
+      /* Give the random algorithm *count* times to find the enclosing tet. 
+       * This is relatively arbitrary. Performance may increase/decrease by 
+       * adjusting this parameter. Switch mode to 'a' and do a fallback
+       * complete mesh search. */
       if ( count > fallBackCount )
       {
-
         mode = 'a';
         xx0  = msh.masterElemConn[allIter+0];
         xx1  = msh.masterElemConn[allIter+1];
@@ -988,9 +827,9 @@ int Interpolator::recover ( double &testX, double &testY, double &testZ,
         allIter = allIter + 4;
       }
 
-      /* If the brute force search fails, just take closest point. This means that
-       * the point is not actually located in the mesh (i.e. floating underflow
-       * has resulted it in being just outside */
+      /* If the brute force search fails, just take closest point. This means 
+       * that the point is not actually located in the mesh (i.e. floating 
+       * underflow has resulted it in being just outside. */
       if ( allIter == (msh.masterElemConn.size()) )
       {
 
@@ -998,9 +837,12 @@ int Interpolator::recover ( double &testX, double &testY, double &testZ,
         double lonPointDeg = 0;
         double radPointDeg = 0;
 
-        util.xyz2ColLonRadDeg ( origX, origY, origZ, colPointDeg, lonPointDeg, radPointDeg ); 
-        std::cout << "Extracting closest. [col, lon, deg] " << colPointDeg << ' '
-          << lonPointDeg << ' ' << radPointDeg << ' ' << std::flush << std::endl;
+        util.xyz2ColLonRadDeg ( origX, origY, origZ, colPointDeg, lonPointDeg, 
+          radPointDeg ); 
+          
+        std::cout << "Extracting closest. [col, lon, deg] " << colPointDeg 
+          << ' ' << lonPointDeg << ' ' << radPointDeg << ' ' 
+          << std::flush << std::endl;
 
         c11 = msh.c11[pointClose];
         c12 = msh.c12[pointClose];
@@ -1028,16 +870,12 @@ int Interpolator::recover ( double &testX, double &testY, double &testZ,
 
       }
     }
-  }
-
-
-#ifdef VISUAL_DEBUG
-  myfile.close();
-#endif
-        
+  }  
+   
+  // Extract just the index of the closet node if we're looking for it.     
   if ( mode == 'e' ) 
   {
-    return nodeNum;
+    return msh.node_num_map[point];
   } 
   else 
   { 

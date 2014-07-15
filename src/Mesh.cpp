@@ -7,7 +7,7 @@
 
 using namespace std;
 
-void Mesh::getInfo ( int in_exoid, char mode ) 
+void Mesh::getInfo ( int in_exoid ) 
 {
     
   exoid = in_exoid;  
@@ -19,19 +19,17 @@ void Mesh::getInfo ( int in_exoid, char mode )
   ier = ex_inquire ( exoid, EX_INQ_ELEM,     &num_elem,     &dum1, &dum2 ); 
   ier = ex_inquire ( exoid, EX_INQ_ELEM_BLK, &num_elem_blk, &dum1, &dum2 );
   
-  allocateMesh   ();  
-  populateCoord  ();
-  getMinMaxRad   ();
+  allocateMesh   ( );  
+  populateCoord  ( );
+  getMinMaxRad   ( );  
+  populateParams ( );
   
-  if ( mode == 'p' ) {
-    populateParams ();
-  }
 }
 
 void Mesh::createKDTreeUnpacked ( )
 {
  
-  cout << "Creating KDTree ( mesh ).\n";
+  std::cout << "Creating KDTree ( mesh )." << std::flush << std::endl;
   tree     = kd_create (3);
   KDdat    = new int [num_nodes];
   for ( int i=0; i<num_nodes; i++ ) 
@@ -50,10 +48,14 @@ void Mesh::getMinMaxRad ( )
   
   double col, lon, rad;
   
+  /* Loop over all nodes to determine what the max and min spherical coordinate
+   * values are. */
   for ( int i=0; i<num_nodes; i++ ) {
     
     util.xyz2ColLonRadDeg ( xmsh[i], ymsh[i], zmsh[i], col, lon, rad );    
             
+    /* We don't get a col or lat if x or y is 0, so handle these cases 
+     * seperate */
     if ( (xmsh[i] != 0) || (ymsh[i] != 0) ) 
     {
       if ( col < colMin )
@@ -70,13 +72,17 @@ void Mesh::getMinMaxRad ( )
         radMax = rad;          
     }
     
+    /* If we're on the z axis, decide whether we're above or below the equator 
+     */
     if ( (xmsh[i] == 0) && (ymsh[i] == 0) && (zmsh[i] > 0) )
       colMin = 0;
     if ( (xmsh[i] == 0) && (ymsh[i] == 0) && (zmsh[i] < 0) )
       colMax = 180;
     
   }
-          
+      
+  /* Small numbers sometimes confuse this function. Here decide if we're on a 
+   * special chunk that wraps around */    
   if ( (lonMax == 180.) && (lonMin < 0.) ) 
   {    
     lonMin = -90;
@@ -86,19 +92,6 @@ void Mesh::getMinMaxRad ( )
   if ( lonMax < lonMin )
     swap ( lonMax, lonMin );
         
-//  if ( colMin < 1 )
-//    colReg000_090 = true;
-//  if ( colMax > 179 )
-//    colReg090_180 = true;
-//  if ( (lonMin < 1) && (lonMax > 89) )
-//    lonReg000_090 = true;
-//  if ( (lonMin < 91) && (lonMax > 179) )
-//    lonReg090_180 = true;
-//  if ( (lonMin < -179) && (lonMax > -91) )
-//    lonReg180_270 = true;
-//  if ( (lonMin < -89) && (lonMax > -1) )
-//    lonReg270_360 = true;
-
   colMin = colMin * con.PI / con.o80;
   colMax = colMax * con.PI / con.o80;
   lonMin = lonMin * con.PI / con.o80;
@@ -248,9 +241,9 @@ void Mesh::populateParams ( )
   
   if ( ier != 0 ) 
   {
-    cout << "***";
-    cout << "Error reading in mesh variables.";
-    cout << "Don't worry, this is ok if you're refining." << endl;
+    std::cout << "***Fatal error reading in mesh parameters. Exiting." 
+      << std::flush << std::endl;
+    exit (EXIT_FAILURE);
   }    
   
 }
@@ -262,7 +255,8 @@ void Mesh::populateCoord ( )
   
   if (ier != 0) 
   {
-    std::cout << "***Fatal error reading in coordinates. Exiting.\n";
+    std::cout << "***Fatal error reading in coordinates. Exiting." 
+      << std::flush << std::endl;
     exit (EXIT_FAILURE);
   }
 }    
@@ -319,116 +313,6 @@ void Mesh::getElemNumMap ( int exoid )
   elem_num_map = new int [num_elem];
   ier = ex_get_elem_num_map ( exoid, elem_num_map );
   
-}
-
-void Mesh::getElementConnectivity ( int exoid, Model_file &mod )
-{
-  
-  Utilities utl;
-  
-  int *ids = new int [num_elem_blk];
-  int ier  = ex_get_elem_blk_ids ( exoid, ids );
-  
-  if ( ier != 0 ) 
-  {
-    cout << "Error in getting elem block ids" << endl;
-    exit ( EXIT_FAILURE );
-  }
-    
-  for ( int i=0; i!=num_elem_blk; i++ ) 
-  {
-    
-    ier = ex_get_elem_block ( exoid, ids[i], elem_type, &num_elem_in_blk, 
-      &num_nodes_in_elem, &num_attr );
-
-    if ( ier != 0 ) 
-    {
-      cout << "Error in getting elem block data" << endl;
-      exit ( EXIT_FAILURE );
-    }
-  
-    std::vector <int> tmpElemConn;
-    std::vector <int> tmpNewElemConn;
-    
-    tmpElemConn.reserve    ( num_elem_in_blk*num_node_per_elem );
-    tmpNewElemConn.reserve ( num_elem_in_blk*num_node_per_elem );
-      
-    int *elemConn = new int [num_elem_in_blk*num_node_per_elem];  
-    ier           = ex_get_elem_conn ( exoid, ids[i], elemConn );
-    
-    if ( ier != 0 ) 
-    {
-      cout << "Error in getting elem connectivity data" << endl;
-      exit ( EXIT_FAILURE );
-    }
-        
-    int outCount = 0;
-    int inCount  = 0;    
-    for ( int j=0; j<num_elem_in_blk*num_node_per_elem; j++ ) 
-    {
-
-      // Define local variables.
-      double mshColRot, mshLonRot, mshRadRot; // Sph. Coord. in rotated domain.
-      double xRot,      yRot,      zRot;      // Cart. Coord in rotated domain.
-      
-      int ind = elemConn[j]-1;
-      utl.rotateBackward ( xmsh[ind], ymsh[ind], zmsh[ind], xRot, yRot, zRot, 
-        mod );
-      utl.xyz2ColLonRadDeg ( xRot, yRot, zRot, mshColRot, mshLonRot, 
-        mshRadRot );
-      
-      if ( mod.wrapAround == true && mshLonRot < 0. )
-      {
-        mshLonRot += 360;   
-      }
-    
-      outCount++;
-      if ( (mshColRot >= mod.colMin && mshColRot <= mod.colMax) &&
-           (mshLonRot >= mod.lonMin && mshLonRot <= mod.lonMax) &&
-           (mshRadRot >= mod.radMin) ) 
-      {               
-        inCount++;
-        if ( inCount == num_node_per_elem )
-        {
-          tmpNewElemConn.push_back ( elemConn[j-3] );
-          tmpNewElemConn.push_back ( elemConn[j-2] );
-          tmpNewElemConn.push_back ( elemConn[j-1] );
-          tmpNewElemConn.push_back ( elemConn[j]   );
-        }
-      }            
-      else
-      {
-        inCount++;
-        if ( inCount == num_node_per_elem )
-        {
-          tmpElemConn.push_back ( elemConn[j-3] );
-          tmpElemConn.push_back ( elemConn[j-2] );
-          tmpElemConn.push_back ( elemConn[j-1] );
-          tmpElemConn.push_back ( elemConn[j]   );                              
-        }
-      
-      }
-      
-      if ( (outCount % num_node_per_elem) == 0 )
-      {
-        inCount = 0;
-      }            
-          
-    }
-    
-    if ( tmpElemConn.size() != 0 )
-    {
-      refineElemConn.push_back ( tmpElemConn );
-    }
-    if ( tmpNewElemConn.size() != 0 )
-    {
-      refineElemConn.push_back ( tmpNewElemConn );
-    }
-    
-    tmpElemConn.clear();      
-    tmpNewElemConn.clear();
-    delete [] elemConn;
-  }  
 }
 
 void Mesh::getConnectivity ( int exoid )

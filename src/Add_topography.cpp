@@ -37,7 +37,7 @@ int main ()
     Interpolator ipl;    
   
     exoFile -> openFile    ( exoFile -> fname );        
-    msh.getInfo            ( exoFile -> idexo, 'p' );    
+    msh.getInfo            ( exoFile -> idexo );    
     ipl.interpolateTopo    ( msh, dis );
     exoFile -> writeParams ( msh );
     msh.deallocateMesh     ( mod );

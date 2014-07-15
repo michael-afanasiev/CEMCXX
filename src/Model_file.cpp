@@ -18,12 +18,18 @@ using namespace std;
 void Model_file::read () 
 {
   
-  if ( input_model_file_type == "SES3D" ) {
+  if ( input_model_file_type == "SES3D" ) 
+  {
     readSES3D ();    
-  } else if ( input_model_file_type == "SPECFEM3D") {
+  } 
+  else if ( input_model_file_type == "SPECFEM3D") 
+  {
     readSPECFEM3D ();    
-  } else {
-    cout << "***MODEL FORMAT NOT RECOGNIZED. CHECK PARAM FILE. EXITING.\n";
+  } 
+  else 
+  {
+    std::cout << "***MODEL FORMAT NOT RECOGNIZED. CHECK PARAM FILE. EXITING."
+      << std::flush << std::endl;    
     exit (EXIT_FAILURE);  
   }
   
@@ -120,8 +126,6 @@ void Model_file::createKDTreeUnpacked ( Mesh &msh )
   std::vector <int> kdRegionsMin;
   std::vector <int> kdRegionsMax;
 
-  //tree  = kd_create (3);
-
   /* Determine if we're crossing regions. */
   for ( size_t reg=0; reg<rad.size(); reg++ )
   {
@@ -147,14 +151,17 @@ void Model_file::createKDTreeUnpacked ( Mesh &msh )
 
   }
 
-  if ( diff == false && kdRegionsMin.size() != 0 )
+  if      ( diff == false && kdRegionsMin.size() != 0 )
     kdRegions.push_back ( kdRegionsMin[0] );
   else if ( diff == false && kdRegionsMax.size() != 0 )
     kdRegions.push_back ( kdRegionsMax[0] );
 
   if ( kdRegions.size() == 0 )
-    std::cout << "__FATAL__ __FATAL__ __FATAL__" << std::endl;
-
+  {
+    std::cout << "__FATAL__ __FATAL__ __FATAL__  something bad in kdtree" 
+      << std::flush <<std::endl;
+    exit ( EXIT_FAILURE );
+  }
 
   KDdat1 = new int [num_p];
   for ( int j=0; j<num_p; j++ )
@@ -171,14 +178,12 @@ void Model_file::createKDTreeUnpacked ( Mesh &msh )
   
   bool tree1Alive = false;
   bool tree2Alive = false;
-
- for ( int i=0; i<kdRegions.size(); i++ )
- {
+  for ( int i=0; i<kdRegions.size(); i++ )
+  {
 
 #pragma omp parallel for
     for ( int j=0; j<num_p; j++ ) 
     { 
-
 
       if ( (radUnwrap[j] <= msh.radMax) && (radUnwrap[j] >= msh.radMin) && 
            (radUnwrap[j] <= maxRadReg[kdRegions[i]]) &&
@@ -188,6 +193,7 @@ void Model_file::createKDTreeUnpacked ( Mesh &msh )
         kd_insert3 ( tree1, x[j], y[j], z[j], &KDdat1[j] );
         tree1Alive = true;
       }
+      
       if ( (radUnwrap[j] <= msh.radMax) && (radUnwrap[j] >= msh.radMin) && 
            (radUnwrap[j] <= maxRadReg[kdRegions[i]]) &&
            (radUnwrap[j] >= minRadReg[kdRegions[i]]) &&
@@ -263,23 +269,30 @@ void Model_file::populateRadiansSES3D ()
   Constants con;
     
   // Compute box ceters and min/max on the fly.  
-  for ( size_t r=0; r<col_deg.size(); r++ ) {
+  for ( size_t r=0; r<col_deg.size(); r++ ) 
+  {
   
-    for ( size_t i=0; i<col_deg[r].size()-1; i++ ) {
+    for ( size_t i=0; i<col_deg[r].size()-1; i++ ) 
+    {
       col_deg[r][i] = (col_deg[r][i] + col_deg[r][i+1]) / 2.;
-      if ( col_deg[r][i] < colMin ) {
+      if ( col_deg[r][i] < colMin ) 
+      {
         colMin = col_deg[r][i];
-      } else if ( col_deg[r][i] > colMax ) {
+      } else if ( col_deg[r][i] > colMax ) 
+      {
         colMax = col_deg[r][i];
       }
     }
     
-    for ( size_t i=0; i<lon_deg[r].size()-1; i++ ) {
+    for ( size_t i=0; i<lon_deg[r].size()-1; i++ ) 
+    {
       
       lon_deg[r][i] = (lon_deg[r][i] + lon_deg[r][i+1]) / 2.;
-      if ( lon_deg[r][i] < lonMin ) {
+      if ( lon_deg[r][i] < lonMin ) 
+      {
         lonMin = lon_deg[r][i];     
-      } else if ( lon_deg[r][i] > lonMax ) {
+      } else if ( lon_deg[r][i] > lonMax ) 
+      {
         lonMax = lon_deg[r][i];
       }
       
@@ -353,7 +366,8 @@ void Model_file::populateRadians ( vector < vector <double> > &deg,
   
   for ( size_t r=0; r<deg.size(); r++ ) {
     
-    for ( size_t i=0; i<deg[r].size()-1; i++ ) {
+    for ( size_t i=0; i<deg[r].size()-1; i++ ) 
+    {
       sub.push_back ( deg[r][i] * con.PI / con.o80 );
     }
     
@@ -489,7 +503,8 @@ void Model_file::readSES3D ()
       populateSES3D ( imd + "dVPP", num_regions, vpp, 'p' );
     }
 
-  } else if ( intentions == "EXTRACT" || intentions == "REFINE" ) {
+  } else if ( intentions == "EXTRACT" ) 
+  {
     rho.resize ( num_regions );
     vsv.resize ( num_regions );
     vsh.resize ( num_regions );
@@ -514,13 +529,13 @@ void Model_file::readSES3D ()
   
   
   // Put aside space for cartesian vectors (for speed).
-  x.resize ( num_p );
-  y.resize ( num_p );
-  z.resize ( num_p );
+  x.resize         ( num_p );
+  y.resize         ( num_p );
+  z.resize         ( num_p );
   radUnwrap.resize ( num_p );
     
-  populateRadiansSES3D ();
-  colLonRad2xyzSES3D   ();  
+  populateRadiansSES3D ( );
+  colLonRad2xyzSES3D   ( );  
           
 }
 
@@ -731,14 +746,8 @@ void Model_file::getSpecFileName ( int &regC, int &iProc )
 void Model_file::deallocate ()
 {
 
-  for ( int r=0; r<treeVec.size(); r++ )
-  {
-    kd_free ( treeVec[r] );
-  }
-
   delete [] KDdat1;
   delete [] KDdat2;
-  treeVec.clear();
   kdRegions.clear();
   
 }

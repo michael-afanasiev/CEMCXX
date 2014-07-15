@@ -46,7 +46,7 @@ int main ( int argc, char *argv[] )
     Interpolator ipl;
 
     exoFile -> openFile      ( exoFile -> fname );
-    msh.getInfo              ( exoFile -> idexo, 'p' );
+    msh.getInfo              ( exoFile -> idexo );
     msh.getConnectivity      ( exoFile -> idexo );
     msh.createKDTreeUnpacked ( );
 
@@ -78,19 +78,13 @@ int main ( int argc, char *argv[] )
       double c11, c12, c13, c14, c15, c16,c22, c23, c24, c25, c26, c33, c34;
       double c35, c36, c44, c45, c46, c55, c56, c66, rho, testX, testY, testZ;
       double col, lon, rad;  
-      char skip;           
             
       utl.checkRegionExtr  ( mod.x[i], mod.y[i], mod.z[i], mod.r[i],
                              testX, testY, testZ ); 
-    
-                             
+                                 
       utl.xyz2ColLonRadRad ( testX, testY, testZ, col, lon, rad ); 
       utl.fixTiny          ( testX, testY, testZ, col, lon, rad, skip, mod );  
       
-      // TODO get rid of the stupid skip parameter.
-      skip = 'p';
-
-
       if ( msh.lonMin < (-1 * con.PI / 2) && msh.lonMax > (con.PI / 2) )
 	      msh.lonMax = -1 * con.PI / 2;
 
@@ -117,7 +111,7 @@ int main ( int argc, char *argv[] )
 
         int pass = ipl.recover ( testX, testY, testZ, msh, c11, c12, c13, 
         c14, c15, c16, c22, c23, c24, c25, c26, c33, c34, c35, c36, c44, 
-        c45, c46, c55, c56, c66, rho, skip, dum ); 
+        c45, c46, c55, c56, c66, rho, 'p' ); 
           
         mod.c11[i]       = c11;
         mod.c12[i]       = c12;
