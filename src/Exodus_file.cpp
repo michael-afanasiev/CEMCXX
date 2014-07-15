@@ -207,16 +207,13 @@ void Exodus_file::merge ( Region &reg, Model_file &mod )
       string dir  = mod.mesh_directory;
       string call = mod.mesh_directory;
       
-//      dir.append (*i);
-//      dir.append (".");
-//     dir.append (*j);
-//      dir.append ("/");
-      
       vector <string> fnames;
       
       for ( vector <string>::iterator ll=radReg.begin(); ll!=radReg.end(); ++ll )
       {
         fnames.push_back ( dir + *i + "." + *j + "." + *ll + ".000.ex2" );
+        reg.colReg.push_back ( *i );
+        reg.lonReg.push_back ( *j );
       }      
                   
       for ( vector <string>::iterator k=fnames.begin(); k!=fnames.end(); ++k ) 

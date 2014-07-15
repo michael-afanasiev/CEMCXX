@@ -34,7 +34,8 @@ int main ( int argc, char *argv[] )
   drv.checkUsage ( mod, "EXTRACT" );
 
   std::cout << "\n----- Extracting -----\n";
-  
+ 
+  int fileIter = 0;
   for ( std::vector < Exodus_file > :: 
     iterator exoFile=reg.regionsExo.begin();
     exoFile!=reg.regionsExo.end(); ++exoFile ) 
@@ -47,8 +48,28 @@ int main ( int argc, char *argv[] )
     exoFile -> openFile      ( exoFile -> fname );
     msh.getInfo              ( exoFile -> idexo, 'p' );
     msh.getConnectivity      ( exoFile -> idexo );
-    msh.createKDTreeUnpacked ( );            
-  
+    msh.createKDTreeUnpacked ( );
+
+    if ( reg.colReg[fileIter] == "col000-090" )
+      msh.colReg000_090 = true;
+
+    if ( reg.colReg[fileIter] == "col090-180" )
+      msh.colReg090_180 = true;
+
+    if ( reg.lonReg[fileIter] == "lon000-090" )
+      msh.lonReg000_090 = true;
+     
+    if ( reg.lonReg[fileIter] == "lon090-180" )
+      msh.lonReg090_180 = true;
+
+    if ( reg.lonReg[fileIter] == "lon180-270" )
+      msh.lonReg180_270 = true;
+
+    if ( reg.lonReg[fileIter] == "lon270-360" )
+      msh.lonReg270_360 = true;
+
+    fileIter += 1; 
+
     std::cout << "Extracting." << std::endl;
   
 #pragma omp parallel for schedule (guided)        
@@ -69,17 +90,6 @@ int main ( int argc, char *argv[] )
       // TODO get rid of the stupid skip parameter.
       skip = 'p';
 
-      if ( abs (rad - msh.radMax) < 0.2 )
-      {
-          rad = rad - 0.2;
-          utl.colLonRadRad2xyz ( col, lon, rad, testX, testY, testZ );
-      }
-
-      if ( abs (rad - msh.radMin) < 0.2 )
-      {
-          rad = rad + 0.2;
-          utl.colLonRadRad2xyz ( col, lon, rad, testX, testY, testZ );
-      }
 
       if ( msh.lonMin < (-1 * con.PI / 2) && msh.lonMax > (con.PI / 2) )
 	      msh.lonMax = -1 * con.PI / 2;
@@ -93,6 +103,18 @@ int main ( int argc, char *argv[] )
             mod.r[i] != 9 ) 
       {            
     
+        if ( abs (rad - msh.radMax) < 1 )
+        {
+            rad = rad - 1;
+            utl.colLonRadRad2xyz ( col, lon, rad, testX, testY, testZ );
+        }
+
+        if ( abs (rad - msh.radMin) < 1 )
+        {
+            rad = rad + 1;
+            utl.colLonRadRad2xyz ( col, lon, rad, testX, testY, testZ );
+        }
+
         int pass = ipl.recover ( testX, testY, testZ, msh, c11, c12, c13, 
         c14, c15, c16, c22, c23, c24, c25, c26, c33, c34, c35, c36, c44, 
         c45, c46, c55, c56, c66, rho, skip, dum ); 

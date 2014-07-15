@@ -605,6 +605,8 @@ void Model_file::readSPECFEM3D ()
     y.insert (y.end(), dumY, dumY+numCoord);
     z.insert (z.end(), dumZ, dumZ+numCoord);
     r.insert (r.end(), dumR, dumR+numCoord);
+
+    std::cout << x[0] << "X0" <<  std::endl;
     
     delete [] dumX;
     delete [] dumY;
@@ -718,7 +720,7 @@ void Model_file::getSpecFileName ( int &regC, int &iProc )
   ssReg << std::to_string (static_cast<long long>(regC+1));
   ssPrc << std::to_string (static_cast<long long>(iProc));      
         
-  specFileName = "./cemRequest/xyz_reg";
+  specFileName = "/mnt/lnec/afanasm/cemRequest/xyz_reg";
   specFileName.append (ssReg.str());
   specFileName.append ("_proc");
   specFileName.append (ssPrc.str());

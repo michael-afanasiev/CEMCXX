@@ -862,9 +862,50 @@ int Interpolator::recover ( double &testX, double &testY, double &testZ,
     if ( found == false ) 
     {   
       
+      double colOrig, lonOrig, radOrig;
+
       util.xyz2ColLonRadRad ( testX, testY, testZ, colPoint, lonPoint, 
-        radPoint );             
+        radPoint );            
+
+      util.xyz2ColLonRadDeg ( origX, origY, origZ, colOrig, lonOrig, 
+        radOrig );
+
+      if ( (colOrig < 1)    && (msh.colReg000_090 == true) )
+        colOrig = 1;
+      if ( (colOrig > 89 )  && (msh.colReg000_090 == true) )
+        colOrig = 89;
+
+      if ( (colOrig < 91 )  && (msh.colReg090_180 == true) )
+        colOrig = 91;
+      if ( (colOrig > 179)  && (msh.colReg090_180 == true) )
+        colOrig = 179;
+
+      if ( (lonOrig > 89)   && (msh.lonReg000_090 == true) )
+        lonOrig = 89;
+      if ( (lonOrig < 1 )   && (msh.lonReg000_090 == true) )
+        lonOrig = 1;
       
+      if ( (lonOrig < 91)   && (msh.lonReg090_180 == true) )
+        lonOrig = 91;
+      if ( (lonOrig > 179)  && (msh.lonReg090_180 == true) )
+        lonOrig = 179;
+      if ( (lonOrig < 0)    && (msh.lonReg090_180 == true) )
+        lonOrig = 179;
+
+      if ( (lonOrig > -1)   && (msh.lonReg270_360 == true) )
+        lonOrig = -1;
+      if ( (lonOrig < -89)  && (msh.lonReg270_360 == true) )
+        lonOrig = -89;
+      if ( (lonOrig > -91)  && (msh.lonReg180_270 == true) )
+        lonOrig = -91;
+      if ( (lonOrig < -179) && (msh.lonReg180_270 == true) )
+        lonOrig = -179;
+      if ( (lonOrig > 0)    && (msh.lonReg180_270 == true) )
+        lonOrig = -179;
+
+
+      util.colLonRadDeg2xyz ( colOrig, lonOrig, radOrig, origX, origY, origZ );
+ 
       count++;
       
       /* For col and lon, randomly choose which direction to look. This might

@@ -18,6 +18,9 @@ class Region
 
 public:
   std::vector < Exodus_file > regionsExo;
+  std::vector < std::string > colReg;
+  std::vector < std::string > lonReg;
+
 
 };
 
@@ -439,6 +442,13 @@ public:
   double radMin = 6371.;
   double radMax = 0.;
   
+  bool colReg000_090 = false;
+  bool colReg090_180 = false;
+  bool lonReg000_090 = false;
+  bool lonReg090_180 = false;
+  bool lonReg180_270 = false;
+  bool lonReg270_360 = false;
+
   kdtree *tree;
   
   std::multimap <int, std::vector <int> > elemOrder;  

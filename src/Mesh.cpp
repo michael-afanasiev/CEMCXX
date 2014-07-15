@@ -82,14 +82,27 @@ void Mesh::getMinMaxRad ( )
     lonMin = -90;
     lonMax = -180;
   }
-  
+
   if ( lonMax < lonMin )
     swap ( lonMax, lonMin );
         
+//  if ( colMin < 1 )
+//    colReg000_090 = true;
+//  if ( colMax > 179 )
+//    colReg090_180 = true;
+//  if ( (lonMin < 1) && (lonMax > 89) )
+//    lonReg000_090 = true;
+//  if ( (lonMin < 91) && (lonMax > 179) )
+//    lonReg090_180 = true;
+//  if ( (lonMin < -179) && (lonMax > -91) )
+//    lonReg180_270 = true;
+//  if ( (lonMin < -89) && (lonMax > -1) )
+//    lonReg270_360 = true;
+
   colMin = colMin * con.PI / con.o80;
   colMax = colMax * con.PI / con.o80;
   lonMin = lonMin * con.PI / con.o80;
-  lonMax = lonMax * con.PI / con.o80;   
+  lonMax = lonMax * con.PI / con.o80;  
   
   if ( radMax <= (con.innerCoreRad + 1) )
     regString = "innerCore";

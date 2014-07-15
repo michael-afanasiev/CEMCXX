@@ -1,9 +1,10 @@
-#! /usr/bin/python
+#! /apps/monch/python-2.7.5/bin/python2.7
 
 import collections
 import os
 import sys
 import subprocess
+import time
 
 from mpi4py import MPI
 
@@ -34,4 +35,4 @@ for i in job_dict[rank]:
   for r in range (begReg-1, endReg):
 
     subprocess.call (pwd + '/bin/extract_spec ' + str (r) + ' ' + str (i),
-    shell=True, stdout=None)  
+    shell=True, stdout=None) 
