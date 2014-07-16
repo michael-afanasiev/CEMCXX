@@ -2,6 +2,18 @@
 #include "classes.hpp"
 using namespace std;
 
+void pullInRad ( double &rad, Mesh &msh )
+{
+
+  if ( abs (rad - msh.radMax) < 1 )
+    rad = rad - 1;
+
+  if ( abs (rad - msh.radMin) < 1 )
+    rad = rad + 1;
+
+}
+
+
 void Utilities::checkRegion ( Mesh &msh, double &rad )
 {
   
@@ -279,47 +291,6 @@ void Utilities::colLonRadDeg2xyz ( double col,  double lon,  double rad,
   z = rad * cos (col);  
   
 } 
-
-void Utilities::fixTiny ( double &x, double &y, double &z, double &col, 
-                          double &lon, double &rad, char &mode, 
-                          Model_file &mod )
-{
-  
-  Constants con;
-  
-  mode = 'p';
-    
-  double tinytiny = con.oneDegRad / 10.;
-  
-  if ( rad == 0 )
-    rad = 5;
-    
-  if ( abs (lon) == 0. )
-  {
-    lon = tinytiny;
-  }
-  if ( lon == con.PIo2 )
-    lon = con.PIo2 + tinytiny;
-  
-  if ( lon == con.PI )
-    lon = con.PI - tinytiny;
-  
-  if ( lon == -1 * con.PI )
-    lon = con.PI + tinytiny;
-  
-  if ( lon == 3 * con.PIo2 )
-    lon = 3 * con.PIo2 + tinytiny;
-  
-  if ( col == 0 )
-    col = tinytiny;
-  if ( col == con.PIo2 )
-    col = con.PIo2 + tinytiny;
-  if ( col == con.PI )
-    col = con.PI - tinytiny;
-  
-  colLonRadRad2xyz ( col, lon, rad, x, y, z );
-  
-}   
 
 void Utilities::colLonRadRad2xyz ( double col,  double lon,  double rad,
                                    double &x,   double &y,   double &z ) 

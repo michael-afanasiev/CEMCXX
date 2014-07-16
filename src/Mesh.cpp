@@ -40,6 +40,30 @@ void Mesh::createKDTreeUnpacked ( )
   
 }
 
+void Mesh::getRegion ( Region &reg, int fileIter )
+{
+
+    /* Tale in the region and fileIterator -- push the correct region information
+     * back. These get reset in the deallocate mesh function. */
+   
+    if ( reg.colReg[fileIter] == "col000-090" )
+      colReg000_090 = true;
+
+    if ( reg.colReg[fileIter] == "col090-180" )
+      colReg090_180 = true;
+
+    if ( reg.lonReg[fileIter] == "lon000-090" )
+      lonReg000_090 = true;
+     
+    if ( reg.lonReg[fileIter] == "lon090-180" )
+      lonReg090_180 = true;
+
+    if ( reg.lonReg[fileIter] == "lon180-270" )
+      lonReg180_270 = true;
+
+    if ( reg.lonReg[fileIter] == "lon270-360" )
+      lonReg270_360 = true;
+
 void Mesh::getMinMaxRad ( )
 {
   
@@ -107,6 +131,10 @@ void Mesh::getMinMaxRad ( )
     regString = "transitionZone";
   if ( radMin >= (con.R400 - 1) )
     regString = "upperMantle";
+
+  /* This prevents wrap-around issues on the lon axis */
+  if ( lonMin < (-1 * con.PI / 2) && lonMax > (con.PI / 2) )
+	lonMax = -1 * con.PI / 2;
        
 }
 
@@ -412,6 +440,13 @@ void Mesh::deallocateMesh ( Model_file &mod )
   delete [] du2;
   delete [] du3;
   delete [] siz;
+
+  colReg000_090 = false;
+  colReg090_180 = false;
+  lonReg000_090 = false;
+  lonReg090_180 = false;
+  lonReg180_270 = false;
+  lonReg270_360 = false;
  
   if ( mod.intentions == "EXTRACT" )
   {    
