@@ -314,11 +314,10 @@ public:
   void checkRegion      ( Mesh &msh, double &rad );
   void checkRegionExtr  ( double x, double y, double z, short r,
                           double &xUse, double &yUse, double &zUse );
-  void fixTiny          ( double &x, double &y, double &z, double &col, 
-                          double &lon, double &rad, char &mode, 
-                          Model_file &mod );
-                          
-  void checkMeshEdge    ( double &col, double *lon, Mesh &msh );  
+  void checkMeshEdge    ( double &col, double *lon, Mesh &msh ); 
+  void pullInRad        ( double &col, double &lon, double &rad,
+                          double &x,   double &y,   double &z,
+                          Mesh &msh );
   int getFilesize       ( std::string fname );
 };
 
