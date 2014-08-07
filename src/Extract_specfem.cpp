@@ -19,7 +19,7 @@ int main ( int argc, char *argv[] )
   Utilities     utl;
   Discontinuity dis;
   
-  std::cout << "Begin model building." << std::endl;
+  std::cout << "Begin model building." << std::flush << std::endl;
                         
   // Reset the random number generator (for use in the kdtree search)
   srand ( time (NULL) );      
@@ -74,7 +74,7 @@ int main ( int argc, char *argv[] )
              
       {            
     
-        utl.pullInRad ( col, lon, rad, testX, testY, testZ );
+        utl.pullInRad ( col, lon, rad, testX, testY, testZ, msh );
           
         int pass = ipl.recover ( testX, testY, testZ, msh, c11, c12, c13, 
         c14, c15, c16, c22, c23, c24, c25, c26, c33, c34, c35, c36, c44, 

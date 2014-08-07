@@ -1,5 +1,5 @@
 #include <iostream>
-
+#include <algorithm>
 #include <cmath>
 #include <assert.h>
 #include <ctype.h>
@@ -136,8 +136,8 @@ void Interpolator::interpolate ( Mesh &msh, Model_file &mod, Discontinuity
          * and seeing which radial chunk we're in. KDregions maps the actual
          * region number to the right kdTree. */
         // IF WE GET DIAMONDING, ADD THE -1 & +1 BACK HERE. 
-        if ( mshRadRot >= ( mod.minRadReg[mod.kdRegions[r]] ) && 
-             mshRadRot <= ( mod.maxRadReg[mod.kdRegions[r]] ) )
+        if ( mshRadRot >= ( mod.minRadReg[mod.kdRegions[r]] -1) && 
+             mshRadRot <= ( mod.maxRadReg[mod.kdRegions[r]] +1) )
         {
           kdRegionExtract = r;
         }
@@ -298,7 +298,7 @@ double Interpolator::taper ( double &col, double &lon, double &rad,
   
   Constants con;
   Utilities util;
-  double dTaper    = 2000.;
+  double dTaper    = 1000.;
   double dTaperRad = 50.;
   
   col = col * con.PI / con.o80;
@@ -376,6 +376,8 @@ int Interpolator::recover ( double &testX, double &testY, double &testZ,
   Utilities util;
   Constants con;
  
+  std::vector<int> usedNodes;
+  
   // Local trees.
   kdtree *tree = msh.tree;
   kdres  *set;
@@ -587,6 +589,42 @@ int Interpolator::recover ( double &testX, double &testY, double &testZ,
           all the indices of the nodes belonging to a element (4 for a tet). So
           we need to extract 12 values, 4 for each dimension */
 
+         bool used0 = true;
+         bool used1 = true;
+         bool used2 = true;
+         bool used3 = true;
+         for ( size_t i=0; i<usedNodes.size(); i++ ) {
+           if ( usedNodes[i] == it->second[0] )
+             used0 = false;
+         }
+
+         for ( size_t i=0; i<usedNodes.size(); i++ ) {
+           if ( usedNodes[i] == it->second[1] )
+             used1 = false;
+         }
+
+         for ( size_t i=0; i<usedNodes.size(); i++ ) {
+           if ( usedNodes[i] == it->second[2] )
+             used2 = false;
+         }
+
+         for ( size_t i=0; i<usedNodes.size(); i++ ) {
+           if ( usedNodes[i] == it->second[3] )
+             used3 = false;
+         }
+
+         if ( used0 == false )
+           usedNodes.push_back ( it->second[0] );
+
+         if ( used1 == false )
+           usedNodes.push_back ( it->second[1] );
+
+         if ( used2 == false )
+           usedNodes.push_back ( it->second[2] );
+
+         if ( used3 == false )
+           usedNodes.push_back ( it->second[3] );
+
          util.convertBary ( origX, origY, origZ,
           msh.xmsh[it->second[0]], msh.xmsh[it->second[1]], 
           msh.xmsh[it->second[2]], msh.xmsh[it->second[3]],
@@ -744,7 +782,7 @@ int Interpolator::recover ( double &testX, double &testY, double &testZ,
       double colOrig, lonOrig, radOrig;      
       util.xyz2ColLonRadDeg ( origX, origY, origZ, colOrig, lonOrig, 
         radOrig );              
-      utl.checkMeshEdge     ( colOrig, lonOrig, msh );        
+      util.checkMeshEdge     ( colOrig, lonOrig, msh );        
       util.colLonRadDeg2xyz ( colOrig, lonOrig, radOrig, origX, origY, origZ );
       
       /* For col and lon, randomly choose which direction to look. This might

@@ -621,8 +621,6 @@ void Model_file::readSPECFEM3D ()
     z.insert (z.end(), dumZ, dumZ+numCoord);
     r.insert (r.end(), dumR, dumR+numCoord);
 
-    std::cout << x[0] << "X0" <<  std::endl;
-    
     delete [] dumX;
     delete [] dumY;
     delete [] dumZ;

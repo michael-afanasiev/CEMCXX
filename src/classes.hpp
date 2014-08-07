@@ -29,7 +29,7 @@ class Mod1d
   
 public:
   
-  eumod ( double &, double &, double &, double & );
+  void eumod ( double &, double &, double &, double & );
   
 };
 
@@ -314,7 +314,7 @@ public:
   void checkRegion      ( Mesh &msh, double &rad );
   void checkRegionExtr  ( double x, double y, double z, short r,
                           double &xUse, double &yUse, double &zUse );
-  void checkMeshEdge    ( double &col, double *lon, Mesh &msh ); 
+  void checkMeshEdge    ( double &col, double &lon, Mesh &msh ); 
   void pullInRad        ( double &col, double &lon, double &rad,
                           double &x,   double &y,   double &z,
                           Mesh &msh );
@@ -399,6 +399,7 @@ public:
 
   int *node_num_map;
   int *elem_num_map;
+  int *sideSet;
   int *KDdat;
   
   double *c11;
@@ -467,10 +468,12 @@ public:
   void createKDTreeUnpacked   ( );
   void getMinMaxRad           ( );
   void getInfo                ( int exoid );
+  void getSideSet             ( int exoid );
   void getConnectivity        ( int exoid );
   void getNodeNumMap          ( int exoid );
   void getElemNumMap          ( int exoid );
   void deallocateMesh         ( Model_file &mod );
+  void getRegion              ( Region &reg, int fileIter );
            
 };
 

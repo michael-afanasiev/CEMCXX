@@ -69,7 +69,7 @@ log.close
 # Figure out what type of thing we're trying to do.
 if ( params[8] == 'EXTRACT' and params[2] == 'SES3D' ):
     intent = 'extract_s3d'
-if ( params[8] == 'EXTRACT' and params[2] == 'SPECFEM' ):
+if ( params[8] == 'EXTRACT' and params[2] == 'SPECFEM3D' ):
     intent = 'extract_spec'
 if ( params[8] == 'CRUST' ):
     intent = 'add_crust'

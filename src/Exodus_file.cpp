@@ -247,13 +247,13 @@ void Exodus_file::writeParams ( Mesh &msh )
   ier = ex_get_init ( idexo, cstr, &ndim, &nump, &numel, &numelblk, &numnps, 
     &numess );
 
-  ier = ex_put_init ( idexo, "Title", ndim, nump, numel, numelblk, 
-    numnps, numess);
+//  ier = ex_put_init ( idexo, "Title", ndim, nump, numel, numelblk, 
+//    numnps, numess);
           
   ier = ex_put_var_param ( idexo, "n", 28 );
   
-  ier = ex_put_var_names ( idexo, "n", 28, 
-    const_cast <char**> ( varnames ));
+//  ier = ex_put_var_names ( idexo, "n", 28, 
+//    const_cast <char**> ( varnames ));
     
   ier = ex_put_nodal_var ( idexo, 1, 1,  msh.num_nodes, msh.c11 );
   ier = ex_put_nodal_var ( idexo, 1, 2,  msh.num_nodes, msh.c12 );

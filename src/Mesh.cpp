@@ -64,6 +64,8 @@ void Mesh::getRegion ( Region &reg, int fileIter )
     if ( reg.lonReg[fileIter] == "lon270-360" )
       lonReg270_360 = true;
 
+}
+
 void Mesh::getMinMaxRad ( )
 {
   
@@ -333,6 +335,19 @@ void Mesh::getNodeNumMap   ( int exoid )
   node_num_map = new int [num_nodes];
   ier = ex_get_node_num_map ( exoid, node_num_map );
   
+}
+
+void Mesh::getSideSet    ( int exoid )
+{
+
+  int numNodesInSet;
+  int numDfInSet;
+
+  int ier = ex_get_node_set_param ( exoid, 1, &numNodesInSet, &numDfInSet );
+
+  sideSet = new int [numNodesInSet];
+  ier     = ex_get_node_set ( exoid, 1, sideSet );
+
 }
 
 void Mesh::getElemNumMap ( int exoid )

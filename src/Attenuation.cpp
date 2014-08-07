@@ -25,7 +25,7 @@ double Attenuation::QL6 ( double &rad )
   }
   else if ( (rad <= 3480) && (rad >= 1221) )
   {
-    Q = 0.0;    
+    Q = 0.0; 
   }
   else
   {
@@ -59,7 +59,7 @@ double Attenuation::correct ( std::string &model, double &rad )
     exit (EXIT_FAILURE);
   }
   freqRef = 1./30.;
-  double freqMes = 1./18.;
+  double freqMes = 1./1.;
   
   double angFreq = 2. * con.PI * freqRef;
   double tau     = 2. / ( con.PI * Q );

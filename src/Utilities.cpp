@@ -2,10 +2,12 @@
 #include "classes.hpp"
 using namespace std;
 
-void pullInRad ( double &col, double &lon, double &rad, 
-                 double &x,   double &y,   double &z 
+void Utilities::pullInRad ( double &col, double &lon, double &rad, 
+                 double &x,   double &y,   double &z, 
                  Mesh &msh )
 {
+
+  Utilities utl;
 
   if ( abs (rad - msh.radMax) < 1 )
     rad = rad - 1;
@@ -45,7 +47,7 @@ void Utilities::checkRegion ( Mesh &msh, double &rad )
   }
   
   if ( msh.regString == "transitionZone" )
-  {
+  { 
     if (rad >= con.R400)
       rad = con.R400 - con.tiny;
     if (rad <= con.R670)
@@ -477,7 +479,25 @@ void Utilities::convertBary ( double &xp, double &yp, double &zp,
   
 }
 
-void Utilities::checkMeshEdge ( double &col, double &lon, Mesh msh )
+void Utilities::convertBary2D ( double &xp, double &yp, double &zp,
+                                double &x1, double &x2, double &x3,
+                                double &y1, double &y2, double &y3,
+                                double &z1, double &z2, double &z3,
+                                double &l1, double &l2, double &l3 )
+
+{
+
+  double vecX = xp - x3;
+  double vecY = yp - y3;
+  double vecZ = zp - z3;
+
+  double a = x1 - x3;
+  double b = x2 - x3;
+  double c = y1 - y3;
+  double d 
+
+void Utilities::checkMeshEdge ( double &colOrig, double &lonOrig, Mesh &msh )
+
 {
    
   if ( (colOrig < 1)    && (msh.colReg000_090 == true) )
