@@ -239,6 +239,7 @@ public:
   void projectSubspaceSES3D   ( );
   void writeSES3D             ( );
   void deallocate             ( );
+  void readTERRAGRID          ( );
   void projectSubspaceSPECFEM ( );
   void getSpecFileName        ( int &, int & );
   void createKDTreeUnpacked   ( Mesh &msh );

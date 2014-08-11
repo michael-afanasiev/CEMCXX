@@ -25,14 +25,79 @@ void Model_file::read ()
   else if ( input_model_file_type == "SPECFEM3D") 
   {
     readSPECFEM3D ();    
-  } 
+  } else if ( input_model_file_type == "TERRAGRID" )
+  {
+    readTERRAGRID ();
+  }
   else 
   {
     std::cout << "***MODEL FORMAT NOT RECOGNIZED. CHECK PARAM FILE. EXITING."
       << std::flush << std::endl;    
     exit (EXIT_FAILURE);  
   }
+}
+
+void Model_file::readTERRAGRID ()
+{
+
+  std::cout << "Reading TERRAGRID." << std::flush << std::endl;
+
+  std::vector <double> terraX;
+  std::vector <double> terraY;
+  std::vector <double> terraZ;
+  std::vector <double> terraRad;
+  string line;
+  ifstream radiusFile;
+  ifstream xyzFile;
+
+  string radName = "./dat/TERRAGRID/RADIUS";
+  radiusFile.open     ( radName, ios::in );
+  while ( getline (radiusFile, line) ) {
+
+    terraRad.push_back ( stod (line) / 1000. );
+
+  }
+
+  radiusFile.close ();
+
+  double col1, col2, col3;
+  string xyzName = "./dat/TERRAGRID/TerraGrid.0000";
+  xyzFile.open ( xyzName, ios::in );
+  while ( getline (xyzFile, line) ) {
+
+    std::istringstream ss(line);
+    ss >> col1 >> col2 >> col3;
+    terraX.push_back ( col1 );
+    terraY.push_back ( col2 );
+    terraZ.push_back ( col3 );
+
+  }
+
+  for ( size_t i=0; i<terraRad.size(); i++ ) {
+    for ( size_t j=0; j<terraX.size(); j++ ) {
+
+      x.push_back ( terraRad[i] * terraX[j] );
+      y.push_back ( terraRad[i] * terraY[j] );
+      z.push_back ( terraRad[i] * terraZ[j] );
+
+    }
+  }
+
+  rho.resize ( 1 );
+  vsv.resize ( 1 );
+  vsh.resize ( 1 );
+  vpp.resize ( 1 );   
   
+  rho[0].resize ( terraRad.size()*terraX.size() );
+  vsv[0].resize ( terraRad.size()*terraX.size() );
+  vsh[0].resize ( terraRad.size()*terraX.size() );
+  vpp[0].resize ( terraRad.size()*terraX.size() );
+  
+  rotAng = 0.;
+  rotVecX = 0.;
+  rotVecY = 0.;
+  rotVecZ = 0.;     
+
 }
 
 void Model_file::populateSES3D ( string name, int &num_regions, 
