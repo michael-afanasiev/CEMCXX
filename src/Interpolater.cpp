@@ -221,21 +221,21 @@ void Interpolator::interpolate ( Mesh &msh, Model_file &mod, Discontinuity
           rhoModCor = rhoMod;
           vshModCor = vshMod * qvCor;
           vsvModCor = vsvMod * qvCor;
-          vppModCor = vppMod * qvCor;
+          vppModCor = vppMod;
         }
         else if ( mod.kernel1d == true )
         {
           rhoModCor = ( rhoMod + rho1d );      
           vshModCor = ( vshMod + vs1d ) * qvCor;
           vsvModCor = ( vsvMod + vs1d ) * qvCor;
-          vppModCor = ( vppMod + vp1d ) * qvCor;
+          vppModCor = ( vppMod + vp1d );
         }
         else if ( mod.kernel3d == true )
         {
           double rhoModAtn = ( rhoMod + rho1d );
           double vshModAtn = ( vshMod + vs1d ) * qvCor;
           double vsvModAtn = ( vsvMod + vs1d ) * qvCor;
-          double vppModAtn = ( vppMod + vp1d ) * qvCor;
+          double vppModAtn = ( vppMod + vp1d );
 
           rhoModCor = rhoModAtn - rho1d + rhoExo;
           vshModCor = vshModAtn - vs1d  + vshExo;
@@ -394,6 +394,7 @@ int Interpolator::recover ( double &testX, double &testY, double &testZ,
   double col, lon, rad;
   double colPoint, lonPoint, radPoint;
   double colClose, lonClose, radClose;
+  bool fullSearch = false;
   
   /* Here we keep track of whether we've found the variable, and if this is our
   first try. Assume we haven't found it at first.*/
@@ -589,41 +590,6 @@ int Interpolator::recover ( double &testX, double &testY, double &testZ,
           all the indices of the nodes belonging to a element (4 for a tet). So
           we need to extract 12 values, 4 for each dimension */
 
-         bool used0 = true;
-         bool used1 = true;
-         bool used2 = true;
-         bool used3 = true;
-         for ( size_t i=0; i<usedNodes.size(); i++ ) {
-           if ( usedNodes[i] == it->second[0] )
-             used0 = false;
-         }
-
-         for ( size_t i=0; i<usedNodes.size(); i++ ) {
-           if ( usedNodes[i] == it->second[1] )
-             used1 = false;
-         }
-
-         for ( size_t i=0; i<usedNodes.size(); i++ ) {
-           if ( usedNodes[i] == it->second[2] )
-             used2 = false;
-         }
-
-         for ( size_t i=0; i<usedNodes.size(); i++ ) {
-           if ( usedNodes[i] == it->second[3] )
-             used3 = false;
-         }
-
-         if ( used0 == false )
-           usedNodes.push_back ( it->second[0] );
-
-         if ( used1 == false )
-           usedNodes.push_back ( it->second[1] );
-
-         if ( used2 == false )
-           usedNodes.push_back ( it->second[2] );
-
-         if ( used3 == false )
-           usedNodes.push_back ( it->second[3] );
 
          util.convertBary ( origX, origY, origZ,
           msh.xmsh[it->second[0]], msh.xmsh[it->second[1]], 
@@ -782,7 +748,7 @@ int Interpolator::recover ( double &testX, double &testY, double &testZ,
       double colOrig, lonOrig, radOrig;      
       util.xyz2ColLonRadDeg ( origX, origY, origZ, colOrig, lonOrig, 
         radOrig );              
-      util.checkMeshEdge     ( colOrig, lonOrig, msh );        
+      util.checkMeshEdge    ( colOrig, lonOrig, msh );        
       util.colLonRadDeg2xyz ( colOrig, lonOrig, radOrig, origX, origY, origZ );
       
       /* For col and lon, randomly choose which direction to look. This might
@@ -849,13 +815,31 @@ int Interpolator::recover ( double &testX, double &testY, double &testZ,
         kd_res_free ( set );
       }
 
+      if ( count > fallBackCount )
+      {
+        util.pullRad          ( colOrig, lonOrig, radOrig, msh, fullSearch );
+        count = 0;
+
+        if ( fullSearch == true )
+        {
+          count = fallBackCount+fallBackCount+1;
+        }
+
+        if ( msh.radMin < 5370 )
+          count = fallBackCount+fallBackCount+1;
+
+        util.colLonRadDeg2xyz ( colOrig, lonOrig, radOrig, origX, origY, origZ );
+
+      }
+
       /* Give the random algorithm *count* times to find the enclosing tet. 
        * This is relatively arbitrary. Performance may increase/decrease by 
        * adjusting this parameter. Switch mode to 'a' and do a fallback
        * complete mesh search. */
-      if ( count > fallBackCount )
+      if ( count > fallBackCount+fallBackCount )
       {
         mode = 'a';
+//        std::cout << "FULL MESH SEARCH BRO" << std::endl;
         xx0  = msh.masterElemConn[allIter+0];
         xx1  = msh.masterElemConn[allIter+1];
         xx2  = msh.masterElemConn[allIter+2];

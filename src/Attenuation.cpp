@@ -74,7 +74,7 @@ double Attenuation::correct ( std::string &model, double &rad )
     B = B + ( D[i] * angFreq * tau_s[i] ) /
       ( 1 + angFreq * angFreq * tau_s[i] * tau_s[i] );
   }
-  
+
   A = 1 + tau * A;
   B = tau * B;
   

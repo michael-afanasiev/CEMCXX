@@ -186,6 +186,16 @@ public:
   bool radReg25   = false;
   bool radReg26   = false;
   bool radReg27   = false;
+  bool radReg28   = false;
+  bool radReg29   = false;
+  bool radReg30   = false;
+  bool radReg31   = false;
+  bool radReg32   = false;
+  bool radReg33   = false;
+  bool radReg34   = false;
+  bool radReg35   = false;
+  bool radReg36   = false;
+  bool radReg37   = false;
   bool wrapAround = false;
   bool doRotate   = false;
   bool kernel1d   = false;
@@ -319,6 +329,8 @@ public:
                           double &x,   double &y,   double &z,
                           Mesh &msh );
   int getFilesize       ( std::string fname );
+
+  void pullRad          ( double &col, double &lon, double &rad, Mesh &msh, bool &fullSearch );
 };
 
 

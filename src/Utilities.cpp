@@ -313,56 +313,76 @@ void Utilities::inquireRotate ( Model_file &mod )
       mod.radReg1  = true;
     if ( rad <= 3480. && rad >= 1221. )
       mod.radReg2  = true;
-    if ( rad <= 5371. && rad >= 3480. )
+    if ( rad <= 4371. && rad >= 3480. )
       mod.radReg3  = true;
-    if ( rad <= 5426. && rad >= 5371. )
+    if ( rad <= 4471. && rad >= 4371. )
       mod.radReg4  = true;
-    if ( rad <= 5481. && rad >= 5426. )
+    if ( rad <= 4571. && rad >= 4471. )
       mod.radReg5  = true;
-    if ( rad <= 5536. && rad >= 5481. )
+    if ( rad <= 4671. && rad >= 4571. )
       mod.radReg6  = true;
-    if ( rad <= 5591. && rad >= 5536. )
+    if ( rad <= 4771. && rad >= 4671. )
       mod.radReg7  = true;
-    if ( rad <= 5646. && rad >= 5591. )
+    if ( rad <= 4871. && rad >= 4771. )
       mod.radReg8  = true;
-    if ( rad <= 5701. && rad >= 5646. )
+    if ( rad <= 4971. && rad >= 4871. )
       mod.radReg9  = true;
-    if ( rad <= 5746. && rad >= 5701. )
-      mod.radReg10 = true;
-    if ( rad <= 5791. && rad >= 5746. )
+    if ( rad <= 5071. && rad >= 4971. )
+      mod.radReg10  = true;
+    if ( rad <= 5171. && rad >= 5071. )
       mod.radReg11 = true;
-    if ( rad <= 5836. && rad >= 5791. )
-      mod.radReg12 = true;
-    if ( rad <= 5881. && rad >= 5836. )
-      mod.radReg13 = true;
-    if ( rad <= 5926. && rad >= 5881. )
-      mod.radReg14 = true;
-    if ( rad <= 5971. && rad >= 5926. )
-      mod.radReg15 = true;
-    if ( rad <= 6021. && rad >= 5971. )
-      mod.radReg16 = true;
-    if ( rad <= 6071. && rad >= 6021. )
-      mod.radReg17 = true;
-    if ( rad <= 6121. && rad >= 6071. )
-      mod.radReg18 = true;
-    if ( rad <= 6171. && rad >= 6121. )
-      mod.radReg19 = true;
-    if ( rad <= 6221. && rad >= 6171. )
+    if ( rad <= 5271. && rad >= 5171. )
+      mod.radReg12  = true;
+    if ( rad <= 5371. && rad >= 5271. )
+      mod.radReg13  = true;
+    if ( rad <= 5426. && rad >= 5371. )
+      mod.radReg14  = true;
+    if ( rad <= 5481. && rad >= 5426. )
+      mod.radReg15  = true;
+    if ( rad <= 5536. && rad >= 5481. )
+      mod.radReg16  = true;
+    if ( rad <= 5591. && rad >= 5536. )
+      mod.radReg17  = true;
+    if ( rad <= 5646. && rad >= 5591. )
+      mod.radReg18  = true;
+    if ( rad <= 5701. && rad >= 5646. )
+      mod.radReg19  = true;
+    if ( rad <= 5746. && rad >= 5701. )
       mod.radReg20 = true;
-    if ( rad <= 6271. && rad >= 6221. )
+    if ( rad <= 5791. && rad >= 5746. )
       mod.radReg21 = true;
-    if ( rad <= 6291. && rad >= 6271. )
+    if ( rad <= 5836. && rad >= 5791. )
       mod.radReg22 = true;
-    if ( rad <= 6311. && rad >= 6291. )
+    if ( rad <= 5881. && rad >= 5836. )
       mod.radReg23 = true;
-    if ( rad <= 6331. && rad >= 6311. )
+    if ( rad <= 5926. && rad >= 5881. )
       mod.radReg24 = true;
-    if ( rad <= 6351. && rad >= 6331. )
+    if ( rad <= 5971. && rad >= 5926. )
       mod.radReg25 = true;
-    if ( rad <= 6361. && rad >= 6351. )
+    if ( rad <= 6021. && rad >= 5971. )
       mod.radReg26 = true;
-    if ( rad <= 6371. && rad >= 6361. )
+    if ( rad <= 6071. && rad >= 6021. )
       mod.radReg27 = true;
+    if ( rad <= 6121. && rad >= 6071. )
+      mod.radReg28 = true;
+    if ( rad <= 6171. && rad >= 6121. )
+      mod.radReg29 = true;
+    if ( rad <= 6221. && rad >= 6171. )
+      mod.radReg30 = true;
+    if ( rad <= 6271. && rad >= 6221. )
+      mod.radReg31 = true;
+    if ( rad <= 6291. && rad >= 6271. )
+      mod.radReg32 = true;
+    if ( rad <= 6311. && rad >= 6291. )
+      mod.radReg33 = true;
+    if ( rad <= 6331. && rad >= 6311. )
+      mod.radReg34 = true;
+    if ( rad <= 6351. && rad >= 6331. )
+      mod.radReg35 = true;
+    if ( rad <= 6361. && rad >= 6351. )
+      mod.radReg36 = true;
+    if ( rad <= 6371. && rad >= 6361. )
+      mod.radReg37 = true;
 
   }
   
@@ -479,23 +499,6 @@ void Utilities::convertBary ( double &xp, double &yp, double &zp,
   
 }
 
-void Utilities::convertBary2D ( double &xp, double &yp, double &zp,
-                                double &x1, double &x2, double &x3,
-                                double &y1, double &y2, double &y3,
-                                double &z1, double &z2, double &z3,
-                                double &l1, double &l2, double &l3 )
-
-{
-
-  double vecX = xp - x3;
-  double vecY = yp - y3;
-  double vecZ = zp - z3;
-
-  double a = x1 - x3;
-  double b = x2 - x3;
-  double c = y1 - y3;
-  double d 
-
 void Utilities::checkMeshEdge ( double &colOrig, double &lonOrig, Mesh &msh )
 
 {
@@ -536,6 +539,36 @@ void Utilities::checkMeshEdge ( double &colOrig, double &lonOrig, Mesh &msh )
   
 }
   
-  
+void Utilities::pullRad ( double &col, double &lon, double &rad, Mesh &msh, bool &fullSearch )
+{
+
+  bool     fixed = false;
+  fullSearch     = false;
+  double safeRad = 5.;
+  double radPert = 0.1;
+
+  if ( abs (rad - msh.radMax) < safeRad )
+  {
+    rad = rad - radPert;
+  }
+
+  if ( abs (rad - msh.radMax) == safeRad )
+  {
+    rad = msh.radMax - 1;
+    fullSearch = true;
+  }
+
+  if ( (rad - msh.radMin) < safeRad )
+  {
+    rad = rad + radPert;
+  }
+
+  if ( abs (rad-msh.radMin) == safeRad )
+  {
+    rad=msh.radMin+1;
+    fullSearch = true;
+  }
+
+}
   
   

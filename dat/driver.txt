@@ -11,5 +11,5 @@ ROTATION_VECTOR_Z     = 0
 INTENTIONS            = EXTRACT
 OUTPUT_MODEL_PHYSICS  = TTI
 OVERWRITE_CRUST       = TRUE
-KERNEL                = fullMod
+KERNEL                = FULLMOD
 SUBSET                = VSH
