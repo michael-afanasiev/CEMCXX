@@ -175,7 +175,7 @@ void Utilities::xyz2ColLonRadDeg ( double &x,   double &y,   double &z,
     rad = con.tiny;
   if ( z == 0 )
     z = con.tiny;
-    
+   
   rad = sqrt  ( x * x + y * y + z * z );
   col = acos  ( z / rad );
   lon = atan2 ( y, x );
@@ -279,13 +279,22 @@ void Utilities::inquireRotate ( Model_file &mod )
   for ( size_t i=0; i<mod.x.size(); i++ ) 
   {
 
-    double xNew = mod.forRot11 * mod.x[i] + mod.forRot21 * mod.y[i] + 
-      mod.forRot31 * mod.z[i];
-    double yNew = mod.forRot12 * mod.x[i] + mod.forRot22 * mod.y[i] + 
-      mod.forRot32 * mod.z[i];
-    double zNew = mod.forRot13 * mod.x[i] + mod.forRot23 * mod.y[i] + 
-      mod.forRot33 * mod.z[i]; 
+    double xNew;
+    double yNew;
+    double zNew;
 
+    if( mod.doRotate == true ) {
+    xNew = mod.forRot11 * mod.x[i] + mod.forRot21 * mod.y[i] + 
+      mod.forRot31 * mod.z[i];
+    yNew = mod.forRot12 * mod.x[i] + mod.forRot22 * mod.y[i] + 
+      mod.forRot32 * mod.z[i];
+    zNew = mod.forRot13 * mod.x[i] + mod.forRot23 * mod.y[i] + 
+      mod.forRot33 * mod.z[i]; 
+    } else {
+      xNew = mod.x[i];
+      yNew = mod.y[i];
+      zNew = mod.z[i];
+    }
     xyz2ColLonRadDeg ( xNew, yNew, zNew, col, lon, rad );
   
     if ( (col >=  0.) && (col <=  90.) )
@@ -554,7 +563,7 @@ void Utilities::pullRad ( double &col, double &lon, double &rad, Mesh &msh, bool
 
   if ( abs (rad - msh.radMax) == safeRad )
   {
-    rad = msh.radMax - 1;
+    rad = msh.radMax - 2;
     fullSearch = true;
   }
 
@@ -565,7 +574,7 @@ void Utilities::pullRad ( double &col, double &lon, double &rad, Mesh &msh, bool
 
   if ( abs (rad-msh.radMin) == safeRad )
   {
-    rad=msh.radMin+1;
+    rad=msh.radMin+2;
     fullSearch = true;
   }
 

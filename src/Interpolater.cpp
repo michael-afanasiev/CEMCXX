@@ -401,6 +401,7 @@ int Interpolator::recover ( double &testX, double &testY, double &testZ,
   bool found   = false;  
   int  count   = 0;
   int  nodeNum = 0;
+  int failsafeCount =0;
 
   /* *point* stores the current point. *pointClose* stores the closest ever
    * point */
@@ -820,6 +821,9 @@ int Interpolator::recover ( double &testX, double &testY, double &testZ,
         util.pullRad          ( colOrig, lonOrig, radOrig, msh, fullSearch );
         count = 0;
 
+        //std::cout << "fallback" << std::endl;
+        failsafeCount++;
+
         if ( fullSearch == true )
         {
           count = fallBackCount+fallBackCount+1;
@@ -833,13 +837,13 @@ int Interpolator::recover ( double &testX, double &testY, double &testZ,
       }
 
       /* Give the random algorithm *count* times to find the enclosing tet. 
-       * This is relatively arbitrary. Performance may increase/decrease by 
+       * T2his is relatively arbitrary. Performance may increase/decrease by 
        * adjusting this parameter. Switch mode to 'a' and do a fallback
        * complete mesh search. */
-      if ( count > fallBackCount+fallBackCount )
+      if ( count > fallBackCount+fallBackCount || failsafeCount > 100 )
       {
         mode = 'a';
-//        std::cout << "FULL MESH SEARCH BRO" << std::endl;
+        //std::cout << "FULL MESH SEARCH BRO" << std::endl;
         xx0  = msh.masterElemConn[allIter+0];
         xx1  = msh.masterElemConn[allIter+1];
         xx2  = msh.masterElemConn[allIter+2];

@@ -36,6 +36,8 @@ void Driver::initialize ( Model_file &mod, Discontinuity &dis, Utilities &utl,
   // Read model file.  
   if ( exo.allFiles == false )
     mod.read           ( );  
+
+
   
   // Read discontinuities.
   dis.read           ( );

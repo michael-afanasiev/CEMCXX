@@ -24,9 +24,6 @@ int main ( int argc, char *argv[] )
   // Reset the random number generator (for use in the kdtree search)
   srand ( time (NULL) );      
   
-  // Get the filename of the current cemRequest file.
-  mod.getSpecFileName ( regC, iProc );
-                
   // Read parameter file.
   drv.initialize ( mod, dis, utl, exo, reg );    
   
@@ -100,12 +97,7 @@ int main ( int argc, char *argv[] )
   }
   
   mod.projectSubspaceSPECFEM ( );
-
-  std::cout << "Writing NetCDF" << std::endl;  
-  mod.writeNetCDF (mod.rho, mod.specFileName+".rho");      
-  mod.writeNetCDF (mod.vpp, mod.specFileName+".vpp");
-  mod.writeNetCDF (mod.vsh, mod.specFileName+".vsh");
-  mod.writeNetCDF (mod.vsv, mod.specFileName+".vsv");  
-
+  mod.writeSES3D ( );
+  
   return 0;
 }

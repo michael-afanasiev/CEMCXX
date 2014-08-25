@@ -22,7 +22,7 @@ void Model_file::read ()
   {
     readSES3D ();    
   } 
-  else if ( input_model_file_type == "SPECFEM3D") 
+  else if ( input_model_file_type == "SPECFEM3D" ) 
   {
     readSPECFEM3D ();    
   } else if ( input_model_file_type == "TERRAGRID" )
@@ -59,6 +59,9 @@ void Model_file::readTERRAGRID ()
   }
 
   radiusFile.close ();
+  x.clear();
+  y.clear();
+  z.clear();
 
   double col1, col2, col3;
   string xyzName = "./dat/TERRAGRID/TerraGrid.0000";
@@ -79,15 +82,19 @@ void Model_file::readTERRAGRID ()
       x.push_back ( terraRad[i] * terraX[j] );
       y.push_back ( terraRad[i] * terraY[j] );
       z.push_back ( terraRad[i] * terraZ[j] );
+      r.push_back ( 7 );
 
     }
   }
+
 
   rho.resize ( 1 );
   vsv.resize ( 1 );
   vsh.resize ( 1 );
   vpp.resize ( 1 );   
-  
+ 
+  num_p = terraRad.size()*terraX.size();
+
   rho[0].resize ( terraRad.size()*terraX.size() );
   vsv[0].resize ( terraRad.size()*terraX.size() );
   vsh[0].resize ( terraRad.size()*terraX.size() );
@@ -97,6 +104,9 @@ void Model_file::readTERRAGRID ()
   rotVecX = 0.;
   rotVecY = 0.;
   rotVecZ = 0.;     
+
+  std::cout << z[0] << std::endl;
+
 
 }
 
