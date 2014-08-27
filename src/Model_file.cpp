@@ -50,7 +50,7 @@ void Model_file::readTERRAGRID ()
   ifstream radiusFile;
   ifstream xyzFile;
 
-  string radName = "./dat/TERRAGRID/RADIUS";
+  string radName = "/mnt/lnec/afanasm/models/TERRAGRID/RADIUS";
   radiusFile.open     ( radName, ios::in );
   while ( getline (radiusFile, line) ) {
 
@@ -64,7 +64,7 @@ void Model_file::readTERRAGRID ()
   z.clear();
 
   double col1, col2, col3;
-  string xyzName = "./dat/TERRAGRID/TerraGrid.0000";
+  string xyzName = terraFileName;
   xyzFile.open ( xyzName, ios::in );
   while ( getline (xyzFile, line) ) {
 
@@ -104,9 +104,6 @@ void Model_file::readTERRAGRID ()
   rotVecX = 0.;
   rotVecY = 0.;
   rotVecZ = 0.;     
-
-  std::cout << z[0] << std::endl;
-
 
 }
 
@@ -796,6 +793,19 @@ int Model_file::writeNetCDF ( std::vector <std::vector<double>> &par,
   
 }
 
+void Model_file::getTerraFileName ( int &iProc )
+{
+
+  std::stringstream ssPrc;
+
+  ssPrc << std::setw(4) << std::setfill('0');
+  ssPrc << std::to_string (static_cast<long long>(iProc));
+
+  terraFileName = "/mnt/lnec/afanasm/models/TERRAGRID/TerraGrid.";
+  terraFileName.append (ssPrc.str());
+
+}
+
 void Model_file::getSpecFileName ( int &regC, int &iProc )
 {
   
@@ -812,7 +822,6 @@ void Model_file::getSpecFileName ( int &regC, int &iProc )
   specFileName.append (ssReg.str());
   specFileName.append ("_proc");
   specFileName.append (ssPrc.str());
-
   
 }
 

@@ -7,10 +7,9 @@
 int main ( int argc, char *argv[] ) 
 {
 
-  bool dum;
-  int regC  = atoi (argv[1]);
-  int iProc = atoi (argv[2]);
-  
+  // Processor number of this particular file.
+  int iProc = atoi (argv[1]);
+
   Region        reg;  
   Constants     con;
   Exodus_file   exo;
@@ -22,7 +21,12 @@ int main ( int argc, char *argv[] )
   std::cout << "Begin model building." << std::flush << std::endl;
                         
   // Reset the random number generator (for use in the kdtree search)
-  srand ( time (NULL) );      
+  srand ( time (NULL) );    
+
+  // Get the filename of the current terragrid processor.
+  mod.getTerraFileName ( iProc );
+
+  std::cout << mod.terraFileName << std::endl;
   
   // Read parameter file.
   drv.initialize ( mod, dis, utl, exo, reg );    

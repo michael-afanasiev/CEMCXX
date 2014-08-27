@@ -229,6 +229,7 @@ public:
   std::string output_model_physics;
   std::string mesh_directory;
   std::string subset;
+  std::string terraFileName;
 
   // Internal functions.  
   void read                   ( );
@@ -242,6 +243,7 @@ public:
   void readTERRAGRID          ( );
   void projectSubspaceSPECFEM ( );
   void getSpecFileName        ( int &, int & );
+  void getTerraFileName       ( int & );
   void createKDTreeUnpacked   ( Mesh &msh );
   int  writeNetCDF            ( std::vector <std::vector <double>> &par,
                                 std::string name );
