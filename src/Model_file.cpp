@@ -633,6 +633,28 @@ void Model_file::writeSES3D ()
   }
 }
 
+void Model_file::writeTERRAGRID ()
+{  
+  string imd = input_model_directory;
+  string omd = imd + "CEM";
+  
+  int status = mkdir ( omd.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH );
+  
+  if ( status != 0 )
+  {
+    cout << "Something fishy happened when I was creating the output " << 
+      "directory. It's probably not a big deal ( i.e. the directory was " <<
+      "just already present ) so I'm forging ahead." << endl;
+  }
+  
+  if ( output_model_physics == "TTI" ) {
+    dePopulateSES3D ( omd + "/rho." + terraFileName, rho );
+    dePopulateSES3D ( omd + "/vsv." + terraFileName, vsv );
+    dePopulateSES3D ( omd + "/vsh." + terraFileName, vsh );
+    dePopulateSES3D ( omd + "/vp."  + terraFileName, vpp );    
+  }
+}
+
 void Model_file::dePopulateSES3D ( string omf, vector < vector <double > > ou )
 {
   

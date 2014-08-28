@@ -241,6 +241,7 @@ public:
   void writeSES3D             ( );
   void deallocate             ( );
   void readTERRAGRID          ( );
+  void writeTERRAGRID         ( );
   void projectSubspaceSPECFEM ( );
   void getSpecFileName        ( int &, int & );
   void getTerraFileName       ( int & );

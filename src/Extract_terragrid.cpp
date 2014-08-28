@@ -101,7 +101,7 @@ int main ( int argc, char *argv[] )
   }
   
   mod.projectSubspaceSPECFEM ( );
-  mod.writeSES3D ( );
+  mod.writeTERRAGRID ( );
   
   return 0;
 }
