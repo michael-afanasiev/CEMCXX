@@ -1,25 +1,64 @@
+NETCDF_LIB = /apps/monch/netcdf/4.3.1/intel/14.0.1/nonparallel/lib
+EXODUS_LIB = /apps/monch/exodus/6.02/intel/14.0.1/nonparallel/lib
+HDF5_LIB   = /apps/monch/hdf5/1.8.12/intel/14.0.1/lib 
+
+EXODUS_INC = /apps/monch/exodus/6.02/intel/14.0.1/nonparallel/include
+NETCDF_INC = /apps/monch/netcdf/4.3.1/intel/14.0.1/nonparallel/include
+
 CXX      = icpc
 CC       = icc
-CXXFLAGS = -O3 -std=c++11
+CXXFLAGS = -O3 -std=c++11 -fopenmp -I$(EXODUS_INC) -isystem$(NETCDF_INC) 
 CFLAGS   = -O3
 
-LDEXO    = -L/apps/monch/exodus/6.02/intel/14.0.1/nonparallel/lib -lexodus
-LDNET    = -L/apps/monch/exodus/6.02/intel/14.0.1/netcdf/lib -lnetcdf
+LDFLAGS = -fopenmp -L$(EXODUS_LIB) -lexodus -L$(NETCDF_LIB) -lnetcdf_c++4 -lnetcdf -L$(HDF5_LIB) -lhdf5_hl -lhdf5 -lz
 
-OBJS = ./src/Exodus_file.o \
-       ./src/Mesh.o \
-       ./src/Read_driver.o \
-       ./src/Model_file.o \
-       ./src/Utilities.o \
-       ./src/Kdtree.o \
-       ./src/Interpolater.o \
-       ./src/Construct.o \
-			
+OBJS_GENERIC     = \
+ 	./src/Exodus_file.o \
+	./src/Mesh.o \
+	./src/Driver.o \
+	./src/Model_file.o \
+	./src/Utilities.o \
+	./src/Kdtree.o \
+	./src/Interpolater.o \
+	./src/Discontinuity.o \
+	./src/Background_models.o \
+	./src/Attenuation.o									 								 
+								 
+OBJS_INTERPOLATE = ./src/Interpolate.o
+
+OBJS_EXTRACT_SES = ./src/Extract_ses3d.o
+
+OBJS_EXTRACT_SPC = ./src/Extract_specfem.o
+
+OBJS_EXTRACT_TER = ./src/Extract_terragrid.o
+
+OBJS_CRUST       = ./src/Add_crust.o
+
+OBJS_REFINE      = ./src/Refine.o
+
+OBJS_TOPO        = ./src/Add_topography.o
+
 ###################
-all: Construct
+all: construct extract_spc extract_s3d crust topo extract_trr
 
-Construct: $(OBJS)
-	$(CXX) -o Construct $(OBJS) $(LDEXO) $(LDNET)
+construct: $(OBJS_INTERPOLATE) $(OBJS_GENERIC)
+	$(CXX) $(LDFLAGS) -o bin/interpolate $(OBJS_INTERPOLATE)  $(OBJS_GENERIC) $(LDFLAGS)
 	
+extract_s3d:   $(OBJS_EXTRACT_SES) $(OBJS_GENERIC)
+	$(CXX) $(LDFLAGS) -o bin/extract_s3d $(OBJS_EXTRACT_SES)  $(OBJS_GENERIC) $(LDFLAGS)
+	
+extract_spc:   $(OBJS_EXTRACT_SPC) $(OBJS_GENERIC)   
+	$(CXX) $(LDFLAGS) -o bin/extract_spec $(OBJS_EXTRACT_SPC) $(OBJS_GENERIC) $(LDFLAGS)
+
+extract_trr:	 $(OBJS_EXTRACT_TER) $(OBJS_GENERIC)
+	$(CXX) $(LDFLAGS) -o bin/extract_terraGrid $(OBJS_EXTRACT_TER) $(OBJS_GENERIC) $(LDFLAGS)
+	
+crust:     $(OBJS_CRUST)   $(OBJS_GENERIC)
+	$(CXX) $(LDFLAGS) -o bin/add_crust   $(OBJS_CRUST)        $(OBJS_GENERIC) $(LDFLAGS)
+	
+topo:      $(OBJS_TOPO)  $(OBJS_GENERIC)
+	$(CXX) $(LDFLAGS) -o bin/topo        $(OBJS_TOPO)         $(OBJS_GENERIC) $(LDFLAGS)
+	
+###################	
 clean:
-	$(RM) ./src/*.o ./Construct
+	$(RM) ./src/*.o ./bin/*
