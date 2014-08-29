@@ -67,10 +67,10 @@ int main ( int argc, char *argv[] )
 
       if ( (rad <= msh.radMax) && 
            (rad >= msh.radMin) &&
-           (lon <= msh.lonMax) &&
-           (lon >= msh.lonMin) &&
-           (col <= msh.colMax) &&
-           (col >= msh.colMin) )
+           (lon <= (msh.lonMax + con.oneDegRad)) &&
+           (lon >= (msh.lonMin - con.oneDegRad)) &&
+           (col <= (msh.colMax + con.oneDegRad)) &&
+           (col >= (msh.colMin - con.oneDegRad) ))
              
       {            
     

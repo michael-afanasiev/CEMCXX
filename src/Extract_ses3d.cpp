@@ -64,13 +64,21 @@ int main ()
 
       if ( msh.lonMin < (-1 * con.PI / 2) && msh.lonMax > (con.PI / 2) )
 	    msh.lonMax = -1 * con.PI / 2;
+
+      if ( abs (lon-msh.lonMax) < con.oneDegRad ) {
+        lon = msh.lonMax - con.oneDegRad;
+      }
+
+      if ( abs (lon-msh.lonMin) < con.oneDegRad ) {
+        lon = msh.lonMin + con.oneDegRad;
+      }
       
       if ( (rad <= msh.radMax) && 
            (rad >= msh.radMin) &&
-           (lon <= msh.lonMax) &&
-           (lon >= msh.lonMin) &&
-           (col <= msh.colMax) &&
-           (col >= msh.colMin ) ) 
+           (lon <= (msh.lonMax)) &&
+           (lon >= (msh.lonMin)) &&
+           (col <= (msh.colMax)) &&
+           (col >= (msh.colMin))) 
       {                                                                                         
         int pass = ipl.recover ( testX, testY, testZ, msh, c11, c12, c13, c14, 
         c15, c16, c22, c23, c24, c25, c26, c33, c34, c35, c36, c44, c45, c46, 

@@ -108,6 +108,7 @@ void Model_file::readTERRAGRID ()
 }
 
 void Model_file::populateSES3D ( string name, int &num_regions, 
+
   vector <vector <double> > &vec , char ftype ) {
     
   /** 
@@ -360,6 +361,9 @@ void Model_file::populateRadiansSES3D ()
     {
       
       lon_deg[r][i] = (lon_deg[r][i] + lon_deg[r][i+1]) / 2.;
+
+
+      // TODO __ MAKE THIS BETTER __
       if ( lon_deg[r][i] < lonMin ) 
       {
         lonMin = lon_deg[r][i];     
@@ -564,6 +568,7 @@ void Model_file::readSES3D ()
 
   getMinMaxRegionSES3D ();
   
+
   // Options for specific physics systems.  
   if ( intentions == "INTERPOLATE" ) {
     
