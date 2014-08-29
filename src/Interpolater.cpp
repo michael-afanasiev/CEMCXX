@@ -843,7 +843,6 @@ int Interpolator::recover ( double &testX, double &testY, double &testZ,
       if ( count > fallBackCount+fallBackCount || failsafeCount > 100 )
       {
         mode = 'a';
-        //std::cout << "FULL MESH SEARCH BRO" << std::endl;
         xx0  = msh.masterElemConn[allIter+0];
         xx1  = msh.masterElemConn[allIter+1];
         xx2  = msh.masterElemConn[allIter+2];
