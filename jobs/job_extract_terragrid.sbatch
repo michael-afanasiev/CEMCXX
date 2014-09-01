@@ -4,11 +4,10 @@
 #SBATCH --ntasks=1
 #SBATCH --time=04:00:00
 #SBATCH --cpus-per-task=20
-#SBATCH --mem=32GB
-#SBATCH --exclusive
+#SBATCH --mem=10GB
 #SBATCH --partition=fichtner_compute
-#SBATCH --output=jobs/job.extract_spec.%j.out
-#SBATCH --error=jobs/job.extract_spec.%j.err
+#SBATCH --output=jobs/output/job.extract_spec.%j.out
+#SBATCH --error=jobs/output/job.extract_spec.%j.err
 
 module load intel netcdf
 export OMP_NUM_THREADS=20

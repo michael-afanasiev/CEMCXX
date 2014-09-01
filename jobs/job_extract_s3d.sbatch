@@ -7,8 +7,8 @@
 #SBATCH --mem=32GB
 #SBATCH --exclusive
 #SBATCH --partition=fichtner_compute
-#SBATCH --output=jobs/job.extract_s3d.%j.out
-#SBATCH --error=jobs/job.extract_s3d.%j.err
+#SBATCH --output=jobs/output/job.extract_s3d.%j.out
+#SBATCH --error=jobs/output/job.extract_s3d.%j.err
 
 module load intel netcdf
 export OMP_NUM_THREADS=20

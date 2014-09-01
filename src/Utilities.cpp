@@ -517,8 +517,8 @@ void Utilities::checkMeshEdge ( double &colOrig, double &lonOrig, Mesh &msh )
   if ( (colOrig > 89 )  && (msh.colReg000_090 == true) )
     colOrig = 89;
 
-  if ( (colOrig < 91 )  && (msh.colReg090_180 == true) )
-    colOrig = 91;
+//  if ( (colOrig < 91 )  && (msh.colReg090_180 == true) )
+//    colOrig = 91;
   if ( (colOrig > 179)  && (msh.colReg090_180 == true) )
     colOrig = 179;
 

@@ -230,6 +230,7 @@ public:
   std::string mesh_directory;
   std::string subset;
   std::string terraFileName;
+  std::string terraFileProc;
 
   // Internal functions.  
   void read                   ( );

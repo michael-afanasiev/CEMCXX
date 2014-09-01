@@ -53,7 +53,7 @@ int main ( int argc, char *argv[] )
 
     std::cout << "Extracting." << std::flush << std::endl;
   
-#pragma omp parallel for schedule (guided)        
+//####pragma omp parallel for schedule (guided)        
     for ( size_t i=0; i<mod.x.size(); i++ )               
     {
       double c11, c12, c13, c14, c15, c16,c22, c23, c24, c25, c26, c33, c34;
@@ -64,6 +64,12 @@ int main ( int argc, char *argv[] )
                              testX, testY, testZ ); 
                                  
       utl.xyz2ColLonRadRad ( testX, testY, testZ, col, lon, rad ); 
+
+      if ( mod.r[i] == 9 ) 
+      {
+        lon = msh.lonMin + 45 * con.oneDegRad;
+        col = msh.colMin + 45 * con.oneDegRad;
+      }
 
       if ( (rad <= msh.radMax) && 
            (rad >= msh.radMin) &&

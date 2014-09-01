@@ -653,10 +653,10 @@ void Model_file::writeTERRAGRID ()
   }
   
   if ( output_model_physics == "TTI" ) {
-    dePopulateSES3D ( omd + "/rho." + terraFileName, rho );
-    dePopulateSES3D ( omd + "/vsv." + terraFileName, vsv );
-    dePopulateSES3D ( omd + "/vsh." + terraFileName, vsh );
-    dePopulateSES3D ( omd + "/vp."  + terraFileName, vpp );    
+    dePopulateSES3D ( omd + "/rho." + terraFileProc, rho );
+    dePopulateSES3D ( omd + "/vsv." + terraFileProc, vsv );
+    dePopulateSES3D ( omd + "/vsh." + terraFileProc, vsh );
+    dePopulateSES3D ( omd + "/vp."  + terraFileProc, vpp );    
   }
 }
 
@@ -828,6 +828,7 @@ void Model_file::getTerraFileName ( int &iProc )
   ssPrc << std::setw(4) << std::setfill('0');
   ssPrc << std::to_string (static_cast<long long>(iProc));
 
+  terraFileProc = ssPrc.str();
   terraFileName = "/mnt/lnec/afanasm/models/TERRAGRID/TerraGrid.";
   terraFileName.append (ssPrc.str());
 
