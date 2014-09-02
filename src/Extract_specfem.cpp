@@ -76,7 +76,7 @@ int main ( int argc, char *argv[] )
            (lon <= (msh.lonMax + con.oneDegRad)) &&
            (lon >= (msh.lonMin - con.oneDegRad)) &&
            (col <= (msh.colMax + con.oneDegRad)) &&
-           (col >= (msh.colMin - con.oneDegRad) ))
+           (col >= (msh.colMin - con.oneDegRad) ) && mod.r[i] < 8)
              
       {            
     
@@ -98,6 +98,37 @@ int main ( int argc, char *argv[] )
         mod.rhoUnwrap[i] = rho;
 
       }
+
+      if ( mod.r[i] >= 8 )
+      {
+        
+        double vshUse, vppUse, rhoUse;
+        
+        Mod1d bm;
+        bm.eumod ( rad, vshUse, vppUse, rhoUse);
+          
+        double vsvUse = vshUse;
+        
+        double N = rhoUse * vshUse * vshUse;
+        double L = rhoUse * vsvUse * vsvUse;
+        double A = rhoUse * vppUse * vppUse;
+        
+        double C = A;
+        double F = A - 2 * L;
+        double S = A - 2 * N;
+        
+        mod.c11[i] = C;
+        mod.c22[i] = A;
+        mod.c33[i] = A;
+        mod.c12[i] = F;
+        mod.c13[i] = F;
+        mod.c23[i] = S;
+        mod.c44[i] = N;
+        mod.c55[i] = L;
+        mod.c66[i] = L;
+        mod.rhoUnwrap[i] = rhoUse;         
+
+      }                          
     }        
 
     msh.deallocateMesh   ( mod );

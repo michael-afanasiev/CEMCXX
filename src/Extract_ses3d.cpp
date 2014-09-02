@@ -50,18 +50,6 @@ int main ()
       
       utl.xyz2ColLonRadRad ( testX, testY, testZ, col, lon, rad );
 
-      if ( abs (rad - msh.radMax) < 0.2 )
-      {
-          rad = rad - 0.2;
-          utl.colLonRadRad2xyz ( col, lon, rad, testX, testY, testZ );
-      }
-
-      if ( abs (rad - msh.radMin) < 0.2 )
-      {
-          rad = rad + 0.2;
-          utl.colLonRadRad2xyz ( col, lon, rad, testX, testY, testZ );
-      }
-
       if ( msh.lonMin < (-1 * con.PI / 2) && msh.lonMax > (con.PI / 2) )
 	    msh.lonMax = -1 * con.PI / 2;
 
@@ -75,11 +63,14 @@ int main ()
       
       if ( (rad <= msh.radMax) && 
            (rad >= msh.radMin) &&
-           (lon <= (msh.lonMax)) &&
-           (lon >= (msh.lonMin)) &&
-           (col <= (msh.colMax)) &&
-           (col >= (msh.colMin))) 
-      {                                                                                         
+           (lon <= msh.lonMax) &&
+           (lon >= msh.lonMin) &&
+           (col <= msh.colMax) &&
+           (col >= msh.colMin) ) 
+      {                                                                                        
+
+        utl.pullInRad ( col, lon, rad, testX, testY, testZ, msh );
+
         int pass = ipl.recover ( testX, testY, testZ, msh, c11, c12, c13, c14, 
         c15, c16, c22, c23, c24, c25, c26, c33, c34, c35, c36, c44, c45, c46, 
         c55, c56, c66, rho, 'p' ); 
