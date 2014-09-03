@@ -58,6 +58,7 @@ double Attenuation::correct ( std::string &model, double &rad )
     std::cout << "Error in setting Q value." << std::endl;
     exit (EXIT_FAILURE);
   }
+
   freqRef = 1./30.;
   double freqMes = 1./1.;
   

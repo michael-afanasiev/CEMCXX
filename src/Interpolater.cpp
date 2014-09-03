@@ -229,6 +229,7 @@ void Interpolator::interpolate ( Mesh &msh, Model_file &mod, Discontinuity
           vshModCor = ( vshMod + vs1d ) * qvCor;
           vsvModCor = ( vsvMod + vs1d ) * qvCor;
           vppModCor = ( vppMod + vp1d );
+//          std::cout << rhoModCor << ' ' << rho1d << ' ' << msh.rho[i] <<  std::flush << std::endl;
         }
         else if ( mod.kernel3d == true )
         {
@@ -298,7 +299,7 @@ double Interpolator::taper ( double &col, double &lon, double &rad,
   
   Constants con;
   Utilities util;
-  double dTaper    = 1000.;
+  double dTaper    = 1500.;
   double dTaperRad = 50.;
   
   col = col * con.PI / con.o80;
