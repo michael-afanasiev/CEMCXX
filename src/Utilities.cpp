@@ -399,76 +399,92 @@ void Utilities::inquireRotate ( Model_file &mod )
       mod.radReg1  = true;
     if ( rad <= 3480. && rad >= 1221. )
       mod.radReg2  = true;
-    if ( rad <= 4371. && rad >= 3480. )
+    if ( rad <= 3571. && rad >= 3480. )
       mod.radReg3  = true;
-    if ( rad <= 4471. && rad >= 4371. )
+    if ( rad <= 3671. && rad >= 3571. )
       mod.radReg4  = true;
-    if ( rad <= 4571. && rad >= 4471. )
+    if ( rad <= 3771. && rad >= 3671. )
       mod.radReg5  = true;
-    if ( rad <= 4671. && rad >= 4571. )
+    if ( rad <= 3871. && rad >= 3771. )
       mod.radReg6  = true;
-    if ( rad <= 4771. && rad >= 4671. )
+    if ( rad <= 3971. && rad >= 3871. )
       mod.radReg7  = true;
-    if ( rad <= 4871. && rad >= 4771. )
+    if ( rad <= 4071. && rad >= 3971. )
       mod.radReg8  = true;
-    if ( rad <= 4971. && rad >= 4871. )
+    if ( rad <= 4171. && rad >= 4071. )
       mod.radReg9  = true;
-    if ( rad <= 5071. && rad >= 4971. )
+    if ( rad <= 4271. && rad >= 4171. )
       mod.radReg10  = true;
-    if ( rad <= 5171. && rad >= 5071. )
-      mod.radReg11 = true;
-    if ( rad <= 5271. && rad >= 5171. )
+    if ( rad <= 4371. && rad >= 4271. )
+      mod.radReg11  = true;
+    if ( rad <= 4471. && rad >= 4371. )
       mod.radReg12  = true;
-    if ( rad <= 5371. && rad >= 5271. )
+    if ( rad <= 4571. && rad >= 4471. )
       mod.radReg13  = true;
-    if ( rad <= 5426. && rad >= 5371. )
+    if ( rad <= 4671. && rad >= 4571. )
       mod.radReg14  = true;
-    if ( rad <= 5481. && rad >= 5426. )
+    if ( rad <= 4771. && rad >= 4671. )
       mod.radReg15  = true;
-    if ( rad <= 5536. && rad >= 5481. )
+    if ( rad <= 4871. && rad >= 4771. )
       mod.radReg16  = true;
-    if ( rad <= 5591. && rad >= 5536. )
+    if ( rad <= 4971. && rad >= 4871. )
       mod.radReg17  = true;
-    if ( rad <= 5646. && rad >= 5591. )
+    if ( rad <= 5071. && rad >= 4971. )
       mod.radReg18  = true;
+    if ( rad <= 5171. && rad >= 5071. )
+      mod.radReg19 = true;
+    if ( rad <= 5271. && rad >= 5171. )
+      mod.radReg20  = true;
+    if ( rad <= 5371. && rad >= 5271. )
+      mod.radReg21  = true;
+    if ( rad <= 5426. && rad >= 5371. )
+      mod.radReg22  = true;
+    if ( rad <= 5481. && rad >= 5426. )
+      mod.radReg23  = true;
+    if ( rad <= 5536. && rad >= 5481. )
+      mod.radReg24  = true;
+    if ( rad <= 5591. && rad >= 5536. )
+      mod.radReg25  = true;
+    if ( rad <= 5646. && rad >= 5591. )
+      mod.radReg26  = true;
     if ( rad <= 5701. && rad >= 5646. )
-      mod.radReg19  = true;
+      mod.radReg27  = true;
     if ( rad <= 5746. && rad >= 5701. )
-      mod.radReg20 = true;
-    if ( rad <= 5791. && rad >= 5746. )
-      mod.radReg21 = true;
-    if ( rad <= 5836. && rad >= 5791. )
-      mod.radReg22 = true;
-    if ( rad <= 5881. && rad >= 5836. )
-      mod.radReg23 = true;
-    if ( rad <= 5926. && rad >= 5881. )
-      mod.radReg24 = true;
-    if ( rad <= 5971. && rad >= 5926. )
-      mod.radReg25 = true;
-    if ( rad <= 6021. && rad >= 5971. )
-      mod.radReg26 = true;
-    if ( rad <= 6071. && rad >= 6021. )
-      mod.radReg27 = true;
-    if ( rad <= 6121. && rad >= 6071. )
       mod.radReg28 = true;
-    if ( rad <= 6171. && rad >= 6121. )
+    if ( rad <= 5791. && rad >= 5746. )
       mod.radReg29 = true;
-    if ( rad <= 6221. && rad >= 6171. )
+    if ( rad <= 5836. && rad >= 5791. )
       mod.radReg30 = true;
-    if ( rad <= 6271. && rad >= 6221. )
+    if ( rad <= 5881. && rad >= 5836. )
       mod.radReg31 = true;
-    if ( rad <= 6291. && rad >= 6271. )
+    if ( rad <= 5926. && rad >= 5881. )
       mod.radReg32 = true;
-    if ( rad <= 6311. && rad >= 6291. )
+    if ( rad <= 5971. && rad >= 5926. )
       mod.radReg33 = true;
-    if ( rad <= 6331. && rad >= 6311. )
+    if ( rad <= 6021. && rad >= 5971. )
       mod.radReg34 = true;
-    if ( rad <= 6351. && rad >= 6331. )
+    if ( rad <= 6071. && rad >= 6021. )
       mod.radReg35 = true;
-    if ( rad <= 6361. && rad >= 6351. )
+    if ( rad <= 6121. && rad >= 6071. )
       mod.radReg36 = true;
-    if ( rad <= 6371. && rad >= 6361. )
+    if ( rad <= 6171. && rad >= 6121. )
       mod.radReg37 = true;
+    if ( rad <= 6221. && rad >= 6171. )
+      mod.radReg38 = true;
+    if ( rad <= 6271. && rad >= 6221. )
+      mod.radReg39 = true;
+    if ( rad <= 6291. && rad >= 6271. )
+      mod.radReg40 = true;
+    if ( rad <= 6311. && rad >= 6291. )
+      mod.radReg41 = true;
+    if ( rad <= 6331. && rad >= 6311. )
+      mod.radReg42 = true;
+    if ( rad <= 6351. && rad >= 6331. )
+      mod.radReg43 = true;
+    if ( rad <= 6361. && rad >= 6351. )
+      mod.radReg44 = true;
+    if ( rad <= 6371. && rad >= 6361. )
+      mod.radReg45 = true;
 
   }
   

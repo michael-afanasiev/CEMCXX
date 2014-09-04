@@ -196,6 +196,14 @@ public:
   bool radReg35   = false;
   bool radReg36   = false;
   bool radReg37   = false;
+  bool radReg38   = false;
+  bool radReg39   = false;
+  bool radReg40   = false;
+  bool radReg41   = false;
+  bool radReg42   = false;
+  bool radReg43   = false;
+  bool radReg44   = false;
+  bool radReg45   = false;
   bool wrapAround = false;
   bool doRotate   = false;
   bool kernel1d   = false;
