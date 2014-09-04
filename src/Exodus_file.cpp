@@ -75,12 +75,12 @@ void Exodus_file::merge ( Region &reg, Model_file &mod )
     if ( mod.intentions == "CRUST" || mod.intentions == "TOPOGRAPHY" )
     {
       mod.radMin   = 6271.;
-      mod.radReg32 = true;
-      mod.radReg33 = true;
-      mod.radReg34 = true;
-      mod.radReg35 = true;
-      mod.radReg36 = true;
-      mod.radReg37 = true;
+      mod.radReg40 = true;
+      mod.radReg41 = true;
+      mod.radReg42 = true;
+      mod.radReg43 = true;
+      mod.radReg44 = true;
+      mod.radReg45 = true;
     } 
         
   }
