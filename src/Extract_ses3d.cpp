@@ -50,16 +50,16 @@ int main ()
       
       utl.xyz2ColLonRadRad ( testX, testY, testZ, col, lon, rad );
 
-      if ( msh.lonMin < (-1 * con.PI / 2) && msh.lonMax > (con.PI / 2) )
-	    msh.lonMax = -1 * con.PI / 2;
-
-      if ( abs (lon-msh.lonMax) < con.oneDegRad ) {
-        lon = msh.lonMax - con.oneDegRad;
-      }
-
-      if ( abs (lon-msh.lonMin) < con.oneDegRad ) {
-        lon = msh.lonMin + con.oneDegRad;
-      }
+//      if ( msh.lonMin < (-1 * con.PI / 2) && msh.lonMax > (con.PI / 2) )
+//	    msh.lonMax = -1 * con.PI / 2;
+//
+//      if ( abs (lon-msh.lonMax) < con.oneDegRad ) {
+//        lon = msh.lonMax - con.oneDegRad;
+//      }
+//
+//      if ( abs (lon-msh.lonMin) < con.oneDegRad ) {
+//        lon = msh.lonMin + con.oneDegRad;
+//      }
       
       if ( (rad <= msh.radMax) && 
            (rad >= msh.radMin) &&

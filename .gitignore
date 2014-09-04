@@ -1,0 +1,5 @@
+*.o
+dat/
+jobs/output/
+bin/
+Makefile*
