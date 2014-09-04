@@ -75,6 +75,83 @@ void Utilities::checkRegionExtr ( double x, double y, double z, short r,
  
   /* Could change specfem to output three regions probably. Just like the normal
    * three regions. 'pullinrad' takes care of the rest i think. */
+
+  if ( r == 1 )
+  {
+    if ( rad >= con.R_EARTH )
+    {
+      rad = con.R_EARTH - 1;
+    }    
+    if ( abs(rad-con.R020) <= con.tiny )
+    {
+      rad = con.R020 + 1;    
+    }
+    if ( abs(rad-con.R_EARTH) <= con.tiny )
+    {
+      rad = con.R_EARTH - 1;
+    }
+  }
+   
+  if ( r == 2 ) 
+  {
+    if ( abs(rad-con.R020) <= con.tiny )
+    {
+      rad = con.R020 - 1;
+    }
+    if ( abs(rad-con.R052) <= con.tiny )
+    {
+      rad = con.R052 + 1;
+    }
+  }
+  
+  if ( r == 3 ) 
+  {
+    if ( abs(rad-con.R052) <= con.tiny )
+    {
+      rad = con.R052 - 1;
+    }
+    if ( abs(rad-con.R100) <= con.tiny )
+    {
+      rad = con.R100 + 1;    
+    }
+  }
+  
+  if ( r == 4 ) 
+  {
+    if ( abs(rad-con.R100) <= con.tiny )
+    {
+      rad = con.R100 - 1;
+    }
+    if ( abs(rad-con.R400) <= con.tiny )
+    {
+      rad = con.R400 + 1;
+    }
+  }
+  
+  if ( r == 5 ) 
+  {
+    if ( abs(rad-con.R400) <= con.tiny )
+    {
+      rad = con.R400 - 1;
+    }
+    if ( abs(rad-con.R670) <= con.tiny )
+    {
+      rad = con.R670 + 1;
+    }
+  }
+  
+  if ( r == 6 ) 
+  {
+    if ( abs(rad-con.R670) <= con.tiny )
+    {
+      rad = con.R670 - 1;
+    }
+    if ( abs(rad-con.RTHO) <= con.tiny )
+    {
+      rad = con.RTHO + 1;
+    }
+  }
+
   if ( r == 7 ) 
   {
     if ( rad < con.outerCoreRad )
